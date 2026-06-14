@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://telegram-bots-backend.onrender.com/api';
 
 // Wrapper для fetch с автоматическим обновлением токенов
 async function apiRequest(endpoint, options = {}) {
