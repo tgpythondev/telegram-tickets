@@ -8,6 +8,7 @@ const userHandler = require('./handlers/user.handler');
 const adminHandler = require('./handlers/admin.handler');
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const BOT_MODE = process.env.BOT_MODE || 'polling'; // polling или webhook
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 if (!TOKEN) {
@@ -17,11 +18,12 @@ if (!TOKEN) {
 
 // Инициализация бота
 const bot = new TelegramBot(TOKEN, {
-    polling: !IS_PRODUCTION
+    polling: BOT_MODE === 'polling'
 });
 
 console.log('🤖 Telegram бот запущен...');
-console.log(`Режим: ${IS_PRODUCTION ? 'Production (Webhook)' : 'Development (Polling)'}`);
+console.log(`Режим: ${BOT_MODE === 'polling' ? 'Long Polling' : 'Webhook'}`);
+console.log(`Окружение: ${IS_PRODUCTION ? 'Production' : 'Development'}`);
 
 // ========== КОМАНДЫ ==========
 
