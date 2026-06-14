@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои тикеты | Telegram Боты</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="tickets.css">
+</head>
+<body>
+    <div class="particles"></div>
+
+    <header>
+        <nav>
+            <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;">KALIANG</a></div>
+            <ul class="nav-links">
+                <li><a href="index.html#services">Услуги</a></li>
+                <li><a href="index.html#portfolio">Портфолио</a></li>
+                <li><a href="index.html#contact">Контакты</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="tickets-page">
+        <div class="user-header">
+            <div class="user-info">
+                <h1>Мои тикеты</h1>
+                <p>Добро пожаловать, <span id="username"></span></p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="create-ticket-btn">Создать тикет</button>
+                <button class="btn btn-logout" id="logout-btn">Выход</button>
+            </div>
+        </div>
+
+        <div class="tickets-container">
+            <!-- Telegram интеграция -->
+            <div class="telegram-section" style="background: var(--light-gray); border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">📱 Telegram интеграция</h3>
+                <div id="telegram-status">
+                    <p style="color: var(--gray); margin-bottom: 1rem;">Получайте уведомления о новых ответах прямо в Telegram!</p>
+                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        <button class="btn" id="toggle-telegram-btn">🔔 Включить уведомления</button>
+                        <span id="telegram-status-text" style="color: var(--gray);"></span>
+                    </div>
+                    <details style="margin-top: 1rem;">
+                        <summary style="cursor: pointer; color: var(--gray);">Как подключить?</summary>
+                        <ol style="margin-top: 0.5rem; color: var(--gray); line-height: 1.8;">
+                            <li>Найдите бота в Telegram (имя бота указано в настройках проекта)</li>
+                            <li>Напишите боту <code>/start</code></li>
+                            <li>Войдите используя ваш логин и пароль: <code>/login username password</code></li>
+                            <li>Нажмите кнопку "Включить уведомления" здесь или в боте</li>
+                        </ol>
+                    </details>
+                </div>
+            </div>
+
+            <div class="tickets-header">
+                <h2>Список тикетов</h2>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">Все</button>
+                    <button class="filter-tab" data-filter="open">Открытые</button>
+                    <button class="filter-tab" data-filter="in_progress">В работе</button>
+                    <button class="filter-tab" data-filter="closed">Закрытые</button>
+                </div>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Загрузка тикетов...</p>
+            </div>
+
+            <div class="tickets-list" id="tickets-list"></div>
+        </div>
+    </div>
+
+    <!-- Модальное окно просмотра тикета -->
+    <div class="modal" id="ticket-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h3>Тикет</h3>
+                </div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания тикета -->
+    <div class="modal" id="create-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h3>Создать тикет</h3>
+                </div>
+                <button class="modal-close" onclick="document.getElementById('create-modal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="create-ticket-form">
+                    <div class="form-group">
+                        <label for="ticket-subject">Тема</label>
+                        <input type="text" id="ticket-subject" required maxlength="200" placeholder="Например: Сколько стоит бот?">
+                    </div>
+                    <div class="form-group">
+                        <label for="ticket-message">Сообщение</label>
+                        <textarea id="ticket-message" required rows="6" placeholder="Опишите ваш вопрос..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="ticket-priority">Приоритет</label>
+                        <select id="ticket-priority" style="width: 100%; padding: 0.75rem; background: var(--light-gray); border: 1px solid var(--border); color: var(--black);">
+                            <option value="normal">Обычный</option>
+                            <option value="high">Высокий</option>
+                            <option value="urgent">Срочный</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Создать тикет</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Telegram Боты на Заказ. Все права защищены.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="api.js"></script>
+    <script src="tickets.js"></script>
+</body>
+</html>

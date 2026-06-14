@@ -1,0 +1,22 @@
+{
+  "name": "telegram-tickets-bot",
+  "version": "1.0.0",
+  "description": "Telegram бот для системы тикетов",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js"
+  },
+  "keywords": ["telegram", "bot", "tickets", "support"],
+  "author": "Kaliang",
+  "license": "MIT",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход | Telegram Боты</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+    <div class="particles"></div>
+
+    <header>
+        <nav>
+            <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;">KALIANG</a></div>
+            <ul class="nav-links">
+                <li><a href="index.html#services">Услуги</a></li>
+                <li><a href="index.html#portfolio">Портфолио</a></li>
+                <li><a href="index.html#contact">Контакты</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="auth-section">
+        <div class="auth-container">
+            <div class="auth-tabs">
+                <button class="tab-button active" data-tab="login">Вход</button>
+                <button class="tab-button" data-tab="register">Регистрация</button>
+            </div>
+
+            <!-- Форма входа -->
+            <form id="login-form" class="auth-form">
+                <h2>Войти в систему</h2>
+                <div class="form-group">
+                    <label for="login-username">Логин</label>
+                    <input type="text" id="login-username" required minlength="3" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Пароль</label>
+                    <input type="password" id="login-password" required minlength="6" autocomplete="current-password">
+                </div>
+                <div class="error-message" id="login-error"></div>
+                <button type="submit" class="auth-button">Войти</button>
+            </form>
+
+            <!-- Форма регистрации -->
+            <form id="register-form" class="auth-form hidden">
+                <h2>Создать аккаунт</h2>
+                <div class="form-group">
+                    <label for="register-username">Логин</label>
+                    <input type="text" id="register-username" required minlength="3" autocomplete="username">
+                    <span class="input-hint">Минимум 3 символа</span>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Пароль</label>
+                    <input type="password" id="register-password" required minlength="6" autocomplete="new-password">
+                    <span class="input-hint">Минимум 6 символов</span>
+                </div>
+                <div class="form-group">
+                    <label for="register-password-confirm">Подтвердите пароль</label>
+                    <input type="password" id="register-password-confirm" required minlength="6" autocomplete="new-password">
+                </div>
+                <div class="error-message" id="register-error"></div>
+                <button type="submit" class="auth-button">Зарегистрироваться</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Telegram Боты на Заказ. Все права защищены.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>
