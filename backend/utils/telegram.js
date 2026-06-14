@@ -30,18 +30,28 @@ async function sendNewTicketNotification(ticket, username, initialMessage) {
     }
 
     const appUrl = process.env.APP_URL || 'http://localhost:8080';
-    const message = `🎫 Новый тикет #${ticket.id}
 
-От: ${username}
-Тема: ${ticket.subject}
-Приоритет: ${ticket.priority}
-Сообщение: ${initialMessage}
+    // Форматирование даты и времени
+    const now = new Date();
+    const date = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
-👉 Перейти в панель: ${appUrl}/admin/dashboard.html?ticket=${ticket.id}`;
+    const message = `🔎 *Новый тикет!*
+
+👤 От: @${username}
+📋 Тема: *${ticket.subject}*
+🕐 ${date} в ${time}
+
+📝 *Описание:*
+${initialMessage.substring(0, 300)}${initialMessage.length > 300 ? '...' : ''}
+
+ℹ️ _Ответьте как можно скорее на тикет!_
+
+👉 [Открыть в веб-панели](${appUrl}/admin/dashboard.html?ticket=${ticket.id})`;
 
     for (const chatId of adminChatIds) {
         try {
-            await bot.sendMessage(chatId, message);
+            await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
         } catch (error) {
             console.error(`Ошибка отправки уведомления в chat ${chatId}:`, error.message);
         }
@@ -56,16 +66,25 @@ async function sendNewMessageNotification(ticketId, username, messageContent) {
     }
 
     const appUrl = process.env.APP_URL || 'http://localhost:8080';
-    const message = `💬 Новое сообщение в тикете #${ticketId}
 
-От: ${username}
-Сообщение: ${messageContent.substring(0, 200)}${messageContent.length > 200 ? '...' : ''}
+    // Форматирование даты и времени
+    const now = new Date();
+    const date = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
-👉 Открыть тикет: ${appUrl}/admin/dashboard.html?ticket=${ticketId}`;
+    const message = `💬 *Новое сообщение в тикете #${ticketId}*
+
+👤 От: @${username}
+🕐 ${date} в ${time}
+
+📝 *Сообщение:*
+${messageContent.substring(0, 300)}${messageContent.length > 300 ? '...' : ''}
+
+👉 [Ответить в веб-панели](${appUrl}/admin/dashboard.html?ticket=${ticketId})`;
 
     for (const chatId of adminChatIds) {
         try {
-            await bot.sendMessage(chatId, message);
+            await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
         } catch (error) {
             console.error(`Ошибка отправки уведомления в chat ${chatId}:`, error.message);
         }

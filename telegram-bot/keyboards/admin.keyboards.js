@@ -2,6 +2,7 @@
 
 // Главное меню админа
 function getAdminMenuKeyboard() {
+    const appUrl = process.env.APP_URL || 'http://localhost:8080';
     return {
         inline_keyboard: [
             [
@@ -19,7 +20,7 @@ function getAdminMenuKeyboard() {
                 { text: '📊 Статистика', callback_data: 'admin_stats' }
             ],
             [
-                { text: '🌐 Веб-панель', url: process.env.APP_URL || 'http://localhost:8080' }
+                { text: '🌐 Веб-панель', url: `${appUrl}/admin/dashboard.html` }
             ]
         ]
     };
