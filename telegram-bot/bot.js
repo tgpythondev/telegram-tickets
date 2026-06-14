@@ -238,9 +238,9 @@ bot.on('message', async (msg) => {
     }
 });
 
-// ========== WEBHOOK (PRODUCTION) ==========
+// ========== WEBHOOK (только если BOT_MODE=webhook) ==========
 
-if (IS_PRODUCTION) {
+if (BOT_MODE === 'webhook') {
     const app = express();
     app.use(express.json());
 
