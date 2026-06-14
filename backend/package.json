@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Backend для системы тикетов Telegram-Bots.pl",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js & cd ../telegram-bot && node bot.js"
+"scripts": {
+    "start": "node server.js & cd ../telegram-bot && node bot.js",
     "dev": "nodemon server.js"
   },
   "keywords": [
