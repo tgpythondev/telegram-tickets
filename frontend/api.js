@@ -124,10 +124,10 @@ const API = {
     getTicket: (id) =>
         apiRequest(`/tickets/${id}`),
 
-    createTicket: (subject, initialMessage, priority = 'normal') =>
+    createTicket: (subject, initialMessage, priority = 'normal', orderConfig = null) =>
         apiRequest('/tickets', {
             method: 'POST',
-            body: JSON.stringify({ subject, initialMessage, priority })
+            body: JSON.stringify({ subject, initialMessage, priority, orderConfig })
         }),
 
     addMessage: (ticketId, content) =>

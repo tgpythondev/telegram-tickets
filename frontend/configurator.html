@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конфигуратор заказа | Telegram Боты</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="configurator.css">
+</head>
+<body>
+    <div class="particles"></div>
+
+    <header>
+        <nav>
+            <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;">KALIANG</a></div>
+            <ul class="nav-links">
+                <li><a href="index.html#services">Услуги</a></li>
+                <li><a href="index.html#portfolio">Портфолио</a></li>
+                <li><a href="index.html#contact">Контакты</a></li>
+                <li><a href="auth.html">Поддержка</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="configurator-page">
+        <div class="configurator-container">
+            <div class="configurator-header">
+                <h1>Конфигуратор заказа</h1>
+                <p>Настройте параметры вашего бота и получите точную стоимость</p>
+            </div>
+
+            <!-- Progress indicator -->
+            <div class="progress-container">
+                <div class="progress-steps">
+                    <div class="progress-line" id="progress-line"></div>
+                    <div class="progress-step active" data-step="1">1</div>
+                    <div class="progress-step" data-step="2">2</div>
+                    <div class="progress-step" data-step="3">3</div>
+                    <div class="progress-step" data-step="4">4</div>
+                    <div class="progress-step" data-step="5">5</div>
+                    <div class="progress-step" data-step="6">6</div>
+                    <div class="progress-step" data-step="7">7</div>
+                </div>
+                <div class="progress-info">
+                    <span id="progress-text">Шаг 1 из 7: Выбор пакета</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Package selection -->
+            <div class="step active" id="step-1">
+                <h2 class="step-title">Выберите пакет</h2>
+                <p class="step-description">Выберите подходящий пакет для вашего проекта</p>
+
+                <div class="package-grid">
+                    <div class="package-card" data-package="Mini" data-price-min="3" data-price-max="5">
+                        <div class="package-name">Mini</div>
+                        <div class="package-price">$3–5</div>
+                        <div class="package-description">Простые боты (автоответчики, рассылки, уведомления) без базы данных.</div>
+                        <div class="package-timeline">Срок: 1–1,5 дня</div>
+                    </div>
+
+                    <div class="package-card" data-package="Mini+" data-price-min="5" data-price-max="10">
+                        <div class="package-name">Mini+</div>
+                        <div class="package-price">$5–10</div>
+                        <div class="package-description">Небольшие боты с базой данных + бесплатный хостинг.</div>
+                        <div class="package-timeline">Срок: 1–3 дня</div>
+                    </div>
+
+                    <div class="package-card" data-package="Standard" data-price-min="20" data-price-max="30">
+                        <div class="package-name">Standard</div>
+                        <div class="package-price">$20–30</div>
+                        <div class="package-description">Небольшие магазины, каталоги, квизы, красивый дизайн + БД. $20 — с бесплатным хостингом, $30 — с платным хостингом (рекомендуется).</div>
+                        <div class="package-timeline">Срок: 4–7 дней</div>
+                    </div>
+
+                    <div class="package-card" data-package="Max" data-price-min="50" data-price-max="70">
+                        <div class="package-name">Max</div>
+                        <div class="package-price">$50–70</div>
+                        <div class="package-description">Сложные боты с большим функционалом, интеграциями, высокой нагрузкой + топовый хостинг.</div>
+                        <div class="package-timeline">Срок: 1–2,5 недели</div>
+                    </div>
+
+                    <div class="package-card" data-package="Custom" data-price-min="70" data-price-max="999">
+                        <div class="package-name">Custom</div>
+                        <div class="package-price">от $70</div>
+                        <div class="package-description">Индивидуальная разработка под задачи клиента. Цена и сроки рассчитываются после обсуждения.</div>
+                        <div class="package-timeline">Срок: обсуждается</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Short description -->
+            <div class="step" id="step-2">
+                <h2 class="step-title">Краткое описание</h2>
+                <p class="step-description">Опишите в нескольких словах, что должен делать ваш бот</p>
+
+                <div class="form-field">
+                    <label for="short-description">Краткое описание (обязательно)</label>
+                    <textarea id="short-description" placeholder="Например: Бот для приема заказов в ресторане" maxlength="200"></textarea>
+                    <div class="char-counter"><span id="short-counter">0</span>/200</div>
+                </div>
+            </div>
+
+            <!-- Step 3: Detailed description -->
+            <div class="step" id="step-3">
+                <h2 class="step-title">Подробное описание</h2>
+                <p class="step-description">Расскажите детально о функционале, который вам нужен</p>
+
+                <div class="form-field">
+                    <label for="detailed-description">Подробное описание (обязательно)</label>
+                    <textarea id="detailed-description" placeholder="Опишите функционал, интеграции, особые требования..." maxlength="2000" style="min-height: 200px;"></textarea>
+                    <div class="char-counter"><span id="detailed-counter">0</span>/2000</div>
+                </div>
+            </div>
+
+            <!-- Step 4: Language selection -->
+            <div class="step" id="step-4">
+                <h2 class="step-title">Язык программирования</h2>
+                <p class="step-description">Выберите язык для разработки бота</p>
+
+                <div class="language-grid">
+                    <div class="language-card" data-language="Python">
+                        <div class="language-name">Python</div>
+                        <div class="language-stats">
+                            <div>Скорость разработки: очень высокая</div>
+                            <div>Скорость работы бота: средняя</div>
+                            <div>Потребление ресурсов: среднее</div>
+                            <div>Доля рынка: ~67% (самый популярный)</div>
+                        </div>
+                    </div>
+
+                    <div class="language-card" data-language="JavaScript">
+                        <div class="language-name">JavaScript</div>
+                        <div class="language-stats">
+                            <div>Скорость разработки: очень высокая</div>
+                            <div>Скорость работы бота: высокая</div>
+                            <div>Потребление ресурсов: низкое</div>
+                            <div>Доля рынка: ~21%</div>
+                        </div>
+                    </div>
+
+                    <div class="language-card" data-language="Go">
+                        <div class="language-name">Go (Golang)</div>
+                        <div class="language-stats">
+                            <div>Скорость разработки: средняя</div>
+                            <div>Скорость работы бота: максимальная</div>
+                            <div>Потребление ресурсов: очень низкое</div>
+                            <div>Доля рынка: ~2% (производительность)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="language-note">* Выбор языка не повлияет на стоимость</div>
+            </div>
+
+            <!-- Step 5: Hosting selection -->
+            <div class="step" id="step-5">
+                <h2 class="step-title">Хостинг</h2>
+                <p class="step-description">Выберите вариант хостинга для вашего бота</p>
+
+                <div class="hosting-grid">
+                    <div class="hosting-card" data-hosting="free">
+                        <div class="hosting-name">Бесплатный (входит в пакет)</div>
+                        <div class="hosting-specs">512 МБ места | 5 ГБ трафика | Без бэкапов | Засыпает при простое</div>
+                    </div>
+
+                    <div class="hosting-card" data-hosting="paid">
+                        <div class="hosting-name">Платный — $5/мес</div>
+                        <div class="hosting-specs">3 ГБ места | 10 ГБ трафика | Бэкапы | Работает 24/7</div>
+                    </div>
+
+                    <div class="hosting-card" data-hosting="none">
+                        <div class="hosting-name">Без хостинга</div>
+                        <div class="hosting-specs">Я сам разверну бота на своем сервере</div>
+                    </div>
+                </div>
+
+                <div class="extra-resources" id="extra-resources" style="display: none;">
+                    <h4>Дополнительные ресурсы</h4>
+                    <div class="resource-input">
+                        <label>Дополнительное место (+$3 за 1 ГБ)</label>
+                        <input type="number" id="extra-storage" min="0" max="50" value="0"> ГБ
+                    </div>
+                    <div class="resource-input">
+                        <label>Дополнительный трафик (+$1 за 1 ГБ)</label>
+                        <input type="number" id="extra-bandwidth" min="0" max="100" value="0"> ГБ
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Priority selection -->
+            <div class="step" id="step-6">
+                <h2 class="step-title">Приоритет заказа</h2>
+                <p class="step-description">Выберите приоритет выполнения заказа</p>
+
+                <div class="priority-grid">
+                    <div class="priority-card" data-priority="normal" data-cost="0">
+                        <div class="priority-info">
+                            <h4>Нормальный</h4>
+                            <p>Заказ будет выполнен по очереди в стандартные сроки</p>
+                        </div>
+                        <div class="priority-price">+$0</div>
+                    </div>
+
+                    <div class="priority-card" data-priority="high" data-cost="10">
+                        <div class="priority-info">
+                            <h4>Высокий</h4>
+                            <p>Ваш заказ будет приоритетным перед обычными заказами</p>
+                        </div>
+                        <div class="priority-price">+$10</div>
+                    </div>
+
+                    <div class="priority-card" data-priority="urgent" data-cost="30">
+                        <div class="priority-info">
+                            <h4>Срочный</h4>
+                            <p>Максимальный приоритет, выполнение в 2 раза быстрее</p>
+                        </div>
+                        <div class="priority-price">+$30</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 7: Summary -->
+            <div class="step" id="step-7">
+                <h2 class="step-title">Подтверждение заказа</h2>
+                <p class="step-description">Проверьте все параметры перед отправкой</p>
+
+                <div class="summary-section">
+                    <h3>Ваш заказ</h3>
+
+                    <div class="summary-item">
+                        <div class="summary-label">Пакет:</div>
+                        <div class="summary-value" id="summary-package">—</div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="summary-label">Краткое описание:</div>
+                        <div class="summary-value" id="summary-short">—</div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="summary-label">Язык программирования:</div>
+                        <div class="summary-value" id="summary-language">—</div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="summary-label">Хостинг:</div>
+                        <div class="summary-value" id="summary-hosting">—</div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="summary-label">Приоритет:</div>
+                        <div class="summary-value" id="summary-priority">—</div>
+                    </div>
+
+                    <div class="summary-total">
+                        <div>Итоговая стоимость:</div>
+                        <div id="summary-total">$0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation buttons -->
+            <div class="step-navigation">
+                <button class="btn-back" id="btn-back" style="display: none;">Назад</button>
+                <button class="btn-next" id="btn-next">Далее</button>
+                <button class="btn-submit" id="btn-submit" style="display: none;">Отправить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price display (fixed bottom right) -->
+    <div class="price-display" id="price-display">
+        <div class="price-label">Примерная стоимость:</div>
+        <div class="price-value" id="price-value">$0</div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p style="color: var(--gray);">Создание заказа...</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Telegram Боты на Заказ. Все права защищены.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="api.js"></script>
+    <script src="configurator.js"></script>
+</body>
+</html>

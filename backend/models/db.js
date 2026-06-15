@@ -91,10 +91,10 @@ async function deleteUserRefreshTokens(userId) {
 
 // ============ TICKETS ============
 
-async function createTicket(userId, subject, priority = 'normal') {
+async function createTicket(userId, subject, priority = 'normal', orderConfig = null) {
     const result = await db.query(
-        'INSERT INTO tickets (user_id, subject, priority) VALUES ($1, $2, $3) RETURNING *',
-        [userId, subject, priority]
+        'INSERT INTO tickets (user_id, subject, priority, order_config) VALUES ($1, $2, $3, $4) RETURNING *',
+        [userId, subject, priority, orderConfig ? JSON.stringify(orderConfig) : null]
     );
     return result.rows[0];
 }

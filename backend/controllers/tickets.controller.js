@@ -40,20 +40,66 @@ async function getTicket(req, res) {
 // Создать тикет
 async function createTicket(req, res) {
     try {
-        const { subject, initialMessage, priority } = req.body;
+        const { subject, initialMessage, priority, orderConfig } = req.body;
 
-        if (!subject || !initialMessage) {
+        // Если есть orderConfig, формируем тему и сообщение из конфигурации
+        let finalSubject = subject;
+        let finalMessage = initialMessage;
+
+        if (orderConfig) {
+            // Формируем тему из пакета
+            finalSubject = `Заказ бота: ${orderConfig.package}`;
+
+            // Формируем красивое сообщение из конфигурации
+            const packagePrices = {
+                'Mini': '$3–5',
+                'Mini+': '$5–10',
+                'Standard': '$20–30',
+                'Max': '$50–70',
+                'Custom': 'от $70'
+            };
+
+            const hostingText = orderConfig.hosting.type === 'free'
+                ? 'Бесплатный (входит в пакет)'
+                : orderConfig.hosting.type === 'paid'
+                ? `Платный ($5/мес)${orderConfig.hosting.extraStorage > 0 ? ` + ${orderConfig.hosting.extraStorage} ГБ доп. места` : ''}${orderConfig.hosting.extraBandwidth > 0 ? ` + ${orderConfig.hosting.extraBandwidth} ГБ доп. трафика` : ''}`
+                : 'Без хостинга (сам разверну)';
+
+            const priorityText = {
+                'normal': 'Нормальный (по очереди)',
+                'high': 'Высокий (+$10 к стоимости)',
+                'urgent': 'Срочный (+$30 к стоимости)'
+            };
+
+            finalMessage = `📦 Пакет: ${orderConfig.package} (${packagePrices[orderConfig.package]})
+
+📝 Краткое описание:
+${orderConfig.shortDescription}
+
+📋 Подробное описание:
+${orderConfig.detailedDescription}
+
+💻 Язык программирования: ${orderConfig.language}
+
+🌐 Хостинг: ${hostingText}
+
+⚡ Приоритет: ${priorityText[orderConfig.priority]}
+
+💰 Итоговая стоимость: $${orderConfig.totalPrice}`;
+        }
+
+        if (!finalSubject || !finalMessage) {
             return res.status(400).json({ error: 'Subject and initial message are required' });
         }
 
-        if (subject.length > 200) {
+        if (finalSubject.length > 200) {
             return res.status(400).json({ error: 'Subject is too long (max 200 characters)' });
         }
 
-        const ticket = await db.createTicket(req.user.id, subject, priority || 'normal');
-        await db.createMessage(ticket.id, req.user.id, initialMessage, false);
+        const ticket = await db.createTicket(req.user.id, finalSubject, priority || 'normal', orderConfig || null);
+        await db.createMessage(ticket.id, req.user.id, finalMessage, false);
 
-        await sendNewTicketNotification(ticket, req.user.username, initialMessage);
+        await sendNewTicketNotification(ticket, req.user.username, finalMessage);
 
         res.status(201).json({ ticket });
     } catch (error) {
