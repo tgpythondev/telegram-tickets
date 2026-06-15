@@ -134,13 +134,23 @@ git push origin main
 2. Откройте проект `telegram-tickets`
 3. Перейдите в "Deployments"
 4. Нажмите "Create deployment" > "Direct Upload"
-5. Загрузите все файлы из папки `frontend/`:
-   - configurator.html
-   - configurator.css
-   - configurator.js
-   - index.html (обновленный)
-   - api.js (обновленный)
-   - все остальные файлы
+5. Загрузите **ВСЕ** файлы из папки `frontend/`:
+   - ✅ configurator.html (новый)
+   - ✅ configurator.css (новый)
+   - ✅ configurator.js (новый)
+   - ✅ index.html (обновленный)
+   - ✅ api.js (обновленный)
+   - ✅ script.js (существующий - необходим для анимаций)
+   - ✅ style.css
+   - ✅ auth.html
+   - ✅ auth.css
+   - ✅ auth.js
+   - ✅ tickets.html
+   - ✅ tickets.css
+   - ✅ tickets.js
+   - ✅ admin/ (вся папка)
+
+**ВАЖНО**: Убедитесь что загружен файл `script.js` - он отвечает за анимации частиц и плавные переходы!
 
 ### 3.3 Проверка frontend
 
@@ -268,6 +278,25 @@ ALTER TABLE tickets ADD COLUMN order_config JSONB;
 1. Проверьте что файлы `configurator.html`, `configurator.css`, `configurator.js` загружены
 2. Проверьте Cloudflare Pages deployment logs
 3. Убедитесь что в `index.html` правильные ссылки на `configurator.html`
+
+### Проблема 3A: Ошибка загрузки script.js
+
+**Симптомы**: В консоли браузера ошибка "Загрузка script.js не удалась"
+
+**Причина**: Файл `script.js` не загружен на Cloudflare Pages
+
+**Решение**:
+1. Убедитесь что файл `script.js` существует в папке `frontend/`
+2. Загрузите его на Cloudflare Pages:
+   ```bash
+   # Если используете Git
+   git add frontend/script.js
+   git commit -m "Add missing script.js"
+   git push origin main
+   ```
+3. Или через Direct Upload загрузите `script.js` вручную
+4. После загрузки очистите кэш браузера (Ctrl+Shift+R)
+5. Проверьте что файл доступен: `https://telegram-tickets.tgpythondev.workers.dev/script.js`
 
 ### Проблема 4: Цена не рассчитывается
 
