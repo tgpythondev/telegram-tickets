@@ -10,6 +10,9 @@ const ticketsRoutes = require('./routes/tickets.routes');
 const adminRoutes = require('./routes/admin.routes');
 
 const app = express();
+
+// Trust proxy для работы за Render.com reverse proxy
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 // Валидация критических переменных окружения при старте
