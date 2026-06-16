@@ -11,12 +11,30 @@ async function register(req, res) {
             return res.status(400).json({ error: 'Username and password are required' });
         }
 
-        if (username.length < 3) {
-            return res.status(400).json({ error: 'Username must be at least 3 characters' });
+        // Валидация username
+        if (username.length < 3 || username.length > 20) {
+            return res.status(400).json({ error: 'Username must be between 3 and 20 characters' });
         }
 
-        if (password.length < 6) {
-            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+            return res.status(400).json({ error: 'Username can only contain letters, numbers, underscore and dash' });
+        }
+
+        // Усиленная валидация пароля
+        if (password.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters' });
+        }
+
+        if (password.length > 128) {
+            return res.status(400).json({ error: 'Password is too long (max 128 characters)' });
+        }
+
+        if (!/[a-zA-Z]/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one letter' });
+        }
+
+        if (!/[0-9]/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one number' });
         }
 
         const existingUser = await db.findUserByUsername(username);
@@ -24,7 +42,7 @@ async function register(req, res) {
             return res.status(409).json({ error: 'Username already exists' });
         }
 
-        const passwordHash = await bcrypt.hash(password, 10);
+        const passwordHash = await bcrypt.hash(password, 12);
         const user = await db.createUser(username, passwordHash);
 
         const accessToken = generateAccessToken(user);
@@ -34,12 +52,15 @@ async function register(req, res) {
         refreshExpiry.setDate(refreshExpiry.getDate() + 30);
         await db.saveRefreshToken(user.id, refreshToken, refreshExpiry);
 
-        res.cookie('refreshToken', refreshToken, {
+        // Настройки cookie
+        const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            sameSite: 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000
-        });
+        };
+
+        res.cookie('refreshToken', refreshToken, cookieOptions);
 
         res.status(201).json({
             user: {
@@ -50,7 +71,7 @@ async function register(req, res) {
             accessToken
         });
     } catch (error) {
-        console.error('Register error:', error);
+        console.error('Register error:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
@@ -64,13 +85,20 @@ async function login(req, res) {
             return res.status(400).json({ error: 'Username and password are required' });
         }
 
-        const user = await db.findUserByUsername(username);
-        if (!user) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+        // Защита от DoS через длинные пароли
+        if (password.length > 128) {
+            return res.status(400).json({ error: 'Invalid credentials' });
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-        if (!isPasswordValid) {
+        const user = await db.findUserByUsername(username);
+
+        // ЗАЩИТА ОТ TIMING ATTACK: всегда выполняем bcrypt.compare
+        const dummyHash = '$2a$12$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+        const passwordHash = user ? user.password_hash : dummyHash;
+
+        const isPasswordValid = await bcrypt.compare(password, passwordHash);
+
+        if (!user || !isPasswordValid) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
@@ -81,14 +109,20 @@ async function login(req, res) {
 
         const refreshExpiry = new Date();
         refreshExpiry.setDate(refreshExpiry.getDate() + 30);
+
+        // Удаляем старые refresh токены пользователя
+        await db.deleteUserRefreshTokens(user.id);
         await db.saveRefreshToken(user.id, refreshToken, refreshExpiry);
 
-        res.cookie('refreshToken', refreshToken, {
+        // Настройки cookie (вынесены в константу для переиспользования)
+        const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            sameSite: 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000
-        });
+        };
+
+        res.cookie('refreshToken', refreshToken, cookieOptions);
 
         res.json({
             user: {
@@ -99,7 +133,7 @@ async function login(req, res) {
             accessToken
         });
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('Login error:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
@@ -184,6 +218,11 @@ async function linkTelegram(req, res) {
             return res.status(400).json({ error: 'Telegram chat ID is required' });
         }
 
+        // Валидация telegram chat ID (должен быть числом)
+        if (!Number.isInteger(telegramChatId) && typeof telegramChatId !== 'string') {
+            return res.status(400).json({ error: 'Invalid Telegram chat ID format' });
+        }
+
         // Проверить, не привязан ли этот chat_id к другому пользователю
         const existingUser = await db.findUserByTelegramChatId(telegramChatId);
         if (existingUser && existingUser.id !== req.user.id) {
@@ -197,7 +236,7 @@ async function linkTelegram(req, res) {
             telegramChatId
         });
     } catch (error) {
-        console.error('Link Telegram error:', error);
+        console.error('Link Telegram error:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 }

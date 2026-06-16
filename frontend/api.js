@@ -1,4 +1,33 @@
-const API_URL = 'https://telegram-bots-backend.onrender.com/api';
+const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000/api'
+    : 'https://telegram-bots-backend.onrender.com/api';
+
+// In-memory token storage (более безопасно чем localStorage для XSS)
+let inMemoryAccessToken = null;
+
+// CSRF token management
+let csrfToken = null;
+
+async function getCsrfToken() {
+    if (!csrfToken) {
+        try {
+            const response = await fetch(`${API_URL}/auth/csrf`, { credentials: 'include' });
+            if (!response.ok) {
+                throw new Error('Failed to fetch CSRF token');
+            }
+            const data = await response.json();
+            if (data && data.csrfToken) {
+                csrfToken = data.csrfToken;
+            } else {
+                throw new Error('Invalid CSRF token response');
+            }
+        } catch (error) {
+            console.error('Failed to get CSRF token:', error);
+            return null;
+        }
+    }
+    return csrfToken;
+}
 
 // Wrapper для fetch с автоматическим обновлением токенов
 async function apiRequest(endpoint, options = {}) {
@@ -9,9 +38,17 @@ async function apiRequest(endpoint, options = {}) {
         credentials: 'include',
     };
 
-    const accessToken = localStorage.getItem('accessToken');
-    if (accessToken) {
-        defaultOptions.headers['Authorization'] = `Bearer ${accessToken}`;
+    // Используем in-memory токен вместо localStorage
+    if (inMemoryAccessToken) {
+        defaultOptions.headers['Authorization'] = `Bearer ${inMemoryAccessToken}`;
+    }
+
+    // Добавляем CSRF токен для мутирующих запросов
+    if (options.method && options.method !== 'GET') {
+        const token = await getCsrfToken();
+        if (token) {
+            defaultOptions.headers['X-CSRF-Token'] = token;
+        }
     }
 
     const config = { ...defaultOptions, ...options };
@@ -22,12 +59,11 @@ async function apiRequest(endpoint, options = {}) {
     let response = await fetch(`${API_URL}${endpoint}`, config);
 
     // Если токен истек, попробовать обновить
-    if (response.status === 403) {
+    if (response.status === 403 || response.status === 401) {
         const refreshed = await refreshAccessToken();
         if (refreshed) {
             // Повторить запрос с новым токеном
-            const newAccessToken = localStorage.getItem('accessToken');
-            config.headers['Authorization'] = `Bearer ${newAccessToken}`;
+            config.headers['Authorization'] = `Bearer ${inMemoryAccessToken}`;
             response = await fetch(`${API_URL}${endpoint}`, config);
         } else {
             // Не удалось обновить токен, перенаправить на вход
@@ -36,48 +72,87 @@ async function apiRequest(endpoint, options = {}) {
         }
     }
 
-    if (!response.ok && response.status !== 403) {
-        const error = await response.json().catch(() => ({ error: 'Request failed' }));
-        throw new Error(error.error || 'Request failed');
+    if (!response.ok && response.status !== 403 && response.status !== 401) {
+        let errorMessage = 'Request failed';
+        try {
+            const error = await response.json();
+            errorMessage = error.error || errorMessage;
+        } catch (parseError) {
+            // Если не удалось распарсить JSON, используем дефолтное сообщение
+            console.error('Failed to parse error response:', parseError);
+        }
+        throw new Error(errorMessage);
     }
 
-    return response.json();
+    // Проверяем что response существует перед вызовом json()
+    if (!response) {
+        throw new Error('No response received');
+    }
+
+    try {
+        return await response.json();
+    } catch (error) {
+        console.error('Failed to parse response JSON:', error);
+        throw new Error('Invalid response format');
+    }
 }
+
+// Флаг для предотвращения race condition при refresh
+let isRefreshing = false;
+let refreshPromise = null;
 
 // Обновить access token через refresh token
 async function refreshAccessToken() {
-    try {
-        const response = await fetch(`${API_URL}/auth/refresh`, {
-            method: 'POST',
-            credentials: 'include',
-        });
-
-        if (!response.ok) {
-            return false;
-        }
-
-        const data = await response.json();
-        localStorage.setItem('accessToken', data.accessToken);
-        return true;
-    } catch (error) {
-        console.error('Token refresh failed:', error);
-        return false;
+    // Предотвращаем множественные одновременные refresh запросы
+    if (isRefreshing) {
+        return refreshPromise;
     }
+
+    isRefreshing = true;
+    refreshPromise = (async () => {
+        try {
+            const response = await fetch(`${API_URL}/auth/refresh`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                return false;
+            }
+
+            const data = await response.json();
+            if (data && data.accessToken) {
+                inMemoryAccessToken = data.accessToken;
+                // Обновляем CSRF токен после refresh
+                csrfToken = null;
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Token refresh failed:', error);
+            return false;
+        } finally {
+            isRefreshing = false;
+            refreshPromise = null;
+        }
+    })();
+
+    return refreshPromise;
 }
 
 // Выход
 function logout() {
-    localStorage.removeItem('accessToken');
+    inMemoryAccessToken = null;
+    csrfToken = null;
     localStorage.removeItem('user');
     window.location.href = 'auth.html';
 }
 
 // Проверка авторизации
 async function checkAuth() {
-    const accessToken = localStorage.getItem('accessToken');
-
-    if (!accessToken) {
-        // Попробовать получить новый токен через refresh
+    // Сначала проверяем in-memory токен
+    if (!inMemoryAccessToken) {
+        // Попробовать получить новый токен через refresh cookie
         const refreshed = await refreshAccessToken();
         if (!refreshed) {
             return null;

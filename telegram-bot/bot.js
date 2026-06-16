@@ -6,6 +6,9 @@ const session = require('./utils/session');
 const authHandler = require('./handlers/auth.handler');
 const userHandler = require('./handlers/user.handler');
 const adminHandler = require('./handlers/admin.handler');
+const { checkRateLimit } = require('./utils/rateLimit');
+const { validateCallbackData, validateTicketId, validateStatus, validatePriority, validateFilter, validateChatId } = require('./utils/validation');
+const { acquireLock, releaseLock } = require('./utils/fsmLock');
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BOT_MODE = process.env.BOT_MODE || 'polling'; // polling или webhook
@@ -29,16 +32,31 @@ console.log(`Окружение: ${IS_PRODUCTION ? 'Production' : 'Development'}
 
 // /start
 bot.onText(/\/start/, async (msg) => {
+    const rateCheck = checkRateLimit(msg.chat.id, 'command');
+    if (!rateCheck.allowed) {
+        await bot.sendMessage(msg.chat.id, `⏳ Слишком много запросов. Повторите через ${rateCheck.retryAfter} сек.`);
+        return;
+    }
     await authHandler.handleStart(bot, msg);
 });
 
 // /login username password
 bot.onText(/\/login (.+)/, async (msg) => {
+    const rateCheck = checkRateLimit(msg.chat.id, 'login');
+    if (!rateCheck.allowed) {
+        await bot.sendMessage(msg.chat.id, `⛔ Слишком много попыток входа. Повторите через ${rateCheck.retryAfter} сек.`);
+        return;
+    }
     await authHandler.handleLogin(bot, msg);
 });
 
 // /register username password
 bot.onText(/\/register (.+)/, async (msg) => {
+    const rateCheck = checkRateLimit(msg.chat.id, 'login');
+    if (!rateCheck.allowed) {
+        await bot.sendMessage(msg.chat.id, `⛔ Слишком много попыток регистрации. Повторите через ${rateCheck.retryAfter} сек.`);
+        return;
+    }
     await authHandler.handleRegister(bot, msg);
 });
 
@@ -117,8 +135,133 @@ bot.onText(/\/notify/, async (msg) => {
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
     const data = query.data;
+    const userId = query.from.id;
 
     try {
+        // Rate limiting для callback queries
+        const rateCheck = checkRateLimit(chatId, 'callback');
+        if (!rateCheck.allowed) {
+            await bot.answerCallbackQuery(query.id, {
+                text: `⏳ Слишком много запросов. Повторите через ${rateCheck.retryAfter} сек.`,
+                show_alert: true
+            });
+            return;
+        }
+
+        // Валидация callback_data
+        const validation = validateCallbackData(data);
+        if (!validation.valid) {
+            await bot.answerCallbackQuery(query.id, {
+                text: 'Некорректные данные',
+                show_alert: true
+            });
+            return;
+        }
+
+        // Проверка 1: userId должен совпадать с chatId для личных сообщений
+        if (chatId !== userId) {
+            await bot.answerCallbackQuery(query.id, {
+                text: 'Ошибка: callback из группового чата не поддерживается',
+                show_alert: true
+            });
+            return;
+        }
+
+        // Проверка 2: Возраст сообщения (не старше 24 часов)
+        const messageDate = query.message.date * 1000;
+        const now = Date.now();
+        if (now - messageDate > 24 * 60 * 60 * 1000) {
+            await bot.answerCallbackQuery(query.id, {
+                text: 'Это сообщение устарело. Используйте /menu для обновления.',
+                show_alert: true
+            });
+            return;
+        }
+
+        // Проверка 3: Проверка сессии для защищенных операций
+        if (data.startsWith('ticket_') || data.startsWith('admin_') ||
+            data.startsWith('priority_') || data === 'tickets_list' ||
+            data === 'tickets_create') {
+
+            const sess = session.getSession(chatId);
+            if (!sess || !sess.accessToken) {
+                await bot.answerCallbackQuery(query.id, {
+                    text: 'Сессия истекла. Войдите заново: /start',
+                    show_alert: true
+                });
+                return;
+            }
+        }
+
+        // Валидация ticketId для всех ticket операций
+        if (data.startsWith('ticket_view_') || data.startsWith('ticket_reply_') ||
+            data.startsWith('ticket_close_') || data.startsWith('admin_ticket_view_') ||
+            data.startsWith('admin_reply_') || data.startsWith('admin_assign_')) {
+
+            const ticketId = data.split('_').pop();
+            const ticketValidation = validateTicketId(ticketId);
+
+            if (!ticketValidation.valid) {
+                await bot.answerCallbackQuery(query.id, {
+                    text: 'Некорректный ID тикета',
+                    show_alert: true
+                });
+                return;
+            }
+        }
+
+        // Валидация admin_status с двумя параметрами
+        if (data.startsWith('admin_status_')) {
+            const parts = data.replace('admin_status_', '').split('_');
+            if (parts.length !== 2) {
+                await bot.answerCallbackQuery(query.id, {
+                    text: 'Некорректный формат',
+                    show_alert: true
+                });
+                return;
+            }
+
+            const [ticketId, status] = parts;
+            const ticketValidation = validateTicketId(ticketId);
+            const statusValidation = validateStatus(status);
+
+            if (!ticketValidation.valid || !statusValidation.valid) {
+                await bot.answerCallbackQuery(query.id, {
+                    text: 'Некорректные данные',
+                    show_alert: true
+                });
+                return;
+            }
+        }
+
+        // Валидация priority
+        if (data.startsWith('priority_')) {
+            const priority = data.replace('priority_', '');
+            const priorityValidation = validatePriority(priority);
+
+            if (!priorityValidation.valid) {
+                await bot.answerCallbackQuery(query.id, {
+                    text: 'Некорректный приоритет',
+                    show_alert: true
+                });
+                return;
+            }
+        }
+
+        // Валидация admin filter
+        if (data.startsWith('admin_tickets_')) {
+            const filter = data.replace('admin_tickets_', '');
+            const filterValidation = validateFilter(filter);
+
+            if (!filterValidation.valid) {
+                await bot.answerCallbackQuery(query.id, {
+                    text: 'Некорректный фильтр',
+                    show_alert: true
+                });
+                return;
+            }
+        }
+
         // Auth callbacks
         if (data === 'auth_login') {
             await bot.sendMessage(chatId,
@@ -217,6 +360,29 @@ bot.on('message', async (msg) => {
         return;
     }
 
+    // Проверка типа сообщения
+    if (!msg.text) {
+        if (sess.state && sess.state !== 'idle') {
+            await bot.sendMessage(chatId,
+                '❌ Пожалуйста, отправьте текстовое сообщение.\n' +
+                'Используйте /menu для отмены текущей операции.'
+            );
+        }
+        return;
+    }
+
+    // Проверка длины текста
+    if (msg.text.length > 10000) {
+        await bot.sendMessage(chatId, '❌ Сообщение слишком длинное (максимум 10000 символов).');
+        return;
+    }
+
+    // ЗАЩИТА ОТ RACE CONDITION
+    if (!acquireLock(chatId)) {
+        await bot.sendMessage(chatId, '⏳ Подождите, идет обработка предыдущего сообщения...');
+        return;
+    }
+
     try {
         // FSM для создания тикета (пользователь)
         if (sess.state === 'waiting_ticket_subject') {
@@ -235,6 +401,8 @@ bot.on('message', async (msg) => {
         console.error('Message handler error:', error);
         await bot.sendMessage(chatId, '❌ Произошла ошибка. Попробуйте снова или используйте /menu');
         session.updateSession(chatId, { state: 'idle', tempData: {} });
+    } finally {
+        releaseLock(chatId); // ВСЕГДА освобождаем лок
     }
 });
 

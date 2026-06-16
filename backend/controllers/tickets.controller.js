@@ -42,11 +42,42 @@ async function createTicket(req, res) {
     try {
         const { subject, initialMessage, priority, orderConfig } = req.body;
 
+        // Валидация priority
+        const validPriorities = ['normal', 'high', 'urgent'];
+        const ticketPriority = priority || 'normal';
+        if (!validPriorities.includes(ticketPriority)) {
+            return res.status(400).json({ error: 'Invalid priority. Must be: normal, high, or urgent' });
+        }
+
         // Если есть orderConfig, формируем тему и сообщение из конфигурации
         let finalSubject = subject;
         let finalMessage = initialMessage;
 
         if (orderConfig) {
+            // Валидация orderConfig
+            if (typeof orderConfig !== 'object' || orderConfig === null || Array.isArray(orderConfig)) {
+                return res.status(400).json({ error: 'Invalid orderConfig format' });
+            }
+
+            // Проверка размера JSON
+            const configSize = JSON.stringify(orderConfig).length;
+            if (configSize > 50000) {
+                return res.status(400).json({ error: 'OrderConfig is too large (max 50KB)' });
+            }
+
+            // Валидация основных полей orderConfig
+            if (orderConfig.package && typeof orderConfig.package !== 'string') {
+                return res.status(400).json({ error: 'Invalid orderConfig.package' });
+            }
+
+            if (orderConfig.language && typeof orderConfig.language !== 'string') {
+                return res.status(400).json({ error: 'Invalid orderConfig.language' });
+            }
+            // Валидация orderConfig
+            if (typeof orderConfig !== 'object') {
+                return res.status(400).json({ error: 'Invalid orderConfig format' });
+            }
+
             // Формируем тему из пакета
             finalSubject = `Заказ бота: ${orderConfig.package}`;
 
@@ -59,9 +90,9 @@ async function createTicket(req, res) {
                 'Custom': 'от $70'
             };
 
-            const hostingText = orderConfig.hosting.type === 'free'
+            const hostingText = orderConfig.hosting?.type === 'free'
                 ? 'Бесплатный (входит в пакет)'
-                : orderConfig.hosting.type === 'paid'
+                : orderConfig.hosting?.type === 'paid'
                 ? `Платный ($5/мес)${orderConfig.hosting.extraStorage > 0 ? ` + ${orderConfig.hosting.extraStorage} ГБ доп. места` : ''}${orderConfig.hosting.extraBandwidth > 0 ? ` + ${orderConfig.hosting.extraBandwidth} ГБ доп. трафика` : ''}`
                 : 'Без хостинга (сам разверну)';
 
@@ -71,39 +102,48 @@ async function createTicket(req, res) {
                 'urgent': 'Срочный (+$30 к стоимости)'
             };
 
-            finalMessage = `📦 Пакет: ${orderConfig.package} (${packagePrices[orderConfig.package]})
+            finalMessage = `📦 Пакет: ${orderConfig.package} (${packagePrices[orderConfig.package] || 'custom'})
 
 📝 Краткое описание:
-${orderConfig.shortDescription}
+${orderConfig.shortDescription || 'Не указано'}
 
 📋 Подробное описание:
-${orderConfig.detailedDescription}
+${orderConfig.detailedDescription || 'Не указано'}
 
-💻 Язык программирования: ${orderConfig.language}
+💻 Язык программирования: ${orderConfig.language || 'Не указан'}
 
 🌐 Хостинг: ${hostingText}
 
-⚡ Приоритет: ${priorityText[orderConfig.priority]}
+⚡ Приоритет: ${priorityText[orderConfig.priority] || 'Нормальный'}
 
-💰 Итоговая стоимость: $${orderConfig.totalPrice}`;
+💰 Итоговая стоимость: $${orderConfig.totalPrice || 0}`;
         }
 
         if (!finalSubject || !finalMessage) {
             return res.status(400).json({ error: 'Subject and initial message are required' });
         }
 
+        // Валидация длины
+        if (finalSubject.trim().length === 0) {
+            return res.status(400).json({ error: 'Subject cannot be empty' });
+        }
+
         if (finalSubject.length > 200) {
             return res.status(400).json({ error: 'Subject is too long (max 200 characters)' });
         }
 
-        const ticket = await db.createTicket(req.user.id, finalSubject, priority || 'normal', orderConfig || null);
+        if (finalMessage.length > 5000) {
+            return res.status(400).json({ error: 'Message is too long (max 5000 characters)' });
+        }
+
+        const ticket = await db.createTicket(req.user.id, finalSubject, ticketPriority, orderConfig || null);
         await db.createMessage(ticket.id, req.user.id, finalMessage, false);
 
         await sendNewTicketNotification(ticket, req.user.username, finalMessage);
 
         res.status(201).json({ ticket });
     } catch (error) {
-        console.error('Create ticket error:', error);
+        console.error('Create ticket error:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
@@ -118,6 +158,11 @@ async function addMessage(req, res) {
             return res.status(400).json({ error: 'Message content is required' });
         }
 
+        // Валидация длины сообщения
+        if (content.length > 5000) {
+            return res.status(400).json({ error: 'Message is too long (max 5000 characters)' });
+        }
+
         const ticket = await db.findTicketById(id);
 
         if (!ticket) {
@@ -129,10 +174,10 @@ async function addMessage(req, res) {
         }
 
         if (ticket.status === 'closed') {
-            return res.status(400).json({ error: 'Cannot add message to closed ticket' });
+            return res.status(409).json({ error: 'Cannot add message to closed ticket' });
         }
 
-        const message = await db.createMessage(ticket.id, req.user.id, content, req.user.isAdmin);
+        const message = await db.createMessage(ticket.id, req.user.id, content.trim(), req.user.isAdmin);
 
         if (!req.user.isAdmin) {
             await sendNewMessageNotification(ticket.id, req.user.username, content);
@@ -140,7 +185,7 @@ async function addMessage(req, res) {
 
         res.status(201).json({ message });
     } catch (error) {
-        console.error('Add message error:', error);
+        console.error('Add message error:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 }

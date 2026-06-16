@@ -34,22 +34,52 @@ async function updateTicket(req, res) {
             return res.status(404).json({ error: 'Ticket not found' });
         }
 
+        // ЗАЩИТА ОТ IDOR: проверка, что тикет не назначен другому админу
+        if (ticket.assigned_admin_id && ticket.assigned_admin_id !== req.user.id) {
+            return res.status(403).json({ error: 'This ticket is assigned to another admin' });
+        }
+
         const updates = {};
+
         if (status !== undefined) {
+            // Валидация статуса
+            const validStatuses = ['open', 'in_progress', 'closed'];
+            if (!validStatuses.includes(status)) {
+                return res.status(400).json({ error: 'Invalid status. Must be: open, in_progress, or closed' });
+            }
             updates.status = status;
         }
+
         if (priority !== undefined) {
+            // Валидация приоритета
+            const validPriorities = ['normal', 'high', 'urgent'];
+            if (!validPriorities.includes(priority)) {
+                return res.status(400).json({ error: 'Invalid priority. Must be: normal, high, or urgent' });
+            }
             updates.priority = priority;
         }
+
         if (assignedAdminId !== undefined) {
+            // Валидация assignedAdminId
+            if (assignedAdminId !== null) {
+                const admin = await db.findUserById(assignedAdminId);
+                if (!admin || !admin.is_admin) {
+                    return res.status(400).json({ error: 'Invalid admin ID or user is not an admin' });
+                }
+            }
             updates.assignedAdminId = assignedAdminId;
+        }
+
+        // Проверка, что есть что обновлять
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ error: 'No valid fields to update' });
         }
 
         const updatedTicket = await db.updateTicket(id, updates);
 
         res.json({ ticket: updatedTicket });
     } catch (error) {
-        console.error('Update ticket error:', error);
+        console.error('Update ticket error:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 }

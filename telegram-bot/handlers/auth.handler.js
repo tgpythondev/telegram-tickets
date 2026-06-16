@@ -42,14 +42,23 @@ async function handleLogin(bot, msg) {
     const chatId = msg.chat.id;
     const text = msg.text;
 
+    // ВАЖНО: Немедленно удаляем сообщение с паролем из чата
+    try {
+        await bot.deleteMessage(chatId, msg.message_id);
+    } catch (error) {
+        console.error('Failed to delete message:', error.message);
+    }
+
     // Формат: /login username password
     const parts = text.split(' ').filter(p => p.length > 0);
 
     if (parts.length !== 3) {
         await bot.sendMessage(chatId,
             `❌ Неверный формат команды.\n\n` +
-            `Используйте: \`/login username password\`\n\n` +
-            `Пример: \`/login myuser mypass123\``,
+            `⚠️ ВНИМАНИЕ: Для безопасности используйте веб-интерфейс для входа!\n\n` +
+            `Если все же хотите войти через бот:\n` +
+            `\`/login username password\`\n\n` +
+            `⚠️ Сообщение с паролем будет автоматически удалено.`,
             { parse_mode: 'Markdown' }
         );
         return;
@@ -57,15 +66,34 @@ async function handleLogin(bot, msg) {
 
     const [, username, password] = parts;
 
+    // Валидация username
+    if (!/^[a-zA-Z0-9_-]{3,20}$/.test(username)) {
+        await bot.sendMessage(chatId,
+            `❌ Некорректный логин. Используйте только буквы, цифры, _ и -`
+        );
+        return;
+    }
+
+    // Валидация пароля
+    if (password.length < 8) {
+        await bot.sendMessage(chatId, '❌ Пароль должен содержать минимум 8 символов.');
+        return;
+    }
+
     await bot.sendMessage(chatId, '🔄 Вход в систему...');
 
     const result = await api.login(username, password);
 
     if (!result.success) {
+        // Добавить фиксированную задержку для предотвращения timing attacks
+        await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
+
         await bot.sendMessage(chatId,
-            `❌ Ошибка входа: ${result.error}\n\n` +
-            `Проверьте логин и пароль и попробуйте снова.`
+            `❌ Неверный логин или пароль.\n\n` +
+            `Попробуйте снова или зарегистрируйте новый аккаунт.`
         );
+
+        console.warn(`Failed login attempt for chat ${chatId}`);
         return;
     }
 
@@ -76,6 +104,11 @@ async function handleLogin(bot, msg) {
 
     if (!linkResult.success) {
         console.error('Failed to link Telegram:', linkResult.error);
+        // Уведомляем пользователя, но не блокируем вход
+        await bot.sendMessage(chatId,
+            `⚠️ Предупреждение: Не удалось привязать Telegram аккаунт.\n` +
+            `Уведомления могут не работать.`
+        );
     }
 
     // Сохранить сессию
@@ -109,17 +142,26 @@ async function handleRegister(bot, msg) {
     const chatId = msg.chat.id;
     const text = msg.text;
 
+    // ВАЖНО: Немедленно удаляем сообщение с паролем из чата
+    try {
+        await bot.deleteMessage(chatId, msg.message_id);
+    } catch (error) {
+        console.error('Failed to delete message:', error.message);
+    }
+
     // Формат: /register username password
     const parts = text.split(' ').filter(p => p.length > 0);
 
     if (parts.length !== 3) {
         await bot.sendMessage(chatId,
             `❌ Неверный формат команды.\n\n` +
-            `Используйте: \`/register username password\`\n\n` +
+            `⚠️ ВНИМАНИЕ: Для безопасности используйте веб-интерфейс для регистрации!\n\n` +
+            `Если все же хотите зарегистрироваться через бот:\n` +
+            `\`/register username password\`\n\n` +
             `Требования:\n` +
-            `• Логин: минимум 3 символа\n` +
-            `• Пароль: минимум 6 символов\n\n` +
-            `Пример: \`/register myuser mypass123\``,
+            `• Логин: 3-20 символов (буквы, цифры, _ и -)\n` +
+            `• Пароль: минимум 8 символов, буквы и цифры\n\n` +
+            `⚠️ Сообщение с паролем будет автоматически удалено.`,
             { parse_mode: 'Markdown' }
         );
         return;
@@ -127,13 +169,30 @@ async function handleRegister(bot, msg) {
 
     const [, username, password] = parts;
 
-    if (username.length < 3) {
-        await bot.sendMessage(chatId, '❌ Логин должен содержать минимум 3 символа.');
+    // Валидация username
+    if (username.length < 3 || username.length > 20) {
+        await bot.sendMessage(chatId, '❌ Логин должен содержать от 3 до 20 символов.');
         return;
     }
 
-    if (password.length < 6) {
-        await bot.sendMessage(chatId, '❌ Пароль должен содержать минимум 6 символов.');
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+        await bot.sendMessage(chatId, '❌ Логин может содержать только буквы, цифры, _ и -');
+        return;
+    }
+
+    // Усиленная валидация пароля
+    if (password.length < 8) {
+        await bot.sendMessage(chatId, '❌ Пароль должен содержать минимум 8 символов.');
+        return;
+    }
+
+    if (!/[a-zA-Z]/.test(password)) {
+        await bot.sendMessage(chatId, '❌ Пароль должен содержать хотя бы одну букву.');
+        return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+        await bot.sendMessage(chatId, '❌ Пароль должен содержать хотя бы одну цифру.');
         return;
     }
 
@@ -142,10 +201,15 @@ async function handleRegister(bot, msg) {
     const result = await api.register(username, password);
 
     if (!result.success) {
+        // Добавить задержку для предотвращения timing attacks
+        await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
+
         await bot.sendMessage(chatId,
-            `❌ Ошибка регистрации: ${result.error}\n\n` +
-            `Возможно, такой логин уже занят.`
+            `❌ Не удалось создать аккаунт.\n\n` +
+            `Возможно, такой логин уже занят или не соответствует требованиям.`
         );
+
+        console.warn(`Failed registration attempt for chat ${chatId}`);
         return;
     }
 

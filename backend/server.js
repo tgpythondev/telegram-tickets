@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
 const { initTelegramBot } = require('./utils/telegram');
 
 const authRoutes = require('./routes/auth.routes');
@@ -11,31 +12,119 @@ const adminRoutes = require('./routes/admin.routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Валидация критических переменных окружения при старте
+function validateEnvironment() {
+    const required = [
+        'JWT_ACCESS_SECRET',
+        'JWT_REFRESH_SECRET',
+        'DATABASE_URL',
+        'TELEGRAM_BOT_TOKEN',
+        'TELEGRAM_ADMIN_CHAT_IDS'
+    ];
+    const missing = required.filter(key => !process.env[key]);
+
+    if (missing.length > 0) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Отсутствуют переменные окружения:', missing.join(', '));
+        process.exit(1);
+    }
+
+    // Проверка минимальной длины JWT секретов
+    if (process.env.JWT_ACCESS_SECRET.length < 32) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: JWT_ACCESS_SECRET должен быть минимум 32 символа');
+        process.exit(1);
+    }
+
+    if (process.env.JWT_REFRESH_SECRET.length < 32) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: JWT_REFRESH_SECRET должен быть минимум 32 символа');
+        process.exit(1);
+    }
+
+    // Валидация FRONTEND_URL
+    if (process.env.FRONTEND_URL) {
+        try {
+            new URL(process.env.FRONTEND_URL);
+        } catch (e) {
+            console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: FRONTEND_URL имеет неверный формат URL');
+            process.exit(1);
+        }
+    }
+
+    // Валидация TELEGRAM_BOT_TOKEN формата
+    if (!/^\d+:[A-Za-z0-9_-]{35}$/.test(process.env.TELEGRAM_BOT_TOKEN)) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: TELEGRAM_BOT_TOKEN имеет некорректный формат');
+        process.exit(1);
+    }
+
+    console.log('✅ Все переменные окружения проверены');
+}
+
+validateEnvironment();
+
 // Инициализация Telegram бота
 initTelegramBot();
 
+// Rate limiting для всех запросов
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 минут
+    max: 100, // максимум 100 запросов с одного IP
+    message: { error: 'Слишком много запросов, попробуйте позже' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Строгий rate limiting для auth эндпоинтов
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 минут
+    max: 5, // максимум 5 попыток входа
+    message: { error: 'Слишком много попыток входа, попробуйте через 15 минут' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 // Middleware
+
+// Безопасное логирование запросов (ПЕРЕД парсингом, чтобы ловить ошибки парсинга)
+app.use((req, res, next) => {
+    const safeUrl = req.path;
+    console.log(`${req.method} ${safeUrl}`);
+    next();
+});
+
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:8080',
     credentials: true
 }));
-app.use(express.json());
-app.use(cookieParser());
 
-// Логирование запросов
-app.use((req, res, next) => {
-    console.log(`${req.method} ${req.path}`);
-    next();
-});
+app.use(express.json({
+    limit: '1mb',
+    strict: true
+}));
+
+app.use(cookieParser());
+app.use(generalLimiter);
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Health check
-app.get('/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Health check с проверкой БД
+app.get('/health', async (req, res) => {
+    try {
+        const { pool } = require('./config/database');
+        await pool.query('SELECT 1');
+        res.json({
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            database: 'connected'
+        });
+    } catch (error) {
+        res.status(503).json({
+            status: 'error',
+            timestamp: new Date().toISOString(),
+            database: 'disconnected'
+        });
+    }
 });
 
 // 404 handler
@@ -45,12 +134,68 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-    console.error('Server error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    // Логируем полную ошибку на сервере
+    console.error('Server error:', err.stack || err);
+
+    // Отправляем клиенту только общее сообщение в production
+    if (process.env.NODE_ENV === 'production') {
+        res.status(500).json({ error: 'Internal server error' });
+    } else {
+        // В development можем показать детали
+        res.status(500).json({
+            error: 'Internal server error',
+            message: err.message,
+            stack: err.stack
+        });
+    }
+});
+
+// Graceful shutdown handler
+const gracefulShutdown = async (signal) => {
+    console.log(`\n${signal} received. Starting graceful shutdown...`);
+
+    server.close(async () => {
+        console.log('HTTP server closed');
+
+        try {
+            const { pool } = require('./config/database');
+            await pool.end();
+            console.log('Database pool closed');
+            process.exit(0);
+        } catch (err) {
+            console.error('Error during shutdown:', err);
+            process.exit(1);
+        }
+    });
+
+    // Принудительное завершение через 10 секунд
+    setTimeout(() => {
+        console.error('Forced shutdown after timeout');
+        process.exit(1);
+    }, 10000);
+};
+
+// Обработчики необработанных ошибок
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    setTimeout(() => {
+        process.exit(1);
+    }, 1000);
 });
 
 // Start server
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:8080'}`);
+const server = app.listen(PORT, () => {
+    if (process.env.NODE_ENV !== 'production') {
+        console.log(`Server running on http://localhost:${PORT}`);
+        console.log(`Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:8080'}`);
+    } else {
+        console.log(`Server started on port ${PORT}`);
+    }
 });
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

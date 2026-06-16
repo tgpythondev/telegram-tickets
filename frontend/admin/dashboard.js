@@ -6,26 +6,36 @@ let stats = {};
 
 // Инициализация
 (async () => {
-    currentUser = await checkAuth();
-    if (!currentUser) {
-        window.location.href = '../auth.html';
-        return;
-    }
+    try {
+        currentUser = await checkAuth();
+        if (!currentUser) {
+            window.location.href = '../auth.html';
+            return;
+        }
 
-    if (!currentUser.isAdmin) {
-        window.location.href = '../tickets.html';
-        return;
-    }
+        if (!currentUser.isAdmin) {
+            window.location.href = '../tickets.html';
+            return;
+        }
 
-    document.getElementById('admin-username').textContent = currentUser.username;
-    loadStats();
-    loadTickets();
+        document.getElementById('admin-username').textContent = currentUser.username || 'Администратор';
+        await loadStats();
+        await loadTickets();
+    } catch (error) {
+        console.error('Initialization error:', error);
+        alert('Ошибка инициализации: ' + error.message);
+    }
 })();
 
 // Загрузка статистики
 async function loadStats() {
     try {
         const data = await API.getStats();
+
+        if (!data || !data.stats) {
+            throw new Error('Неверный формат данных статистики');
+        }
+
         stats = data.stats;
 
         document.getElementById('stat-open').textContent = stats.open_tickets || 0;
@@ -34,6 +44,11 @@ async function loadStats() {
         document.getElementById('stat-total').textContent = stats.total_tickets || 0;
     } catch (error) {
         console.error('Stats load error:', error);
+        // Устанавливаем нули при ошибке
+        document.getElementById('stat-open').textContent = '—';
+        document.getElementById('stat-progress').textContent = '—';
+        document.getElementById('stat-closed').textContent = '—';
+        document.getElementById('stat-total').textContent = '—';
     }
 }
 
@@ -47,6 +62,11 @@ async function loadTickets() {
 
     try {
         const data = await API.getAllTickets(currentFilters);
+
+        if (!data || !Array.isArray(data.tickets)) {
+            throw new Error('Неверный формат данных');
+        }
+
         tickets = data.tickets;
 
         if (tickets.length === 0) {
@@ -64,10 +84,11 @@ async function loadTickets() {
             });
         }
     } catch (error) {
+        console.error('Load tickets error:', error);
         tableBody.innerHTML = `
             <tr>
                 <td colspan="7" style="text-align: center; padding: 2rem; color: #ff6b6b;">
-                    Ошибка загрузки: ${error.message}
+                    Ошибка загрузки: ${escapeHtml(error.message)}
                 </td>
             </tr>
         `;
@@ -123,6 +144,11 @@ async function openTicket(ticketId) {
 
     try {
         const data = await API.getTicket(ticketId);
+
+        if (!data || !data.ticket || !Array.isArray(data.messages)) {
+            throw new Error('Неверный формат данных тикета');
+        }
+
         currentTicket = data.ticket;
         const messages = data.messages;
 
@@ -142,7 +168,7 @@ async function openTicket(ticketId) {
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Пользователь</div>
-                        <div class="detail-value">${escapeHtml(currentTicket.user_username)}</div>
+                        <div class="detail-value">${escapeHtml(currentTicket.user_username || 'Неизвестный')}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Статус</div>
@@ -158,7 +184,7 @@ async function openTicket(ticketId) {
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Назначен</div>
-                        <div class="detail-value">${currentTicket.assigned_admin_username || '—'}</div>
+                        <div class="detail-value">${escapeHtml(currentTicket.assigned_admin_username) || '—'}</div>
                     </div>
                 </div>
 
@@ -186,7 +212,7 @@ async function openTicket(ticketId) {
                 ${messages.map(msg => `
                     <div class="message ${msg.is_admin_reply ? 'admin-reply' : ''}">
                         <div class="message-header">
-                            <span class="message-author ${msg.is_admin_reply ? 'admin' : ''}">${escapeHtml(msg.username)}</span>
+                            <span class="message-author ${msg.is_admin_reply ? 'admin' : ''}">${escapeHtml(msg.username || 'Неизвестный')}</span>
                             <span class="message-time">${new Date(msg.created_at).toLocaleString('ru-RU')}</span>
                         </div>
                         <div class="message-content">${escapeHtml(msg.content)}</div>
@@ -196,7 +222,7 @@ async function openTicket(ticketId) {
 
             ${currentTicket.status !== 'closed' ? `
                 <form class="admin-reply-form" id="admin-reply-form">
-                    <textarea id="admin-reply-content" placeholder="Напишите ответ пользователю..." required></textarea>
+                    <textarea id="admin-reply-content" placeholder="Напишите ответ пользователю..." required maxlength="5000"></textarea>
                     <button type="submit" class="btn btn-primary">Отправить ответ</button>
                 </form>
             ` : ''}
@@ -209,7 +235,8 @@ async function openTicket(ticketId) {
         document.getElementById('update-status').onchange = null;
         document.getElementById('update-priority').onchange = null;
     } catch (error) {
-        modalBody.innerHTML = `<div class="empty-state"><p style="color: #ff6b6b;">Ошибка: ${error.message}</p></div>`;
+        console.error('Open ticket error:', error);
+        modalBody.innerHTML = `<div class="empty-state"><p style="color: #ff6b6b;">Ошибка: ${escapeHtml(error.message)}</p></div>`;
     }
 }
 
@@ -221,13 +248,23 @@ function assignToMe() {
 
 // Обновить детали тикета
 async function updateTicketDetails() {
-    const status = document.getElementById('update-status').value;
-    const priority = document.getElementById('update-priority').value;
+    const statusEl = document.getElementById('update-status');
+    const priorityEl = document.getElementById('update-priority');
+
+    if (!statusEl || !priorityEl) {
+        console.error('Update elements not found');
+        return;
+    }
+
+    const status = statusEl.value;
+    const priority = priorityEl.value;
 
     const updates = {};
     if (status) updates.status = status;
     if (priority) updates.priority = priority;
-    if (currentTicket.assigned_admin_id) updates.assignedAdminId = currentTicket.assigned_admin_id;
+    if (currentTicket && currentTicket.assigned_admin_id) {
+        updates.assignedAdminId = currentTicket.assigned_admin_id;
+    }
 
     if (Object.keys(updates).length === 0) {
         alert('Нет изменений для сохранения');
@@ -237,9 +274,10 @@ async function updateTicketDetails() {
     try {
         await API.updateTicket(currentTicket.id, updates);
         closeModal();
-        loadStats();
-        loadTickets();
+        await loadStats();
+        await loadTickets();
     } catch (error) {
+        console.error('Update ticket error:', error);
         alert('Ошибка: ' + error.message);
     }
 }
@@ -253,6 +291,11 @@ async function handleReply(e) {
 
     if (!content) return;
 
+    if (content.length > 5000) {
+        alert('Сообщение слишком длинное (максимум 5000 символов)');
+        return;
+    }
+
     const button = e.target.querySelector('button[type="submit"]');
     button.disabled = true;
     button.textContent = 'Отправка...';
@@ -260,8 +303,9 @@ async function handleReply(e) {
     try {
         await API.replyToTicket(currentTicket.id, content);
         textarea.value = '';
-        openTicket(currentTicket.id);
+        await openTicket(currentTicket.id);
     } catch (error) {
+        console.error('Reply error:', error);
         alert('Ошибка: ' + error.message);
         button.disabled = false;
         button.textContent = 'Отправить ответ';
@@ -276,7 +320,7 @@ function closeModal() {
 
 // Фильтры
 document.querySelectorAll('.filter-tab').forEach(tab => {
-    tab.onclick = () => {
+    tab.onclick = async () => {
         const filter = tab.dataset.filter;
 
         document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
@@ -290,7 +334,7 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
             currentFilters = { status: filter };
         }
 
-        loadTickets();
+        await loadTickets();
     };
 });
 
@@ -328,6 +372,7 @@ document.getElementById('ticket-modal').onclick = (e) => {
 
 // Утилита
 function escapeHtml(text) {
+    if (!text) return '';
     const map = {
         '&': '&amp;',
         '<': '&lt;',
@@ -335,5 +380,5 @@ function escapeHtml(text) {
         '"': '&quot;',
         "'": '&#039;'
     };
-    return text.replace(/[&<>"']/g, m => map[m]);
+    return String(text).replace(/[&<>"']/g, m => map[m]);
 }

@@ -26,15 +26,17 @@ CREATE TABLE tickets (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     closed_at TIMESTAMP,
     assigned_admin_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    order_config JSONB,
 
-    CONSTRAINT valid_status CHECK (status IN ('open', 'in_progress', 'closed', 'pending')),
-    CONSTRAINT valid_priority CHECK (priority IN ('low', 'normal', 'high', 'urgent'))
+    CONSTRAINT valid_status CHECK (status IN ('open', 'in_progress', 'closed')),
+    CONSTRAINT valid_priority CHECK (priority IN ('normal', 'high', 'urgent'))
 );
 
 CREATE INDEX idx_tickets_user_id ON tickets(user_id);
 CREATE INDEX idx_tickets_status ON tickets(status);
 CREATE INDEX idx_tickets_assigned_admin ON tickets(assigned_admin_id);
 CREATE INDEX idx_tickets_created_at ON tickets(created_at DESC);
+CREATE INDEX idx_tickets_order_config ON tickets USING GIN (order_config);
 
 -- Таблица сообщений в тикетах
 CREATE TABLE messages (

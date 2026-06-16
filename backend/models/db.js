@@ -155,9 +155,13 @@ async function findAllTickets(filters = {}) {
 }
 
 async function updateTicketStatus(ticketId, status) {
-    const closedAt = status === 'closed' ? 'CURRENT_TIMESTAMP' : 'NULL';
+    // Безопасное использование параметризованного запроса
     const result = await db.query(
-        `UPDATE tickets SET status = $1, closed_at = ${closedAt} WHERE id = $2 RETURNING *`,
+        `UPDATE tickets
+         SET status = $1,
+             closed_at = CASE WHEN $1 = 'closed' THEN CURRENT_TIMESTAMP ELSE NULL END
+         WHERE id = $2
+         RETURNING *`,
         [status, ticketId]
     );
     return result.rows[0];

@@ -363,8 +363,9 @@ async function submitOrder() {
         // Check authentication
         const user = await checkAuth();
         if (!user) {
-            // Save config to sessionStorage and redirect to auth
-            sessionStorage.setItem('pendingOrder', JSON.stringify(config));
+            // Не сохраняем конфигурацию в sessionStorage (XSS уязвимость)
+            // Вместо этого просто перенаправляем на авторизацию
+            alert('Пожалуйста, войдите в систему для оформления заказа');
             window.location.href = 'auth.html?redirect=configurator';
             return;
         }

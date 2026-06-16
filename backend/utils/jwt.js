@@ -25,7 +25,9 @@ function generateRefreshToken(user) {
 // Верификация access token
 function verifyAccessToken(token) {
     try {
-        return jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+        return jwt.verify(token, process.env.JWT_ACCESS_SECRET, {
+            algorithms: ['HS256']
+        });
     } catch (error) {
         throw new Error('Invalid or expired access token');
     }
@@ -34,7 +36,9 @@ function verifyAccessToken(token) {
 // Верификация refresh token
 function verifyRefreshToken(token) {
     try {
-        return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+        return jwt.verify(token, process.env.JWT_REFRESH_SECRET, {
+            algorithms: ['HS256']
+        });
     } catch (error) {
         throw new Error('Invalid or expired refresh token');
     }

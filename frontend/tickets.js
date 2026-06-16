@@ -5,26 +5,36 @@ let currentFilter = 'all';
 
 // Инициализация
 (async () => {
-    currentUser = await checkAuth();
-    if (!currentUser) {
-        window.location.href = 'auth.html';
-        return;
-    }
+    try {
+        currentUser = await checkAuth();
+        if (!currentUser) {
+            window.location.href = 'auth.html';
+            return;
+        }
 
-    if (currentUser.isAdmin) {
-        window.location.href = 'admin/dashboard.html';
-        return;
-    }
+        if (currentUser.isAdmin) {
+            window.location.href = 'admin/dashboard.html';
+            return;
+        }
 
-    document.getElementById('username').textContent = currentUser.username;
-    loadTelegramStatus();
-    loadTickets();
+        document.getElementById('username').textContent = currentUser.username || 'Пользователь';
+        await loadTelegramStatus();
+        await loadTickets();
+    } catch (error) {
+        console.error('Initialization error:', error);
+        alert('Ошибка инициализации: ' + error.message);
+    }
 })();
 
 // Загрузка статуса Telegram интеграции
 async function loadTelegramStatus() {
     const statusTextEl = document.getElementById('telegram-status-text');
     const toggleBtn = document.getElementById('toggle-telegram-btn');
+
+    if (!currentUser) {
+        console.error('Current user is null');
+        return;
+    }
 
     if (currentUser.telegram_chat_id) {
         statusTextEl.textContent = currentUser.telegram_notifications_enabled
@@ -38,7 +48,7 @@ async function loadTelegramStatus() {
         statusTextEl.textContent = '❌ Telegram не подключен';
         toggleBtn.textContent = '📱 Подключить Telegram';
         toggleBtn.onclick = () => {
-            alert('Пожалуйста, подключите бота в Telegram:\n\n1. Найдите бота: @YOUR_BOT_USERNAME\n2. Напишите /start\n3. Войдите: /login ' + currentUser.username + ' [ваш_пароль]');
+            alert('Пожалуйста, подключите бота в Telegram:\n\n1. Найдите бота: @YOUR_BOT_USERNAME\n2. Напишите /start\n3. Используйте команду /auth для безопасной авторизации\n\n⚠️ ВАЖНО: Никогда не отправляйте пароли через команды!');
         };
     }
 }
@@ -52,10 +62,16 @@ async function toggleTelegramNotifications() {
     try {
         const enabled = !currentUser.telegram_notifications_enabled;
         const data = await API.toggleTelegramNotifications(enabled);
+
+        if (!data || typeof data.enabled === 'undefined') {
+            throw new Error('Неверный формат ответа сервера');
+        }
+
         currentUser.telegram_notifications_enabled = data.enabled;
-        loadTelegramStatus();
+        await loadTelegramStatus();
     } catch (error) {
-        alert('Ошибка: ' + error.message);
+        console.error('Toggle notifications error:', error);
+        showError('Ошибка: ' + error.message);
     } finally {
         toggleBtn.disabled = false;
     }
@@ -72,6 +88,11 @@ async function loadTickets() {
     try {
         const status = currentFilter === 'all' ? null : currentFilter;
         const data = await API.getTickets(status);
+
+        if (!data || !Array.isArray(data.tickets)) {
+            throw new Error('Неверный формат данных');
+        }
+
         tickets = data.tickets;
 
         if (tickets.length === 0) {
@@ -89,9 +110,10 @@ async function loadTickets() {
             });
         }
     } catch (error) {
+        console.error('Load tickets error:', error);
         ticketsListEl.innerHTML = `
             <div class="empty-state">
-                <p style="color: #ff6b6b;">Ошибка загрузки: ${error.message}</p>
+                <p style="color: #ff6b6b;">Ошибка загрузки: ${escapeHtml(error.message)}</p>
             </div>
         `;
     } finally {
@@ -144,6 +166,11 @@ async function openTicket(ticketId) {
 
     try {
         const data = await API.getTicket(ticketId);
+
+        if (!data || !data.ticket || !Array.isArray(data.messages)) {
+            throw new Error('Неверный формат данных тикета');
+        }
+
         currentTicket = data.ticket;
         const messages = data.messages;
 
@@ -168,7 +195,7 @@ async function openTicket(ticketId) {
                 ${messages.map(msg => `
                     <div class="message ${msg.is_admin_reply ? 'admin-reply' : ''}">
                         <div class="message-header">
-                            <span class="message-author ${msg.is_admin_reply ? 'admin' : ''}">${escapeHtml(msg.username)}</span>
+                            <span class="message-author ${msg.is_admin_reply ? 'admin' : ''}">${escapeHtml(msg.username || 'Неизвестный')}</span>
                             <span class="message-time">${new Date(msg.created_at).toLocaleString('ru-RU')}</span>
                         </div>
                         <div class="message-content">${escapeHtml(msg.content)}</div>
@@ -178,7 +205,7 @@ async function openTicket(ticketId) {
 
             ${currentTicket.status !== 'closed' ? `
                 <form class="reply-form" id="reply-form">
-                    <textarea id="reply-content" placeholder="Напишите сообщение..." required></textarea>
+                    <textarea id="reply-content" placeholder="Напишите сообщение..." required maxlength="5000"></textarea>
                     <div class="reply-form-actions">
                         <button type="submit" class="btn btn-primary">Отправить</button>
                         <button type="button" class="btn" onclick="closeTicketConfirm()">Закрыть тикет</button>
@@ -191,7 +218,8 @@ async function openTicket(ticketId) {
             document.getElementById('reply-form').onsubmit = handleReply;
         }
     } catch (error) {
-        modalBody.innerHTML = `<div class="empty-state"><p style="color: #ff6b6b;">Ошибка: ${error.message}</p></div>`;
+        console.error('Open ticket error:', error);
+        modalBody.innerHTML = `<div class="empty-state"><p style="color: #ff6b6b;">Ошибка: ${escapeHtml(error.message)}</p></div>`;
     }
 }
 
@@ -204,6 +232,11 @@ async function handleReply(e) {
 
     if (!content) return;
 
+    if (content.length > 5000) {
+        showError('Сообщение слишком длинное (максимум 5000 символов)');
+        return;
+    }
+
     const button = e.target.querySelector('button[type="submit"]');
     button.disabled = true;
     button.textContent = 'Отправка...';
@@ -211,9 +244,10 @@ async function handleReply(e) {
     try {
         await API.addMessage(currentTicket.id, content);
         textarea.value = '';
-        openTicket(currentTicket.id); // Перезагрузить тикет
+        await openTicket(currentTicket.id); // Перезагрузить тикет
     } catch (error) {
-        alert('Ошибка отправки: ' + error.message);
+        console.error('Send message error:', error);
+        showError('Ошибка отправки: ' + error.message);
         button.disabled = false;
         button.textContent = 'Отправить';
     }
@@ -228,9 +262,10 @@ async function closeTicketConfirm() {
     try {
         await API.closeTicket(currentTicket.id);
         closeModal();
-        loadTickets();
+        await loadTickets();
     } catch (error) {
-        alert('Ошибка: ' + error.message);
+        console.error('Close ticket error:', error);
+        showError('Ошибка: ' + error.message);
     }
 }
 
@@ -252,6 +287,28 @@ document.getElementById('create-ticket-form').onsubmit = async (e) => {
     const message = document.getElementById('ticket-message').value.trim();
     const priority = document.getElementById('ticket-priority').value;
 
+    // Валидация
+    if (!subject || subject.length < 3) {
+        showError('Тема должна содержать минимум 3 символа');
+        return;
+    }
+
+    if (!message || message.length < 10) {
+        showError('Сообщение должно содержать минимум 10 символов');
+        return;
+    }
+
+    if (message.length > 5000) {
+        showError('Сообщение слишком длинное (максимум 5000 символов)');
+        return;
+    }
+
+    const validPriorities = ['low', 'normal', 'high'];
+    if (!validPriorities.includes(priority)) {
+        showError('Неверный приоритет');
+        return;
+    }
+
     const button = e.target.querySelector('button[type="submit"]');
     button.disabled = true;
     button.textContent = 'Создание...';
@@ -260,9 +317,10 @@ document.getElementById('create-ticket-form').onsubmit = async (e) => {
         await API.createTicket(subject, message, priority);
         document.getElementById('create-modal').classList.remove('active');
         e.target.reset();
-        loadTickets();
+        await loadTickets();
     } catch (error) {
-        alert('Ошибка: ' + error.message);
+        console.error('Create ticket error:', error);
+        showError('Ошибка: ' + error.message);
     } finally {
         button.disabled = false;
         button.textContent = 'Создать тикет';
@@ -271,11 +329,11 @@ document.getElementById('create-ticket-form').onsubmit = async (e) => {
 
 // Фильтры
 document.querySelectorAll('.filter-tab').forEach(tab => {
-    tab.onclick = () => {
+    tab.onclick = async () => {
         currentFilter = tab.dataset.filter;
         document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        loadTickets();
+        await loadTickets();
     };
 });
 
@@ -298,8 +356,9 @@ document.querySelectorAll('.modal').forEach(modal => {
     };
 });
 
-// Утилита
+// Утилиты
 function escapeHtml(text) {
+    if (!text) return '';
     const map = {
         '&': '&amp;',
         '<': '&lt;',
@@ -307,5 +366,10 @@ function escapeHtml(text) {
         '"': '&quot;',
         "'": '&#039;'
     };
-    return text.replace(/[&<>"']/g, m => map[m]);
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+// Показать ошибку пользователю
+function showError(message) {
+    alert(message);
 }

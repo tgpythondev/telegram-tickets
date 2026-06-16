@@ -2,13 +2,36 @@ const axios = require('axios');
 
 const API_BASE_URL = process.env.BACKEND_API_URL || 'http://localhost:3000/api';
 
+// Проверка HTTPS в production
+if (process.env.NODE_ENV === 'production' && !API_BASE_URL.startsWith('https://')) {
+    console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: В production необходимо использовать HTTPS!');
+    console.error(`Текущий URL: ${API_BASE_URL}`);
+    process.exit(1);
+}
+
 const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json'
     },
-    timeout: 10000
+    timeout: 30000,
+    maxRedirects: 0,
+    validateStatus: (status) => status < 500,
+    maxContentLength: 10 * 1024 * 1024, // 10MB max
+    maxBodyLength: 10 * 1024 * 1024
 });
+
+// Interceptor для sanitization токенов из ошибок
+api.interceptors.response.use(
+    response => response,
+    error => {
+        // Удалить токен из конфига запроса перед логированием
+        if (error.config?.headers?.Authorization) {
+            error.config.headers.Authorization = 'Bearer [REDACTED]';
+        }
+        return Promise.reject(error);
+    }
+);
 
 // ========== AUTH ==========
 
