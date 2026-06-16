@@ -4,7 +4,7 @@ const db = require('../config/database');
 
 async function createUser(username, passwordHash) {
     const result = await db.query(
-        'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, is_admin, created_at',
+        'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, is_admin, created_at, telegram_chat_id, telegram_notifications_enabled, telegram_linked_at',
         [username, passwordHash]
     );
     return result.rows[0];
@@ -20,7 +20,7 @@ async function findUserByUsername(username) {
 
 async function findUserById(id) {
     const result = await db.query(
-        'SELECT id, username, is_admin, created_at, last_login FROM users WHERE id = $1',
+        'SELECT id, username, is_admin, created_at, last_login, telegram_chat_id, telegram_notifications_enabled, telegram_linked_at FROM users WHERE id = $1',
         [id]
     );
     return result.rows[0];

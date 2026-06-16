@@ -66,7 +66,9 @@ async function register(req, res) {
             user: {
                 id: user.id,
                 username: user.username,
-                isAdmin: user.is_admin
+                isAdmin: user.is_admin,
+                telegram_chat_id: user.telegram_chat_id || null,
+                telegram_notifications_enabled: user.telegram_notifications_enabled || false
             },
             accessToken
         });
@@ -200,7 +202,8 @@ async function me(req, res) {
                 username: user.username,
                 isAdmin: user.is_admin,
                 telegram_chat_id: user.telegram_chat_id || null,
-                telegram_notifications_enabled: user.telegram_notifications_enabled || false
+                telegram_notifications_enabled: user.telegram_notifications_enabled || false,
+                telegram_linked_at: user.telegram_linked_at || null
             }
         });
     } catch (error) {
