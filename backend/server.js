@@ -65,18 +65,18 @@ initTelegramBot();
 
 // Rate limiting для всех запросов
 const generalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 минут
+    windowMs: 20 * 1000, // 20 секунд
     max: 100, // максимум 100 запросов с одного IP
-    message: { error: 'Слишком много запросов, попробуйте позже' },
+    message: { error: 'Слишком много запросов, попробуйте через 20 секунд' },
     standardHeaders: true,
-    legacyHeaders: false,
+    legacyHeaders: false
 });
 
 // Строгий rate limiting для auth эндпоинтов
 const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 минут
-    max: 5, // максимум 5 попыток входа
-    message: { error: 'Слишком много попыток входа, попробуйте через 15 минут' },
+    windowMs: 20 * 1000, // 20 секунд
+    max: 10, // максимум 10 попыток входа
+    message: { error: 'Слишком много попыток входа, попробуйте через 20 секунд' },
     standardHeaders: true,
     legacyHeaders: false,
 });
