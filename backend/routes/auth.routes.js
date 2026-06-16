@@ -5,8 +5,9 @@ const authenticateToken = require('../middleware/auth');
 const csrfProtection = require('../middleware/csrf');
 
 // CSRF token endpoint (GET запрос, без CSRF проверки)
-router.get('/csrf', csrfProtection, (req, res) => {
-    res.json({ csrfToken: req.csrfToken() });
+router.get('/csrf', (req, res) => {
+    const csrfToken = csrfProtection.generateToken();
+    res.json({ csrfToken });
 });
 
 // Применяем CSRF защиту ко всем мутирующим операциям
