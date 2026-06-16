@@ -10,11 +10,11 @@ router.get('/csrf', (req, res) => {
     res.json({ csrfToken });
 });
 
-// Применяем CSRF защиту ко всем мутирующим операциям
+// Применяем CSRF защиту только к user-initiated запросам (НЕ к refresh)
 router.post('/register', csrfProtection, authController.register);
 router.post('/login', csrfProtection, authController.login);
-router.post('/logout', csrfProtection, authController.logout);
-router.post('/refresh', csrfProtection, authController.refresh);
+router.post('/logout', authController.logout);
+router.post('/refresh', authController.refresh); // БЕЗ CSRF - автоматический запрос
 router.get('/me', authenticateToken, authController.me);
 
 // Telegram интеграция
