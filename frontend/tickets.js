@@ -8,7 +8,7 @@ let currentFilter = 'all';
     try {
         currentUser = await checkAuth();
         if (!currentUser) {
-            window.location.href = 'auth.html';
+            window.location.href = '/auth.html';
             return;
         }
 

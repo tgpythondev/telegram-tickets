@@ -147,7 +147,7 @@ function logout() {
     inMemoryAccessToken = null;
     csrfToken = null;
     localStorage.removeItem('user');
-    window.location.href = 'auth.html';
+    window.location.href = '/auth.html';
 }
 
 // Проверка авторизации

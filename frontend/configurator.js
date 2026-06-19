@@ -366,7 +366,7 @@ async function submitOrder() {
             // Не сохраняем конфигурацию в sessionStorage (XSS уязвимость)
             // Вместо этого просто перенаправляем на авторизацию
             alert('Пожалуйста, войдите в систему для оформления заказа');
-            window.location.href = 'auth.html?redirect=configurator';
+            window.location.href = '/auth.html?redirect=configurator';
             return;
         }
 
