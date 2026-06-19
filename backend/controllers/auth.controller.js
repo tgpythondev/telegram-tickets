@@ -2,6 +2,17 @@ const bcrypt = require('bcryptjs');
 const db = require('../models/db');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 
+// Общая функция для получения cookie настроек
+function getCookieOptions() {
+    const isProduction = process.env.NODE_ENV === 'production';
+    return {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
+    };
+}
+
 // Регистрация
 async function register(req, res) {
     try {
@@ -52,15 +63,7 @@ async function register(req, res) {
         refreshExpiry.setDate(refreshExpiry.getDate() + 30);
         await db.saveRefreshToken(user.id, refreshToken, refreshExpiry);
 
-        // Настройки cookie
-        const cookieOptions = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 30 * 24 * 60 * 60 * 1000
-        };
-
-        res.cookie('refreshToken', refreshToken, cookieOptions);
+        res.cookie('refreshToken', refreshToken, getCookieOptions());
 
         res.status(201).json({
             user: {
@@ -116,15 +119,7 @@ async function login(req, res) {
         await db.deleteUserRefreshTokens(user.id);
         await db.saveRefreshToken(user.id, refreshToken, refreshExpiry);
 
-        // Настройки cookie (вынесены в константу для переиспользования)
-        const cookieOptions = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 30 * 24 * 60 * 60 * 1000
-        };
-
-        res.cookie('refreshToken', refreshToken, cookieOptions);
+        res.cookie('refreshToken', refreshToken, getCookieOptions());
 
         res.json({
             user: {
@@ -149,7 +144,9 @@ async function logout(req, res) {
             await db.deleteRefreshToken(refreshToken);
         }
 
-        res.clearCookie('refreshToken');
+        // Для clearCookie используем те же параметры без maxAge
+        const { maxAge, ...clearOptions } = getCookieOptions();
+        res.clearCookie('refreshToken', clearOptions);
         res.json({ message: 'Logged out successfully' });
     } catch (error) {
         console.error('Logout error:', error);
