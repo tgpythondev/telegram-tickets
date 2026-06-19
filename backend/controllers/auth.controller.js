@@ -56,7 +56,7 @@ async function register(req, res) {
         const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000
         };
 
@@ -120,7 +120,7 @@ async function login(req, res) {
         const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000
         };
 
@@ -162,27 +162,38 @@ async function refresh(req, res) {
     try {
         const refreshToken = req.cookies.refreshToken;
 
+        console.log('[AUTH] Refresh token request received');
+        console.log('[AUTH] Has refresh token cookie:', !!refreshToken);
+
         if (!refreshToken) {
+            console.log('[AUTH] No refresh token in cookies');
             return res.status(401).json({ error: 'Refresh token required' });
         }
 
         const tokenData = await db.findRefreshToken(refreshToken);
+        console.log('[AUTH] Token found in DB:', !!tokenData);
+
         if (!tokenData) {
+            console.log('[AUTH] Refresh token not found in database or expired');
             return res.status(403).json({ error: 'Invalid or expired refresh token' });
         }
 
         const payload = verifyRefreshToken(refreshToken);
+        console.log('[AUTH] JWT verification passed, user ID:', payload.id);
+
         const user = await db.findUserById(payload.id);
 
         if (!user) {
+            console.log('[AUTH] User not found:', payload.id);
             return res.status(403).json({ error: 'User not found' });
         }
 
         const newAccessToken = generateAccessToken(user);
+        console.log('[AUTH] New access token generated for user:', user.username);
 
         res.json({ accessToken: newAccessToken });
     } catch (error) {
-        console.error('Refresh error:', error);
+        console.error('[AUTH] Refresh error:', error.message);
         res.status(403).json({ error: 'Invalid or expired refresh token' });
     }
 }

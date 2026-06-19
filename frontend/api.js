@@ -58,8 +58,8 @@ async function apiRequest(endpoint, options = {}) {
 
     let response = await fetch(`${API_URL}${endpoint}`, config);
 
-    // Если токен истек, попробовать обновить
-    if (response.status === 403 || response.status === 401) {
+    // Если токен истек, попробовать обновить (НО НЕ для самого /auth/refresh)
+    if ((response.status === 403 || response.status === 401) && endpoint !== '/auth/refresh') {
         const refreshed = await refreshAccessToken();
         if (refreshed) {
             // Повторить запрос с новым токеном
@@ -123,8 +123,6 @@ async function refreshAccessToken() {
             const data = await response.json();
             if (data && data.accessToken) {
                 inMemoryAccessToken = data.accessToken;
-                // Обновляем CSRF токен после refresh
-                csrfToken = null;
                 return true;
             }
             return false;
