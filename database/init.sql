@@ -9,6 +9,8 @@ CREATE TABLE users (
     is_admin BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP,
+    failed_login_attempts INTEGER DEFAULT 0,
+    locked_until TIMESTAMP,
 
     CONSTRAINT username_length CHECK (char_length(username) >= 3)
 );
@@ -90,3 +92,19 @@ BEGIN
     DELETE FROM refresh_tokens WHERE expires_at < CURRENT_TIMESTAMP;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Таблица для security audit logging
+CREATE TABLE audit_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action VARCHAR(100) NOT NULL,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at DESC);
+CREATE INDEX idx_audit_logs_metadata ON audit_logs USING GIN (metadata);

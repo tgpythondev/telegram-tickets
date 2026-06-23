@@ -7,14 +7,19 @@
     "start": "node bot.js",
     "dev": "nodemon bot.js"
   },
-  "keywords": ["telegram", "bot", "tickets", "support"],
+  "keywords": [
+    "telegram",
+    "bot",
+    "tickets",
+    "support"
+  ],
   "author": "Kaliang",
   "license": "MIT",
   "dependencies": {
-    "node-telegram-bot-api": "^0.64.0",
-    "axios": "^1.6.0",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2"
+    "axios": "^1.18.1",
+    "dotenv": "^17.4.2",
+    "express": "^4.18.2",
+    "node-telegram-bot-api": "^1.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

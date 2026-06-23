@@ -28,7 +28,41 @@ async function findUserById(id) {
 
 async function updateLastLogin(userId) {
     await db.query(
-        'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1',
+        'UPDATE users SET last_login = CURRENT_TIMESTAMP, failed_login_attempts = 0, locked_until = NULL WHERE id = $1',
+        [userId]
+    );
+}
+
+async function incrementFailedLoginAttempts(userId) {
+    const result = await db.query(
+        'UPDATE users SET failed_login_attempts = failed_login_attempts + 1 WHERE id = $1 RETURNING failed_login_attempts',
+        [userId]
+    );
+    return result.rows[0];
+}
+
+async function lockUserAccount(userId, lockDurationMinutes = 30) {
+    await db.query(
+        'UPDATE users SET locked_until = CURRENT_TIMESTAMP + INTERVAL \'1 minute\' * $2 WHERE id = $1',
+        [userId, lockDurationMinutes]
+    );
+}
+
+async function isUserLocked(userId) {
+    const result = await db.query(
+        'SELECT locked_until FROM users WHERE id = $1',
+        [userId]
+    );
+    const user = result.rows[0];
+    if (!user || !user.locked_until) {
+        return false;
+    }
+    return new Date(user.locked_until) > new Date();
+}
+
+async function resetFailedLoginAttempts(userId) {
+    await db.query(
+        'UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = $1',
         [userId]
     );
 }
@@ -242,6 +276,10 @@ module.exports = {
     findUserByUsername,
     findUserById,
     updateLastLogin,
+    incrementFailedLoginAttempts,
+    lockUserAccount,
+    isUserLocked,
+    resetFailedLoginAttempts,
     updateUserTelegramChatId,
     findUserByTelegramChatId,
     toggleTelegramNotifications,

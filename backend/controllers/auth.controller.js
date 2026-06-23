@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const db = require('../models/db');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt');
+const { logAuditEvent, AUDIT_ACTIONS } = require('../utils/audit');
 
 // Общая функция для получения cookie настроек
 function getCookieOptions() {
@@ -48,6 +49,10 @@ async function register(req, res) {
             return res.status(400).json({ error: 'Password must contain at least one number' });
         }
 
+        if (!/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)' });
+        }
+
         const existingUser = await db.findUserByUsername(username);
         if (existingUser) {
             return res.status(409).json({ error: 'Username already exists' });
@@ -64,6 +69,9 @@ async function register(req, res) {
         await db.saveRefreshToken(user.id, refreshToken, refreshExpiry);
 
         res.cookie('refreshToken', refreshToken, getCookieOptions());
+
+        // Audit log: успешная регистрация
+        await logAuditEvent(user.id, AUDIT_ACTIONS.REGISTER, req, { username: user.username });
 
         res.status(201).json({
             user: {
@@ -97,6 +105,11 @@ async function login(req, res) {
 
         const user = await db.findUserByUsername(username);
 
+        // Проверка блокировки аккаунта
+        if (user && await db.isUserLocked(user.id)) {
+            return res.status(423).json({ error: 'Account is temporarily locked due to multiple failed login attempts. Please try again later.' });
+        }
+
         // ЗАЩИТА ОТ TIMING ATTACK: всегда выполняем bcrypt.compare
         const dummyHash = '$2a$12$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
         const passwordHash = user ? user.password_hash : dummyHash;
@@ -104,10 +117,35 @@ async function login(req, res) {
         const isPasswordValid = await bcrypt.compare(password, passwordHash);
 
         if (!user || !isPasswordValid) {
+            // Увеличиваем счётчик неудачных попыток
+            if (user) {
+                const result = await db.incrementFailedLoginAttempts(user.id);
+                const attempts = result.failed_login_attempts;
+
+                // Audit log: неудачная попытка входа
+                await logAuditEvent(user.id, AUDIT_ACTIONS.LOGIN_FAILED, req, { attempts, username });
+
+                // Блокируем аккаунт после 5 попыток
+                if (attempts >= 5) {
+                    await db.lockUserAccount(user.id, 30); // 30 минут блокировки
+
+                    // Audit log: блокировка аккаунта
+                    await logAuditEvent(user.id, AUDIT_ACTIONS.ACCOUNT_LOCKED, req, { attempts, lockDuration: 30 });
+
+                    return res.status(423).json({ error: 'Account locked due to multiple failed login attempts. Try again in 30 minutes.' });
+                }
+            } else {
+                // Попытка входа с несуществующим username
+                await logAuditEvent(null, AUDIT_ACTIONS.LOGIN_FAILED, req, { username });
+            }
+
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         await db.updateLastLogin(user.id);
+
+        // Audit log: успешный вход
+        await logAuditEvent(user.id, AUDIT_ACTIONS.LOGIN_SUCCESS, req, { username: user.username });
 
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
@@ -142,6 +180,11 @@ async function logout(req, res) {
 
         if (refreshToken) {
             await db.deleteRefreshToken(refreshToken);
+        }
+
+        // Audit log: выход из системы
+        if (req.user) {
+            await logAuditEvent(req.user.id, AUDIT_ACTIONS.LOGOUT, req);
         }
 
         // Для clearCookie используем те же параметры без maxAge
@@ -187,6 +230,9 @@ async function refresh(req, res) {
 
         const newAccessToken = generateAccessToken(user);
         console.log('[AUTH] New access token generated for user:', user.username);
+
+        // Audit log: обновление токена
+        await logAuditEvent(user.id, AUDIT_ACTIONS.TOKEN_REFRESH, req);
 
         res.json({ accessToken: newAccessToken });
     } catch (error) {
@@ -242,6 +288,9 @@ async function linkTelegram(req, res) {
 
         await db.updateUserTelegramChatId(req.user.id, telegramChatId);
 
+        // Audit log: привязка Telegram
+        await logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_LINK, req, { telegramChatId });
+
         res.json({
             message: 'Telegram account linked successfully',
             telegramChatId
@@ -256,6 +305,9 @@ async function linkTelegram(req, res) {
 async function unlinkTelegram(req, res) {
     try {
         await db.unlinkTelegramAccount(req.user.id);
+
+        // Audit log: отвязка Telegram
+        await logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_UNLINK, req);
 
         res.json({ message: 'Telegram account unlinked successfully' });
     } catch (error) {
@@ -299,6 +351,9 @@ async function toggleTelegramNotifications(req, res) {
         }
 
         await db.toggleTelegramNotifications(req.user.id, enabled);
+
+        // Audit log: изменение настроек уведомлений
+        await logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_NOTIFICATIONS_TOGGLE, req, { enabled });
 
         res.json({
             message: `Telegram notifications ${enabled ? 'enabled' : 'disabled'}`,

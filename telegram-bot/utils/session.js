@@ -27,7 +27,7 @@ const ENCRYPTION_KEY = (() => {
         const newKey = crypto.randomBytes(32).toString('hex');
         fs.writeFileSync(keyPath, newKey, { mode: 0o600 });
         console.warn('⚠️  Generated new encryption key. Add SESSION_ENCRYPTION_KEY to .env!');
-        console.warn(`SESSION_ENCRYPTION_KEY=${newKey}`);
+        console.warn('⚠️  The key has been saved to .session.key file');
         return newKey;
     } catch (error) {
         throw new Error('Failed to initialize encryption key: ' + error.message);

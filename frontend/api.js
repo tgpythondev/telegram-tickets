@@ -8,6 +8,86 @@ let inMemoryAccessToken = null;
 // CSRF token management
 let csrfToken = null;
 
+/**
+ * Централизованная функция показа ошибок пользователю
+ * @param {string} message - Сообщение об ошибке
+ * @param {number} duration - Длительность показа в мс (по умолчанию 5000)
+ */
+function showError(message, duration = 5000) {
+    // Создаём toast уведомление если его ещё нет
+    let toast = document.getElementById('error-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'error-toast';
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #ff4444;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10000;
+            max-width: 400px;
+            word-wrap: break-word;
+            animation: slideIn 0.3s ease-out;
+        `;
+        document.body.appendChild(toast);
+
+        // Добавляем CSS анимацию если её нет
+        if (!document.getElementById('toast-styles')) {
+            const style = document.createElement('style');
+            style.id = 'toast-styles';
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(400px); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(400px); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    toast.textContent = message;
+    toast.style.display = 'block';
+
+    // Автоматически скрываем через duration мс
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+            toast.style.display = 'none';
+            toast.style.animation = 'slideIn 0.3s ease-out';
+        }, 300);
+    }, duration);
+}
+
+/**
+ * Получить понятное сообщение об ошибке на основе HTTP кода
+ * @param {number} status - HTTP статус код
+ * @param {string} defaultMessage - Дефолтное сообщение
+ */
+function getErrorMessage(status, defaultMessage) {
+    const errorMessages = {
+        400: 'Некорректные данные запроса',
+        401: 'Требуется авторизация',
+        403: 'Доступ запрещён',
+        404: 'Ресурс не найден',
+        409: 'Конфликт данных',
+        423: 'Аккаунт временно заблокирован',
+        429: 'Слишком много запросов, попробуйте позже',
+        500: 'Ошибка сервера, попробуйте позже',
+        502: 'Сервер временно недоступен',
+        503: 'Сервис временно недоступен'
+    };
+
+    return errorMessages[status] || defaultMessage;
+}
+
 async function getCsrfToken() {
     if (!csrfToken) {
         try {
@@ -23,6 +103,7 @@ async function getCsrfToken() {
             }
         } catch (error) {
             console.error('Failed to get CSRF token:', error);
+            showError('Ошибка получения CSRF токена. Перезагрузите страницу.');
             return null;
         }
     }
@@ -76,11 +157,15 @@ async function apiRequest(endpoint, options = {}) {
         let errorMessage = 'Request failed';
         try {
             const error = await response.json();
-            errorMessage = error.error || errorMessage;
+            errorMessage = error.error || getErrorMessage(response.status, errorMessage);
         } catch (parseError) {
-            // Если не удалось распарсить JSON, используем дефолтное сообщение
+            // Если не удалось распарсить JSON, используем понятное сообщение по статусу
+            errorMessage = getErrorMessage(response.status, errorMessage);
             console.error('Failed to parse error response:', parseError);
         }
+
+        // Показываем ошибку пользователю
+        showError(errorMessage);
         throw new Error(errorMessage);
     }
 

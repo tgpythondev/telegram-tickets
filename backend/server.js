@@ -3,7 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const { initTelegramBot } = require('./utils/telegram');
+const { startTokenCleanupSchedule } = require('./utils/cleanup');
 
 const authRoutes = require('./routes/auth.routes');
 const ticketsRoutes = require('./routes/tickets.routes');
@@ -66,6 +68,9 @@ validateEnvironment();
 // Инициализация Telegram бота
 initTelegramBot();
 
+// Запуск периодической очистки истёкших refresh токенов (каждые 24 часа)
+startTokenCleanupSchedule(24);
+
 // Rate limiting для всех запросов
 const generalLimiter = rateLimit({
     windowMs: 20 * 1000, // 20 секунд
@@ -85,6 +90,28 @@ const authLimiter = rateLimit({
 });
 
 // Middleware
+
+// Security headers с helmet
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            mediaSrc: ["'self'"],
+            frameSrc: ["'none'"]
+        }
+    },
+    hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+    }
+}));
 
 // Безопасное логирование запросов (ПЕРЕД парсингом, чтобы ловить ошибки парсинга)
 app.use((req, res, next) => {

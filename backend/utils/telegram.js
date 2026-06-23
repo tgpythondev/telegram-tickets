@@ -21,8 +21,7 @@ function initTelegramBot() {
         bot = new TelegramBot(token, { polling: false });
         adminChatIds = chatIds.split(',').map(id => id.trim());
         console.log('✅ Telegram bot инициализирован для отправки уведомлений');
-        console.log(`📋 Админов: ${adminChatIds.length}`);
-        console.log(`👥 Chat IDs: ${adminChatIds.join(', ')}`);
+        console.log(`📋 Количество админов: ${adminChatIds.length}`);
     } catch (error) {
         console.error('❌ Ошибка инициализации Telegram бота:', error.message);
     }

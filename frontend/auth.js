@@ -89,8 +89,15 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     // Проверка сложности пароля
     const hasLetter = /[a-zA-Z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password);
+
     if (!hasLetter || !hasNumber) {
         errorEl.textContent = 'Пароль должен содержать буквы и цифры';
+        return;
+    }
+
+    if (!hasSpecial) {
+        errorEl.textContent = 'Пароль должен содержать хотя бы один спецсимвол (!@#$%^&*()_+-=[]{}|;:,.<>?)';
         return;
     }
 
