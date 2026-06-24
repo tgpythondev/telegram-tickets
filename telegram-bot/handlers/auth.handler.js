@@ -2,6 +2,8 @@ const api = require('../services/api.service');
 const session = require('../utils/session');
 const { getStartKeyboard, getMainMenuKeyboard } = require('../keyboards/user.keyboards');
 const { getAdminMenuKeyboard } = require('../keyboards/admin.keyboards');
+const path = require('path');
+const fs = require('fs');
 
 // Команда /start
 async function handleStart(bot, msg) {
@@ -24,16 +26,50 @@ async function handleStart(bot, msg) {
             );
         }
     } else {
-        await bot.sendMessage(chatId,
-            `Привет, ${firstName}! 👋\n\n` +
+        // Путь к баннеру
+        const bannerPath = path.join(__dirname, '../images/banner.png');
+
+        const welcomeMessage = `Привет, ${firstName}! 👋\n\n` +
             `Добро пожаловать в систему поддержки Kaliang.\n\n` +
             `Здесь вы можете:\n` +
             `• Создавать тикеты с вопросами\n` +
             `• Отслеживать статус своих обращений\n` +
             `• Получать уведомления об ответах\n\n` +
-            `Для начала работы войдите в аккаунт или зарегистрируйтесь.`,
-            { reply_markup: getStartKeyboard() }
-        );
+            `Для начала работы войдите в аккаунт или зарегистрируйтесь.`;
+
+        // Попытаться отправить баннер
+        if (fs.existsSync(bannerPath)) {
+            try {
+                // Проверить размер файла
+                const stats = fs.statSync(bannerPath);
+                const fileSizeInMB = stats.size / (1024 * 1024);
+
+                if (fileSizeInMB > 10) {
+                    console.warn(`⚠️ Banner file too large: ${fileSizeInMB.toFixed(2)} MB`);
+                    // Fallback на текстовое сообщение
+                    await bot.sendMessage(chatId, welcomeMessage, {
+                        reply_markup: getStartKeyboard()
+                    });
+                } else {
+                    await bot.sendPhoto(chatId, bannerPath, {
+                        caption: welcomeMessage,
+                        reply_markup: getStartKeyboard()
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to send banner:', error.message);
+                // Fallback на текстовое сообщение
+                await bot.sendMessage(chatId, welcomeMessage, {
+                    reply_markup: getStartKeyboard()
+                });
+            }
+        } else {
+            console.warn('⚠️ Banner file not found:', bannerPath);
+            // Fallback на текстовое сообщение
+            await bot.sendMessage(chatId, welcomeMessage, {
+                reply_markup: getStartKeyboard()
+            });
+        }
     }
 }
 

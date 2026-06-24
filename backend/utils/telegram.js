@@ -101,8 +101,187 @@ ${messageContent.substring(0, 300)}${messageContent.length > 300 ? '...' : ''}
     }
 }
 
+// Отправка уведомления пользователю об ответе администратора
+async function sendAdminReplyNotification(ticket, adminUsername, replyContent) {
+    console.log(`📤 Попытка отправить уведомление пользователю о ответе на тикет #${ticket.id}`);
+
+    if (!bot) {
+        console.log('⚠️ Telegram bot не инициализирован');
+        return;
+    }
+
+    try {
+        // Получить данные владельца тикета
+        const dbModule = require('../models/db');
+        const user = await dbModule.findUserById(ticket.user_id);
+
+        if (!user) {
+            console.log(`⚠️ Пользователь #${ticket.user_id} не найден`);
+            return;
+        }
+
+        // Проверить настройки уведомлений
+        if (!user.telegram_chat_id) {
+            console.log(`⚠️ У пользователя ${user.username} не привязан Telegram`);
+            return;
+        }
+
+        if (!user.telegram_notifications_enabled) {
+            console.log(`⚠️ Пользователь ${user.username} отключил уведомления`);
+            return;
+        }
+
+        // Форматирование даты и времени
+        const now = new Date();
+        const date = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+        const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+        // Обрезать контент для превью
+        const preview = replyContent.substring(0, 200);
+        const hasMore = replyContent.length > 200;
+
+        const message = `💬 *Новый ответ на ваш тикет #${ticket.id}*
+
+👨‍💼 Администратор: ${adminUsername}
+🕐 ${date} ${time}
+
+📝 *Ответ:*
+${preview}${hasMore ? '...' : ''}
+
+_Нажмите кнопку ниже, чтобы открыть тикет и прочитать полный ответ._`;
+
+        // Inline-кнопка для открытия тикета
+        const keyboard = {
+            inline_keyboard: [[
+                { text: '📋 Открыть тикет', callback_data: `ticket_view_${ticket.id}` }
+            ]]
+        };
+
+        await bot.sendMessage(user.telegram_chat_id, message, {
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+        });
+
+        console.log(`✅ Уведомление отправлено пользователю ${user.username} (chat_id: ${user.telegram_chat_id})`);
+    } catch (error) {
+        console.error(`❌ Ошибка отправки уведомления пользователю:`, error.message);
+        // Не прерываем выполнение - уведомление не критично для основного flow
+    }
+}
+
+// Отправка уведомления пользователю о смене статуса тикета
+async function sendTicketStatusChangeNotification(ticket, oldStatus, newStatus, adminUsername) {
+    console.log(`📤 Попытка отправить уведомление о смене статуса тикета #${ticket.id}: ${oldStatus} → ${newStatus}`);
+
+    if (!bot) {
+        console.log('⚠️ Telegram bot не инициализирован');
+        return;
+    }
+
+    try {
+        const dbModule = require('../models/db');
+        const user = await dbModule.findUserById(ticket.user_id);
+
+        if (!user || !user.telegram_chat_id || !user.telegram_notifications_enabled) {
+            console.log(`⚠️ Уведомления для пользователя #${ticket.user_id} недоступны`);
+            return;
+        }
+
+        // Эмодзи для статусов
+        const statusEmoji = {
+            'open': '🟢',
+            'in_progress': '🟡',
+            'closed': '⚫'
+        };
+
+        const statusNames = {
+            'open': 'Открыт',
+            'in_progress': 'В работе',
+            'closed': 'Закрыт'
+        };
+
+        const now = new Date();
+        const date = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+        const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+        const message = `🔄 *Изменен статус тикета #${ticket.id}*
+
+${statusEmoji[oldStatus] || '⚪'} ${statusNames[oldStatus] || oldStatus} → ${statusEmoji[newStatus] || '⚪'} ${statusNames[newStatus] || newStatus}
+
+👨‍💼 Администратор: ${adminUsername}
+🕐 ${date} ${time}
+
+📌 Тема: ${ticket.subject}`;
+
+        const keyboard = {
+            inline_keyboard: [[
+                { text: '📋 Открыть тикет', callback_data: `ticket_view_${ticket.id}` }
+            ]]
+        };
+
+        await bot.sendMessage(user.telegram_chat_id, message, {
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+        });
+
+        console.log(`✅ Уведомление о смене статуса отправлено пользователю ${user.username}`);
+    } catch (error) {
+        console.error(`❌ Ошибка отправки уведомления о смене статуса:`, error.message);
+    }
+}
+
+// Отправка уведомления пользователю о назначении администратора
+async function sendTicketAssignedNotification(ticket, adminUsername) {
+    console.log(`📤 Попытка отправить уведомление о назначении админа на тикет #${ticket.id}`);
+
+    if (!bot) {
+        console.log('⚠️ Telegram bot не инициализирован');
+        return;
+    }
+
+    try {
+        const dbModule = require('../models/db');
+        const user = await dbModule.findUserById(ticket.user_id);
+
+        if (!user || !user.telegram_chat_id || !user.telegram_notifications_enabled) {
+            console.log(`⚠️ Уведомления для пользователя #${ticket.user_id} недоступны`);
+            return;
+        }
+
+        const now = new Date();
+        const date = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+        const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+        const message = `👨‍💼 *Администратор взял ваш тикет в работу*
+
+📋 Тикет #${ticket.id}: ${ticket.subject}
+👤 Администратор: ${adminUsername}
+🕐 ${date} ${time}
+
+_Ваш вопрос будет рассмотрен в ближайшее время._`;
+
+        const keyboard = {
+            inline_keyboard: [[
+                { text: '📋 Открыть тикет', callback_data: `ticket_view_${ticket.id}` }
+            ]]
+        };
+
+        await bot.sendMessage(user.telegram_chat_id, message, {
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+        });
+
+        console.log(`✅ Уведомление о назначении отправлено пользователю ${user.username}`);
+    } catch (error) {
+        console.error(`❌ Ошибка отправки уведомления о назначении:`, error.message);
+    }
+}
+
 module.exports = {
     initTelegramBot,
     sendNewTicketNotification,
-    sendNewMessageNotification
+    sendNewMessageNotification,
+    sendAdminReplyNotification,
+    sendTicketStatusChangeNotification,
+    sendTicketAssignedNotification
 };

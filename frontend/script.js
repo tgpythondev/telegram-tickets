@@ -1,7 +1,37 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Mobile menu toggle
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            mobileMenuToggle.classList.toggle('active');
+            document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+        });
+
+        // Close menu when clicking on a link
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                mobileMenuToggle.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!mobileMenuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+                navLinks.classList.remove('active');
+                mobileMenuToggle.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
     // Particles animation
     const particlesContainer = document.querySelector('.particles');
-    const particleCount = 50;
+    const particleCount = window.innerWidth < 768 ? 20 : 50; // Меньше частиц на мобильных
 
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
@@ -21,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         particlesContainer.appendChild(particle);
     }
 
+    // Intersection Observer for animations
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
@@ -44,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
 
+    // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -57,8 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Header hide/show on scroll
     let lastScroll = 0;
     const header = document.querySelector('header');
+    header.style.transition = 'transform 0.3s ease';
 
     window.addEventListener('scroll', () => {
         const currentScroll = window.pageYOffset;
@@ -66,13 +100,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentScroll <= 0) {
             header.style.transform = 'translateY(0)';
         } else if (currentScroll > lastScroll && currentScroll > 100) {
+            // Скрываем header при скролле вниз
             header.style.transform = 'translateY(-100%)';
         } else if (currentScroll < lastScroll) {
+            // Показываем header при скролле вверх
             header.style.transform = 'translateY(0)';
         }
 
         lastScroll = currentScroll;
     });
-
-    header.style.transition = 'transform 0.3s ease';
 });

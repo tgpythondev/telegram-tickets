@@ -89,11 +89,11 @@ function getPriorityKeyboard() {
     return {
         inline_keyboard: [
             [
-                { text: 'Обычный', callback_data: 'priority_normal' },
-                { text: 'Высокий', callback_data: 'priority_high' }
+                { text: '🔵 Обычный', callback_data: 'priority_normal' },
+                { text: '🟠 Высокий', callback_data: 'priority_high' }
             ],
             [
-                { text: 'Срочный', callback_data: 'priority_urgent' }
+                { text: '🔴 Срочный', callback_data: 'priority_urgent' }
             ],
             [
                 { text: '❌ Отмена', callback_data: 'main_menu' }

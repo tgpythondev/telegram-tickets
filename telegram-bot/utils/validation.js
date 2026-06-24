@@ -96,6 +96,22 @@ function sanitizeMarkdown(text) {
         .replace(/\)/g, '\\)');
 }
 
+// Санитизация для отображения (ограничение длины и экранирование)
+function sanitizeForDisplay(text) {
+    if (!text) return '';
+
+    // Экранировать специальные символы Markdown
+    let sanitized = String(text)
+        .replace(/[_*\[\]()~`>#+=|{}.!-]/g, '\\$&');
+
+    // Ограничить длину (Telegram limit 4096 символов на сообщение)
+    if (sanitized.length > 4000) {
+        sanitized = sanitized.substring(0, 4000) + '...';
+    }
+
+    return sanitized;
+}
+
 module.exports = {
     validateTicketId,
     validateStatus,
@@ -103,5 +119,6 @@ module.exports = {
     validateFilter,
     validateChatId,
     validateCallbackData,
-    sanitizeMarkdown
+    sanitizeMarkdown,
+    sanitizeForDisplay
 };

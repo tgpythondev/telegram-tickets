@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Telegram Боты на Заказ</title>
+    <title>Telegram Боты на Заказ | Kaliang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,11 +19,15 @@
     <header>
         <nav>
             <div class="logo">KALIANG</div>
+            <button class="mobile-menu-toggle" aria-label="Открыть меню">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <ul class="nav-links">
                 <li><a href="#services">Услуги</a></li>
                 <li><a href="#portfolio">Портфолио</a></li>
-                <li><a href="#contact">Контакты</a></li>
-                <li><a href="auth.html">Поддержка</a></li>
+                <li><a href="auth.html" class="nav-cta">Вход / Регистрация</a></li>
             </ul>
         </nav>
     </header>
@@ -29,9 +36,9 @@
         <div class="hero-content">
             <h1>Создание Telegram Ботов<br>на Заказ</h1>
             <p>Автоматизация бизнеса через умных ботов.<br>От идеи до запуска.</p>
-            <div class="cta-buttons" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <a href="configurator.html" class="cta-button">Перейти к конфигурации</a>
-                <a href="auth.html" class="cta-button" style="background: transparent; border: 1px solid var(--black); color: var(--black);">Создать тикет</a>
+            <div class="cta-buttons">
+                <a href="configurator.html" class="cta-button primary">Перейти к конфигурации</a>
+                <a href="auth.html" class="cta-button secondary">Создать тикет</a>
             </div>
         </div>
         <div class="hero-visual">
@@ -70,7 +77,10 @@
                 <p>Обновления, доработки, техническая поддержка</p>
             </div>
         </div>
-        <a href="configurator.html" class="cta-button" style="display: inline-block; margin-top: 2rem;">Перейти к конфигурации</a>
+        <div class="section-cta">
+            <a href="configurator.html" class="cta-button primary">Перейти к конфигурации</a>
+            <a href="auth.html" class="cta-button secondary">Вход / Регистрация</a>
+        </div>
     </section>
 
     <section id="portfolio" class="portfolio">
@@ -107,22 +117,16 @@
         </div>
     </section>
 
-    <section id="contact" class="contact">
-        <h2>Давай обсудим твой проект</h2>
-        <p>Напиши мне в Telegram или создай тикет в системе поддержки</p>
-        <div class="contact-methods">
-            <a href="https://t.me/Kaliang_dev" class="contact-card telegram" target="_blank">
-                <div class="contact-icon">✈</div>
-                <div class="contact-text">
-                    <h3>Telegram</h3>
-                    <p>@Kaliang_dev</p>
-                </div>
-            </a>
-        </div>
-    </section>
-
     <footer>
-        <p>© 2026 Telegram Боты на Заказ. Все права защищены.</p>
+        <div class="footer-content">
+            <div class="footer-logo">KALIANG</div>
+            <div class="footer-links">
+                <a href="https://t.me/Kaliang_dev" target="_blank" rel="noopener">Telegram</a>
+                <a href="auth.html">Поддержка</a>
+                <a href="configurator.html">Конфигуратор</a>
+            </div>
+            <p class="footer-copyright">© 2026 Kaliang. Все права защищены.</p>
+        </div>
     </footer>
 
     <script src="script.js"></script>

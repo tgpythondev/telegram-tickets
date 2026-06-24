@@ -18,6 +18,12 @@ function csrfProtection(req, res, next) {
         return next();
     }
 
+    // Пропускаем CSRF проверку для запросов с Authorization header
+    // (это запросы от telegram бота или других API клиентов)
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        return next();
+    }
+
     const token = req.headers['x-csrf-token'];
 
     if (!token) {

@@ -6,18 +6,18 @@ function getAdminMenuKeyboard() {
     return {
         inline_keyboard: [
             [
-                { text: '📋 Открытые', callback_data: 'admin_tickets_open' },
-                { text: '🔄 В работе', callback_data: 'admin_tickets_in_progress' }
+                { text: '🟢 Открытые', callback_data: 'admin_tickets_open' },
+                { text: '🟡 В работе', callback_data: 'admin_tickets_in_progress' }
             ],
             [
-                { text: '✅ Закрытые', callback_data: 'admin_tickets_closed' },
-                { text: '🔍 Все тикеты', callback_data: 'admin_tickets_all' }
+                { text: '⚫ Закрытые', callback_data: 'admin_tickets_closed' },
+                { text: '📊 Все тикеты', callback_data: 'admin_tickets_all' }
             ],
             [
                 { text: '👤 Мои тикеты', callback_data: 'admin_tickets_mine' }
             ],
             [
-                { text: '📊 Статистика', callback_data: 'admin_stats' }
+                { text: '📈 Статистика', callback_data: 'admin_stats' }
             ],
             [
                 { text: '🌐 Веб-панель', url: `${appUrl}/admin/dashboard.html` }
@@ -31,8 +31,8 @@ function getAdminTicketsListKeyboard(currentFilter = 'all') {
     return {
         inline_keyboard: [
             [
-                { text: '📋 Открытые', callback_data: 'admin_tickets_open' },
-                { text: '🔄 В работе', callback_data: 'admin_tickets_in_progress' }
+                { text: '🟢 Открытые', callback_data: 'admin_tickets_open' },
+                { text: '🟡 В работе', callback_data: 'admin_tickets_in_progress' }
             ],
             [
                 { text: '← Назад в меню', callback_data: 'admin_menu' }
@@ -55,13 +55,13 @@ function getTicketAdminKeyboard(ticketId, currentStatus) {
     // Кнопки изменения статуса
     const statusButtons = [];
     if (currentStatus !== 'open') {
-        statusButtons.push({ text: '📋 Открыть', callback_data: `admin_status_${ticketId}_open` });
+        statusButtons.push({ text: '🟢 Открыть', callback_data: `admin_status_${ticketId}_open` });
     }
     if (currentStatus !== 'in_progress') {
-        statusButtons.push({ text: '🔄 В работу', callback_data: `admin_status_${ticketId}_in_progress` });
+        statusButtons.push({ text: '🟡 В работу', callback_data: `admin_status_${ticketId}_in_progress` });
     }
     if (currentStatus !== 'closed') {
-        statusButtons.push({ text: '✅ Закрыть', callback_data: `admin_status_${ticketId}_closed` });
+        statusButtons.push({ text: '⚫ Закрыть', callback_data: `admin_status_${ticketId}_closed` });
     }
 
     if (statusButtons.length > 0) {
@@ -92,12 +92,11 @@ function getPriorityAdminKeyboard(ticketId) {
     return {
         inline_keyboard: [
             [
-                { text: 'Низкий', callback_data: `admin_priority_${ticketId}_low` },
-                { text: 'Обычный', callback_data: `admin_priority_${ticketId}_normal` }
+                { text: '🔵 Обычный', callback_data: `admin_priority_${ticketId}_normal` },
+                { text: '🟠 Высокий', callback_data: `admin_priority_${ticketId}_high` }
             ],
             [
-                { text: 'Высокий', callback_data: `admin_priority_${ticketId}_high` },
-                { text: 'Срочный', callback_data: `admin_priority_${ticketId}_urgent` }
+                { text: '🔴 Срочный', callback_data: `admin_priority_${ticketId}_urgent` }
             ],
             [
                 { text: '← Назад', callback_data: `admin_ticket_view_${ticketId}` }
