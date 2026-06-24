@@ -1,6 +1,21 @@
-const API_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:3000/api'
-    : 'https://telegram-bots-backend.onrender.com/api';
+// Определение API URL в зависимости от домена
+function getApiUrl() {
+    const hostname = window.location.hostname;
+
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:3000/api';
+    }
+
+    // Для нового домена telegram-bots.pl используем тот же backend
+    if (hostname === 'telegram-bots.pl' || hostname === 'www.telegram-bots.pl') {
+        return 'https://telegram-bots-backend.onrender.com/api';
+    }
+
+    // Fallback на старый backend
+    return 'https://telegram-bots-backend.onrender.com/api';
+}
+
+const API_URL = getApiUrl();
 
 // In-memory token storage (более безопасно чем localStorage для XSS)
 let inMemoryAccessToken = null;

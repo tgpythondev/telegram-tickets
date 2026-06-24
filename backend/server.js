@@ -120,8 +120,24 @@ app.use((req, res, next) => {
     next();
 });
 
+// Разрешённые origins для CORS
+const allowedOrigins = [
+    process.env.FRONTEND_URL || 'http://localhost:8080',
+    'https://telegram-bots.pl',
+    'https://www.telegram-bots.pl'
+];
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+    origin: (origin, callback) => {
+        // Разрешаем запросы без origin (например, mobile apps, Postman)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 
