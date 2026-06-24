@@ -160,7 +160,7 @@ async function handleLogin(bot, msg) {
         username: user.username,
         isAdmin: user.isAdmin,
         accessToken: accessToken,
-        notificationsEnabled: false,
+        notificationsEnabled: true,
         state: 'idle'
     });
 
@@ -274,7 +274,7 @@ async function handleRegister(bot, msg) {
         username: user.username,
         isAdmin: user.isAdmin,
         accessToken: accessToken,
-        notificationsEnabled: false,
+        notificationsEnabled: true,
         state: 'idle'
     });
 

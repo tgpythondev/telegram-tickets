@@ -36,7 +36,7 @@ async function sendNewTicketNotification(ticket, username, initialMessage) {
         return;
     }
 
-    const appUrl = process.env.APP_URL || 'http://localhost:8080';
+    const appUrl = process.env.APP_URL || 'https://telegram-bots.pl';
 
     // Форматирование даты и времени
     const now = new Date();
@@ -75,7 +75,7 @@ async function sendNewMessageNotification(ticketId, username, messageContent) {
         return;
     }
 
-    const appUrl = process.env.APP_URL || 'http://localhost:8080';
+    const appUrl = process.env.APP_URL || 'https://telegram-bots.pl';
 
     // Форматирование даты и времени
     const now = new Date();
@@ -137,18 +137,26 @@ async function sendAdminReplyNotification(ticket, adminUsername, replyContent) {
         const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
         // Обрезать контент для превью
-        const preview = replyContent.substring(0, 200);
-        const hasMore = replyContent.length > 200;
+        const preview = replyContent.length > 200 ? replyContent.substring(0, 200) + '...' : replyContent;
 
-        const message = `💬 *Новый ответ на ваш тикет #${ticket.id}*
+        const message = `╔══════════════════════════════╗
+║  💬 НОВЫЙ ОТВЕТ АДМИНИСТРАЦИИ  ║
+╚══════════════════════════════╝
 
-👨‍💼 Администратор: ${adminUsername}
-🕐 ${date} ${time}
+🎫 *Тикет #${ticket.id}*
+📌 Тема: ${ticket.subject}
+
+👨‍💼 *Администратор ${adminUsername}*
+⏰ ${date} в ${time}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📝 *Ответ:*
-${preview}${hasMore ? '...' : ''}
+${preview}
 
-_Нажмите кнопку ниже, чтобы открыть тикет и прочитать полный ответ._`;
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_Нажмите кнопку ниже для просмотра полного ответа_`;
 
         // Inline-кнопка для открытия тикета
         const keyboard = {
@@ -204,14 +212,23 @@ async function sendTicketStatusChangeNotification(ticket, oldStatus, newStatus, 
         const date = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
         const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
-        const message = `🔄 *Изменен статус тикета #${ticket.id}*
+        const message = `╔══════════════════════════════╗
+║   🔄 ИЗМЕНЕН СТАТУС ТИКЕТА    ║
+╚══════════════════════════════╝
 
-${statusEmoji[oldStatus] || '⚪'} ${statusNames[oldStatus] || oldStatus} → ${statusEmoji[newStatus] || '⚪'} ${statusNames[newStatus] || newStatus}
+🎫 *Тикет #${ticket.id}*
+📌 ${ticket.subject}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${statusEmoji[oldStatus] || '⚪'} *${statusNames[oldStatus] || oldStatus}*
+          ⬇️
+${statusEmoji[newStatus] || '⚪'} *${statusNames[newStatus] || newStatus}*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 👨‍💼 Администратор: ${adminUsername}
-🕐 ${date} ${time}
-
-📌 Тема: ${ticket.subject}`;
+⏰ ${date} в ${time}`;
 
         const keyboard = {
             inline_keyboard: [[
@@ -252,13 +269,23 @@ async function sendTicketAssignedNotification(ticket, adminUsername) {
         const date = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
         const time = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
-        const message = `👨‍💼 *Администратор взял ваш тикет в работу*
+        const message = `╔══════════════════════════════╗
+║ 👨‍💼 ТИКЕТ ВЗЯТ В РАБОТУ         ║
+╚══════════════════════════════╝
 
-📋 Тикет #${ticket.id}: ${ticket.subject}
-👤 Администратор: ${adminUsername}
-🕐 ${date} ${time}
+🎫 *Тикет #${ticket.id}*
+📌 ${ticket.subject}
 
-_Ваш вопрос будет рассмотрен в ближайшее время._`;
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Ваш вопрос рассматривается
+
+👨‍💼 Администратор: *${adminUsername}*
+⏰ ${date} в ${time}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_Ожидайте ответа в ближайшее время_`;
 
         const keyboard = {
             inline_keyboard: [[

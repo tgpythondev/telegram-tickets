@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://telegram-bots-backend.onrender.com https://telegram-bots.pl; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self' https://telegram-bots-backend.onrender.com https://telegram-bots.pl; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Админ панель | Telegram Боты</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../tickets.css">
     <link rel="stylesheet" href="dashboard.css">
@@ -19,10 +22,15 @@
     <header>
         <nav>
             <div class="logo"><a href="../index.html" style="color: inherit; text-decoration: none;">KALIANG</a></div>
+            <button class="mobile-menu-toggle" aria-label="Меню">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <ul class="nav-links">
                 <li><a href="../index.html#services">Услуги</a></li>
                 <li><a href="../index.html#portfolio">Портфолио</a></li>
-                <li><a href="../index.html#contact">Контакты</a></li>
+                <li><a href="../auth.html" class="nav-cta">Вход / Регистрация</a></li>
             </ul>
         </nav>
     </header>
@@ -38,22 +46,35 @@
             </div>
         </div>
 
-        <div class="stats-grid">
+        <!-- Улучшенная статистика -->
+        <div class="stats-enhanced">
             <div class="stat-card">
-                <div class="stat-value" id="stat-open">0</div>
-                <div class="stat-label">Открытые</div>
+                <div class="stat-icon">🟢</div>
+                <div class="stat-details">
+                    <div class="stat-number" id="stat-open">0</div>
+                    <div class="stat-label">Открытые</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="stat-progress">0</div>
-                <div class="stat-label">В работе</div>
+                <div class="stat-icon">🟡</div>
+                <div class="stat-details">
+                    <div class="stat-number" id="stat-progress">0</div>
+                    <div class="stat-label">В работе</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="stat-closed">0</div>
-                <div class="stat-label">Закрытые</div>
+                <div class="stat-icon">⚫</div>
+                <div class="stat-details">
+                    <div class="stat-number" id="stat-closed">0</div>
+                    <div class="stat-label">Закрытые</div>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="stat-total">0</div>
-                <div class="stat-label">Всего</div>
+                <div class="stat-icon">📊</div>
+                <div class="stat-details">
+                    <div class="stat-number" id="stat-total">0</div>
+                    <div class="stat-label">Всего</div>
+                </div>
             </div>
         </div>
 
@@ -73,7 +94,8 @@
                 <p>Загрузка тикетов...</p>
             </div>
 
-            <table class="tickets-table">
+            <!-- Desktop: таблица -->
+            <table class="tickets-table desktop-only">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -87,6 +109,9 @@
                 </thead>
                 <tbody id="tickets-tbody"></tbody>
             </table>
+
+            <!-- Mobile: карточки -->
+            <div class="tickets-cards mobile-only" id="tickets-cards"></div>
         </div>
     </div>
 
@@ -103,8 +128,18 @@
         </div>
     </div>
 
+    <!-- Toast notifications -->
+    <div id="toast-container"></div>
+
     <footer>
-        <p>&copy; 2026 Telegram Боты на Заказ. Все права защищены.</p>
+        <div class="footer-content">
+            <div class="footer-logo">KALIANG</div>
+            <div class="footer-links">
+                <a href="https://t.me/Kaliang_dev" target="_blank" rel="noopener">Telegram</a>
+                <a href="../auth.html">Поддержка</a>
+            </div>
+            <p class="footer-copyright">© 2026 Kaliang. Все права защищены.</p>
+        </div>
     </footer>
 
     <script src="../script.js"></script>

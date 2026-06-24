@@ -4,7 +4,7 @@
 -- Добавление Telegram полей в таблицу users
 ALTER TABLE users
 ADD COLUMN telegram_chat_id BIGINT UNIQUE,
-ADD COLUMN telegram_notifications_enabled BOOLEAN DEFAULT FALSE,
+ADD COLUMN telegram_notifications_enabled BOOLEAN DEFAULT TRUE,
 ADD COLUMN telegram_linked_at TIMESTAMP;
 
 -- Индекс для быстрого поиска по telegram_chat_id

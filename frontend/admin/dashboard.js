@@ -83,6 +83,9 @@ async function loadTickets() {
                 tableBody.appendChild(row);
             });
         }
+
+        // Рендерить карточки для мобильных
+        renderTicketCards(tickets);
     } catch (error) {
         console.error('Load tickets error:', error);
         tableBody.innerHTML = `
@@ -381,4 +384,100 @@ function escapeHtml(text) {
         "'": '&#039;'
     };
     return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+// ============ MOBILE CARD VIEW ============
+
+function renderTicketCards(tickets) {
+    const container = document.getElementById('tickets-cards');
+    if (!container) return;
+
+    if (tickets.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--gray);">Нет тикетов</div>';
+        return;
+    }
+
+    container.innerHTML = tickets.map(ticket => `
+        <div class="ticket-card" onclick="openTicket(${ticket.id})">
+            <div class="ticket-card-header">
+                <div class="ticket-card-id">🎫 #${ticket.id}</div>
+                <div class="ticket-card-badges">
+                    <span class="ticket-badge status-${ticket.status}">${getStatusEmoji(ticket.status)}</span>
+                    <span class="ticket-badge priority-${ticket.priority}">${getPriorityEmoji(ticket.priority)}</span>
+                </div>
+            </div>
+            <div class="ticket-card-body">
+                <div class="ticket-card-subject">${escapeHtml(ticket.subject)}</div>
+                <div class="ticket-card-meta">
+                    <div>👤 ${escapeHtml(ticket.user_username)}</div>
+                    <div>⏰ ${new Date(ticket.created_at).toLocaleDateString('ru-RU')}</div>
+                    ${ticket.assigned_admin_username ? `<div>👨‍💼 ${escapeHtml(ticket.assigned_admin_username)}</div>` : ''}
+                </div>
+            </div>
+            <div class="ticket-card-actions">
+                <button class="quick-action-btn" onclick="event.stopPropagation(); quickReply(${ticket.id})">
+                    💬 Ответить
+                </button>
+                <button class="quick-action-btn" onclick="event.stopPropagation(); quickAssign(${ticket.id})">
+                    👤 Назначить
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getStatusEmoji(status) {
+    const emojis = { 'open': '🟢', 'in_progress': '🟡', 'closed': '⚫' };
+    return emojis[status] || '⚪';
+}
+
+function getPriorityEmoji(priority) {
+    const emojis = { 'normal': '🔵', 'high': '🟠', 'urgent': '🔴' };
+    return emojis[priority] || '⚪';
+}
+
+// Быстрые действия
+async function quickReply(ticketId) {
+    const content = prompt('Введите ваш ответ:');
+    if (!content) return;
+
+    try {
+        await API.replyToTicket(ticketId, content);
+        showToast('✅ Ответ отправлен');
+        await loadTickets();
+    } catch (error) {
+        showToast('❌ Ошибка отправки');
+    }
+}
+
+async function quickAssign(ticketId) {
+    try {
+        await API.updateTicket(ticketId, { assignedAdminId: currentUser.id });
+        showToast('✅ Тикет назначен вам');
+        await loadTickets();
+    } catch (error) {
+        showToast('❌ Ошибка назначения');
+    }
+}
+
+function showToast(message) {
+    const container = document.getElementById('toast-container');
+    if (!container) {
+        const div = document.createElement('div');
+        div.id = 'toast-container';
+        document.body.appendChild(div);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.getElementById('toast-container').appendChild(toast);
+
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 }

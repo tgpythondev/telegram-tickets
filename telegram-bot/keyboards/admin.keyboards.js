@@ -2,7 +2,7 @@
 
 // Главное меню админа
 function getAdminMenuKeyboard() {
-    const appUrl = process.env.APP_URL || 'http://localhost:8080';
+    const appUrl = process.env.APP_URL || 'https://telegram-bots.pl';
     return {
         inline_keyboard: [
             [

@@ -2,6 +2,9 @@ let currentUser = null;
 let tickets = [];
 let currentTicket = null;
 let currentFilter = 'all';
+let pollingInterval = null;
+let lastMessageTimestamp = null;
+let isUserAtBottom = true;
 
 // Инициализация
 (async () => {
@@ -217,6 +220,14 @@ async function openTicket(ticketId) {
         if (currentTicket.status !== 'closed') {
             document.getElementById('reply-form').onsubmit = handleReply;
         }
+
+        // Инициализация polling
+        if (messages.length > 0) {
+            lastMessageTimestamp = messages[messages.length - 1].created_at;
+        }
+        setupScrollTracking();
+        scrollToBottom();
+        startPolling();
     } catch (error) {
         console.error('Open ticket error:', error);
         modalBody.innerHTML = `<div class="empty-state"><p style="color: #ff6b6b;">Ошибка: ${escapeHtml(error.message)}</p></div>`;
@@ -271,6 +282,8 @@ async function closeTicketConfirm() {
 
 // Закрыть модальное окно
 function closeModal() {
+    stopPolling();
+    lastMessageTimestamp = null;
     document.getElementById('ticket-modal').classList.remove('active');
     currentTicket = null;
 }
@@ -372,4 +385,106 @@ function escapeHtml(text) {
 // Показать ошибку пользователю
 function showError(message) {
     alert(message);
+}
+
+// ============ POLLING FUNCTIONS ============
+
+// Управление polling
+function startPolling() {
+    stopPolling();
+    pollingInterval = setInterval(checkNewMessages, 2000);
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
+// Проверка новых сообщений
+async function checkNewMessages() {
+    if (!currentTicket) return;
+
+    try {
+        const response = await API.getTicket(currentTicket.id);
+        const newMessages = response.messages.filter(msg => {
+            return !lastMessageTimestamp ||
+                   new Date(msg.created_at) > new Date(lastMessageTimestamp);
+        });
+
+        if (newMessages.length > 0) {
+            appendNewMessages(newMessages);
+            lastMessageTimestamp = newMessages[newMessages.length - 1].created_at;
+            playNotificationSound();
+
+            if (isUserAtBottom) {
+                scrollToBottom();
+            }
+        }
+    } catch (error) {
+        console.error('Polling error:', error);
+    }
+}
+
+// Добавление новых сообщений в DOM
+function appendNewMessages(messages) {
+    const messagesList = document.getElementById('messages-list');
+
+    messages.forEach(msg => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${msg.is_admin_reply ? 'admin-reply' : ''} new-message`;
+        messageDiv.innerHTML = `
+            <div class="message-header">
+                <span class="message-author ${msg.is_admin_reply ? 'admin' : ''}">${escapeHtml(msg.username)}</span>
+                <span class="message-time">${new Date(msg.created_at).toLocaleString('ru-RU')}</span>
+            </div>
+            <div class="message-content">${escapeHtml(msg.content)}</div>
+        `;
+        messagesList.appendChild(messageDiv);
+
+        setTimeout(() => messageDiv.classList.remove('new-message'), 2000);
+    });
+}
+
+// Звуковое уведомление
+function playNotificationSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (error) {
+        console.error('Sound error:', error);
+    }
+}
+
+// Отслеживание позиции скролла
+function setupScrollTracking() {
+    const messagesList = document.getElementById('messages-list');
+    if (!messagesList) return;
+
+    messagesList.addEventListener('scroll', () => {
+        const isBottom = messagesList.scrollHeight - messagesList.clientHeight <= messagesList.scrollTop + 50;
+        isUserAtBottom = isBottom;
+    });
+}
+
+// Автоскролл вниз
+function scrollToBottom() {
+    const messagesList = document.getElementById('messages-list');
+    if (messagesList) {
+        messagesList.scrollTop = messagesList.scrollHeight;
+    }
 }

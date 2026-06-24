@@ -16,7 +16,7 @@ function getStartKeyboard() {
 }
 
 // Главное меню пользователя
-function getMainMenuKeyboard(notificationsEnabled = false) {
+function getMainMenuKeyboard(notificationsEnabled = true) {
     const notifyIcon = notificationsEnabled ? '🔔' : '🔕';
     const notifyText = notificationsEnabled ? 'Уведомления: ВКЛ' : 'Уведомления: ВЫКЛ';
 

@@ -1,0 +1,236 @@
+.admin-page {
+    min-height: 100vh;
+    padding-top: 6rem;
+    background: var(--white);
+}
+
+.admin-header {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.admin-title h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.admin-title p {
+    color: var(--gray);
+}
+
+.stats-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-card {
+    background: var(--light-gray);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--gray);
+    font-size: 0.9rem;
+}
+
+.admin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.admin-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.tickets-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--light-gray);
+    border: 1px solid var(--border);
+}
+
+.tickets-table th,
+.tickets-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.tickets-table th {
+    background: var(--white);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tickets-table tbody tr {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.tickets-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.ticket-link {
+    color: var(--black);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.ticket-link:hover {
+    text-decoration: underline;
+}
+
+.priority-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+.priority-normal {
+    color: var(--gray);
+}
+
+.priority-high {
+    color: #FF9800;
+}
+
+.priority-urgent {
+    color: #ff6b6b;
+    font-weight: 600;
+}
+
+.assigned-to {
+    color: var(--gray);
+    font-size: 0.9rem;
+}
+
+.admin-modal-body {
+    padding: 2rem;
+}
+
+.ticket-details {
+    margin-bottom: 2rem;
+}
+
+.ticket-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-item {
+    padding: 1rem;
+    background: var(--light-gray);
+    border: 1px solid var(--border);
+}
+
+.detail-label {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin-bottom: 0.3rem;
+}
+
+.detail-value {
+    font-weight: 600;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.admin-actions select {
+    padding: 0.75rem;
+    background: var(--light-gray);
+    border: 1px solid var(--border);
+    color: var(--black);
+    cursor: pointer;
+}
+
+.admin-reply-form textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 1rem;
+    background: var(--light-gray);
+    border: 1px solid var(--border);
+    color: var(--black);
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    margin-bottom: 1rem;
+}
+
+.search-box {
+    padding: 0.75rem;
+    background: var(--light-gray);
+    border: 1px solid var(--border);
+    color: var(--black);
+    width: 300px;
+    max-width: 100%;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: var(--black);
+}
+
+@media (max-width: 968px) {
+    .tickets-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .admin-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -403,3 +403,30 @@
     background-position: right 1rem center;
     padding-right: 2.5rem;
 }
+
+/* Анимации для новых сообщений (polling) */
+.message.new-message {
+    animation: slideInMessage 0.3s ease-out, highlightNew 2s ease-out;
+}
+
+@keyframes slideInMessage {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes highlightNew {
+    0% {
+        background: rgba(0, 136, 204, 0.2);
+    }
+    100% {
+        background: transparent;
+    }
+}
+
+}

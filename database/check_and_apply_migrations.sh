@@ -39,7 +39,7 @@ else
     psql "$DATABASE_URL" << 'EOF'
 -- Add telegram integration fields to users table
 ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_chat_id BIGINT UNIQUE;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_notifications_enabled BOOLEAN DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_notifications_enabled BOOLEAN DEFAULT TRUE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_linked_at TIMESTAMP;
 
 -- Add index for faster telegram lookups
