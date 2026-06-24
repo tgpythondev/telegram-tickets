@@ -163,7 +163,9 @@ async function login(req, res) {
             user: {
                 id: user.id,
                 username: user.username,
-                isAdmin: user.is_admin
+                isAdmin: user.is_admin,
+                telegram_chat_id: user.telegram_chat_id || null,
+                telegram_notifications_enabled: user.telegram_notifications_enabled || false
             },
             accessToken
         });
