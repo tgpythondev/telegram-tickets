@@ -97,6 +97,13 @@ async function handleLogin(bot, msg) {
         return;
     }
 
+    // Проверка структуры ответа
+    if (!result.data || !result.data.user || !result.data.accessToken) {
+        console.error('Invalid login response structure:', JSON.stringify(result));
+        await bot.sendMessage(chatId, '❌ Ошибка сервера при входе. Попробуйте позже.');
+        return;
+    }
+
     const { user, accessToken } = result.data;
 
     // Привязать Telegram к аккаунту
@@ -210,6 +217,13 @@ async function handleRegister(bot, msg) {
         );
 
         console.warn(`Failed registration attempt for chat ${chatId}`);
+        return;
+    }
+
+    // Проверка структуры ответа
+    if (!result.data || !result.data.user || !result.data.accessToken) {
+        console.error('Invalid register response structure:', JSON.stringify(result));
+        await bot.sendMessage(chatId, '❌ Ошибка сервера при регистрации. Попробуйте позже.');
         return;
     }
 
