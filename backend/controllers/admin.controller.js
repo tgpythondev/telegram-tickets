@@ -157,7 +157,9 @@ async function replyToTicket(req, res) {
         });
 
         // Проверить подключение пользователя перед отправкой
+        console.log(`SSE: Checking connection for user ${ticket.user_id} (type: ${typeof ticket.user_id})`);
         if (sse.isUserConnected(ticket.user_id)) {
+            console.log(`SSE: Sending user:message:new to user ${ticket.user_id}`);
             sse.sendToUser(ticket.user_id, 'user:message:new', {
                 ticketId: ticket.id,
                 message: {
@@ -167,6 +169,7 @@ async function replyToTicket(req, res) {
             });
         } else {
             console.warn(`SSE: User ${ticket.user_id} not connected, message will be visible on next page load`);
+            console.warn(`SSE: Active users:`, sse.getConnectionStats());
         }
 
         // Отправить уведомление пользователю

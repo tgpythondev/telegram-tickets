@@ -10,7 +10,7 @@ function sseAuth(req, res, next) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
     req.user = {
-      id: decoded.userId,
+      id: String(decoded.userId),
       isAdmin: decoded.isAdmin || false
     };
     next();

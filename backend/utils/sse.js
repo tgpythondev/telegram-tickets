@@ -8,6 +8,7 @@ class SSE {
   }
 
   addAdmin(userId, res) {
+    userId = String(userId);
     const existing = Array.from(this.admins.keys()).filter(key => key.startsWith(`${userId}-`));
     if (existing.length >= 3) {
       const oldest = existing.sort()[0];
@@ -32,6 +33,7 @@ class SSE {
   }
 
   addUser(userId, res) {
+    userId = String(userId);
     const existing = Array.from(this.users.keys()).filter(key => key.startsWith(`${userId}-`));
     if (existing.length >= 3) {
       const oldest = existing.sort()[0];
@@ -88,10 +90,15 @@ class SSE {
   }
 
   sendToUser(userId, event, data) {
+    userId = String(userId);
+    console.log(`SSE: Attempting to send ${event} to user ${userId} (type: ${typeof userId})`);
+
     const connIds = Array.from(this.users.keys()).filter(key => key.startsWith(`${userId}-`));
+    console.log(`SSE: Found ${connIds.length} active connections for user ${userId}`);
 
     if (connIds.length === 0) {
       console.warn(`SSE: No active connection for user ${userId}, event ${event} lost`);
+      console.warn(`SSE: Active user keys:`, Array.from(this.users.keys()));
       return;
     }
 
@@ -119,6 +126,7 @@ class SSE {
   }
 
   sendToAdmin(adminId, event, data) {
+    adminId = String(adminId);
     const connIds = Array.from(this.admins.keys()).filter(key => key.startsWith(`${adminId}-`));
     if (connIds.length === 0) {
       return;
@@ -180,7 +188,10 @@ class SSE {
   }
 
   isUserConnected(userId) {
-    return Array.from(this.users.keys()).some(key => key.startsWith(`${userId}-`));
+    userId = String(userId);
+    const connected = Array.from(this.users.keys()).some(key => key.startsWith(`${userId}-`));
+    console.log(`SSE: isUserConnected(${userId}) = ${connected}`);
+    return connected;
   }
 
   getConnectionStats() {
