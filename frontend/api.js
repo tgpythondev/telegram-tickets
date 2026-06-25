@@ -29,16 +29,37 @@ let csrfToken = null;
  * @param {number} duration - Длительность показа в мс (по умолчанию 5000)
  */
 function showError(message, duration = 5000) {
-    // Создаём toast уведомление если его ещё нет
-    let toast = document.getElementById('error-toast');
+    showToast(message, 'error', duration);
+}
+
+/**
+ * Централизованная функция показа успешных уведомлений
+ * @param {string} message - Сообщение об успехе
+ * @param {number} duration - Длительность показа в мс (по умолчанию 3000)
+ */
+function showSuccess(message, duration = 3000) {
+    showToast(message, 'success', duration);
+}
+
+/**
+ * Универсальная функция показа toast уведомлений
+ * @param {string} message - Текст сообщения
+ * @param {string} type - Тип: 'error' или 'success'
+ * @param {number} duration - Длительность показа в мс
+ */
+function showToast(message, type = 'error', duration = 5000) {
+    const toastId = type === 'error' ? 'error-toast' : 'success-toast';
+    let toast = document.getElementById(toastId);
+
     if (!toast) {
         toast = document.createElement('div');
-        toast.id = 'error-toast';
+        toast.id = toastId;
+        const bgColor = type === 'error' ? '#ff4444' : '#22c55e';
         toast.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
-            background-color: #ff4444;
+            background-color: ${bgColor};
             color: white;
             padding: 16px 24px;
             border-radius: 4px;
@@ -50,7 +71,6 @@ function showError(message, duration = 5000) {
         `;
         document.body.appendChild(toast);
 
-        // Добавляем CSS анимацию если её нет
         if (!document.getElementById('toast-styles')) {
             const style = document.createElement('style');
             style.id = 'toast-styles';
@@ -71,7 +91,6 @@ function showError(message, duration = 5000) {
     toast.textContent = message;
     toast.style.display = 'block';
 
-    // Автоматически скрываем через duration мс
     setTimeout(() => {
         toast.style.animation = 'slideOut 0.3s ease-out';
         setTimeout(() => {

@@ -1,5 +1,6 @@
 const db = require('../models/db');
 const { sendAdminReplyNotification, sendTicketStatusChangeNotification, sendTicketAssignedNotification } = require('../utils/telegram');
+const sse = require('../utils/sse');
 
 // Получить все тикеты (для админов)
 async function listAllTickets(req, res) {
@@ -78,6 +79,15 @@ async function updateTicket(req, res) {
 
         const updatedTicket = await db.updateTicket(id, updates);
 
+        // Отправить SSE события
+        sse.send('admins', 'admin:ticket:updated', updatedTicket);
+        sse.sendToUser(updatedTicket.user_id, 'user:ticket:updated', {
+            ticketId: updatedTicket.id,
+            status: updatedTicket.status,
+            priority: updatedTicket.priority,
+            assignedAdminUsername: updatedTicket.assigned_admin_username
+        });
+
         // Отправить уведомления пользователю
         if (updates.status && updates.status !== ticket.status) {
             await sendTicketStatusChangeNotification(updatedTicket, ticket.status, updates.status, req.user.username);
@@ -111,6 +121,22 @@ async function replyToTicket(req, res) {
         }
 
         const message = await db.createMessage(ticket.id, req.user.id, content, true);
+
+        // Отправить SSE события
+        sse.send('admins', 'admin:message:new', {
+            ticketId: ticket.id,
+            message: {
+                ...message,
+                username: req.user.username
+            }
+        });
+        sse.sendToUser(ticket.user_id, 'user:message:new', {
+            ticketId: ticket.id,
+            message: {
+                ...message,
+                username: req.user.username
+            }
+        });
 
         // Отправить уведомление пользователю
         await sendAdminReplyNotification(ticket, req.user.username, content);

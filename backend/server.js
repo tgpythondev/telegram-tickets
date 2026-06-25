@@ -10,6 +10,8 @@ const { startTokenCleanupSchedule } = require('./utils/cleanup');
 const authRoutes = require('./routes/auth.routes');
 const ticketsRoutes = require('./routes/tickets.routes');
 const adminRoutes = require('./routes/admin.routes');
+const sseAuth = require('./middleware/sseAuth');
+const sseController = require('./controllers/sse.controller');
 
 const app = express();
 
@@ -153,6 +155,7 @@ app.use(generalLimiter);
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/admin', adminRoutes);
+app.get('/api/events', sseAuth, sseController.stream);
 
 // Health check с проверкой БД
 app.get('/health', async (req, res) => {
@@ -199,6 +202,9 @@ app.use((err, req, res, next) => {
 // Graceful shutdown handler
 const gracefulShutdown = async (signal) => {
     console.log(`\n${signal} received. Starting graceful shutdown...`);
+
+    const sse = require('./utils/sse');
+    sse.closeAll();
 
     server.close(async () => {
         console.log('HTTP server closed');
