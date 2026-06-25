@@ -95,6 +95,25 @@ async function updateTicket(req, res) {
 
         if (updates.assignedAdminId && updates.assignedAdminId !== ticket.assigned_admin_id) {
             await sendTicketAssignedNotification(updatedTicket, req.user.username);
+
+            // Создать системное сообщение в тикете о назначении админа
+            await db.createMessage(
+                updatedTicket.id,
+                req.user.id,
+                `Администратор ${req.user.username} взял ваш тикет в работу`,
+                true
+            );
+
+            // Отправить SSE событие о новом системном сообщении
+            sse.sendToUser(updatedTicket.user_id, 'user:message:new', {
+                ticketId: updatedTicket.id,
+                message: {
+                    content: `Администратор ${req.user.username} взял ваш тикет в работу`,
+                    username: 'Система',
+                    is_admin_reply: true,
+                    created_at: new Date().toISOString()
+                }
+            });
         }
 
         res.json({ ticket: updatedTicket });

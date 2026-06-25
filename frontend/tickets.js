@@ -29,11 +29,12 @@ const Tickets = (() => {
     });
 
     sse.addEventListener('user:ticket:updated', (e) => {
-      const { ticketId, status, priority } = JSON.parse(e.data);
+      const { ticketId, status, priority, assignedAdminUsername } = JSON.parse(e.data);
       if (currentTicket && currentTicket.id === ticketId) {
         currentTicket.status = status;
         currentTicket.priority = priority;
-        updateTicketStatusDisplay(status, priority);
+        currentTicket.assigned_admin_username = assignedAdminUsername;
+        updateTicketStatusDisplay(status, priority, assignedAdminUsername);
       }
       loadTickets();
     });
@@ -147,6 +148,10 @@ const Tickets = (() => {
       'urgent': '🔴'
     };
 
+    const assignedAdminText = ticket.assigned_admin_username
+      ? `<div class="ticket-admin">👨‍💼 Администратор: ${escapeHtml(ticket.assigned_admin_username)}</div>`
+      : '';
+
     card.innerHTML = `
       <div class="ticket-card-header">
         <div class="ticket-number">#${ticket.id}</div>
@@ -157,6 +162,7 @@ const Tickets = (() => {
       </div>
       <div class="ticket-card-body">
         <h3 class="ticket-subject">${escapeHtml(ticket.subject)}</h3>
+        ${assignedAdminText}
         <div class="ticket-meta">
           <span>📅 ${new Date(ticket.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
         </div>
@@ -209,6 +215,10 @@ const Tickets = (() => {
       'closed': 'Закрыт'
     };
 
+    const assignedAdminInfo = ticket.assigned_admin_username
+      ? `<div class="ticket-assigned-info">👨‍💼 Администратор <strong>${escapeHtml(ticket.assigned_admin_username)}</strong> работает над вашим тикетом</div>`
+      : '';
+
     modalBody.innerHTML = `
       <div class="ticket-header">
         <h2>${escapeHtml(ticket.subject)}</h2>
@@ -217,6 +227,7 @@ const Tickets = (() => {
           <span class="badge priority">${ticket.priority.toUpperCase()}</span>
           <span class="ticket-id">#${ticket.id}</span>
         </div>
+        ${assignedAdminInfo}
       </div>
 
       <div class="messages-list" id="messages-list">
@@ -321,7 +332,7 @@ const Tickets = (() => {
     lastMessageTimestamp = message.created_at;
   }
 
-  function updateTicketStatusDisplay(status, priority) {
+  function updateTicketStatusDisplay(status, priority, assignedAdminUsername) {
     const statusText = {
       'open': 'Открыт',
       'in_progress': 'В работе',
@@ -337,6 +348,21 @@ const Tickets = (() => {
     const priorityBadge = document.querySelector('.ticket-info .badge.priority');
     if (priorityBadge) {
       priorityBadge.textContent = priority.toUpperCase();
+    }
+
+    const existingAdminInfo = document.querySelector('.ticket-assigned-info');
+    if (assignedAdminUsername) {
+      if (!existingAdminInfo) {
+        const ticketHeader = document.querySelector('.ticket-header');
+        if (ticketHeader) {
+          const adminInfoDiv = document.createElement('div');
+          adminInfoDiv.className = 'ticket-assigned-info';
+          adminInfoDiv.innerHTML = `👨‍💼 Администратор <strong>${escapeHtml(assignedAdminUsername)}</strong> работает над вашим тикетом`;
+          ticketHeader.appendChild(adminInfoDiv);
+        }
+      }
+    } else if (existingAdminInfo) {
+      existingAdminInfo.remove();
     }
   }
 
