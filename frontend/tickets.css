@@ -1,22 +1,24 @@
-/* Tickets page - темная тема */
+/* Tickets page - Black & White с яркими акцентами */
 
 :root {
-    --surface: #0A0E1A;
-    --surface-elevated: #141926;
-    --border: #1F2937;
-    --text-primary: #F9FAFB;
-    --text-muted: #9CA3AF;
-    --accent-blue: #3B82F6;
-    --accent-orange: #F97316;
-    --accent-red: #EF4444;
-    --accent-green: #22C55E;
+    --black: #000000;
+    --white: #FFFFFF;
+    --gray-dark: #1a1a1a;
+    --gray-medium: #333333;
+    --gray-light: #666666;
+    --gray-border: #2a2a2a;
+
+    /* Яркие акценты только для критичных элементов */
+    --accent-urgent: #FF0000;
+    --accent-success: #00FF00;
+    --accent-warning: #FFD700;
 }
 
 .tickets-page {
     min-height: 100vh;
     padding-top: 6rem;
-    background: var(--surface);
-    color: var(--text-primary);
+    background: var(--black);
+    color: var(--white);
 }
 
 .user-header {
@@ -26,17 +28,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--gray-border);
 }
 
 .user-info h1 {
     font-size: 2rem;
     margin-bottom: 0.5rem;
-    color: var(--text-primary);
+    color: var(--white);
 }
 
 .user-info p {
-    color: var(--text-muted);
+    color: var(--gray-light);
 }
 
 .header-actions {
@@ -46,9 +48,9 @@
 
 .btn {
     padding: 0.75rem 1.5rem;
-    border: 1px solid var(--border);
-    background: var(--surface-elevated);
-    color: var(--text-primary);
+    border: 1px solid var(--gray-border);
+    background: var(--gray-medium);
+    color: var(--white);
     cursor: pointer;
     border-radius: 8px;
     font-weight: 600;
@@ -59,29 +61,32 @@
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+    background: var(--white);
+    color: var(--black);
 }
 
 .btn-primary {
-    background: var(--accent-blue);
-    color: white;
-    border-color: var(--accent-blue);
+    background: var(--white);
+    color: var(--black);
+    border-color: var(--white);
 }
 
 .btn-logout {
     background: transparent;
-    border-color: var(--border);
+    border-color: var(--gray-border);
 }
 
 .btn-logout:hover {
-    background: var(--accent-red);
-    border-color: var(--accent-red);
+    background: var(--white);
+    border-color: var(--white);
+    color: var(--black);
 }
 
 .btn-secondary {
     background: transparent;
-    border-color: var(--border);
-    color: var(--text-muted);
+    border-color: var(--gray-border);
+    color: var(--gray-light);
 }
 
 .tickets-container {
@@ -92,39 +97,39 @@
 
 /* Telegram section */
 .telegram-section {
-    background: var(--surface-elevated) !important;
-    border: 1px solid var(--border) !important;
+    background: var(--gray-dark) !important;
+    border: 1px solid var(--gray-border) !important;
     border-radius: 12px;
     padding: 2rem !important;
     margin-bottom: 2rem !important;
 }
 
 .telegram-section h3 {
-    color: var(--text-primary);
+    color: var(--white);
     margin-bottom: 1rem;
 }
 
 .telegram-section p {
-    color: var(--text-muted) !important;
+    color: var(--gray-light) !important;
 }
 
 .telegram-section summary {
-    color: var(--text-muted) !important;
+    color: var(--gray-light) !important;
 }
 
 .telegram-section ol {
-    color: var(--text-muted) !important;
+    color: var(--gray-light) !important;
 }
 
 .telegram-section code {
-    background: var(--surface);
+    background: var(--gray-medium);
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
-    color: var(--accent-blue);
+    color: var(--white);
 }
 
 #telegram-status-text {
-    color: var(--text-muted) !important;
+    color: var(--gray-light) !important;
 }
 
 .tickets-header {
@@ -139,7 +144,7 @@
 .tickets-header h2 {
     font-size: 1.5rem;
     margin: 0;
-    color: var(--text-primary);
+    color: var(--white);
 }
 
 .filter-tabs {
@@ -148,26 +153,26 @@
     flex-wrap: wrap;
 }
 
-.filter-tab {
+.filter-btn {
     padding: 0.5rem 1rem;
     background: transparent;
-    border: 1px solid var(--border);
+    border: 1px solid var(--gray-border);
     border-radius: 8px;
-    color: var(--text-muted);
+    color: var(--gray-light);
     cursor: pointer;
     transition: all 0.2s;
     font-weight: 500;
 }
 
-.filter-tab:hover {
-    border-color: var(--accent-blue);
-    color: var(--text-primary);
+.filter-btn:hover {
+    border-color: var(--white);
+    color: var(--white);
 }
 
-.filter-tab.active {
-    background: var(--accent-blue);
-    color: white;
-    border-color: var(--accent-blue);
+.filter-btn.active {
+    background: var(--white);
+    color: var(--black);
+    border-color: var(--white);
 }
 
 .tickets-list {
@@ -176,8 +181,8 @@
 }
 
 .ticket-card {
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
+    background: var(--gray-dark);
+    border: 1px solid var(--gray-border);
     border-radius: 12px;
     padding: 1.5rem;
     cursor: pointer;
@@ -186,8 +191,8 @@
 
 .ticket-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    border-color: var(--accent-blue);
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);
+    border-color: var(--white);
 }
 
 .ticket-card-header {
@@ -196,13 +201,13 @@
     align-items: center;
     margin-bottom: 1rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--gray-border);
 }
 
 .ticket-number {
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--white);
     font-family: 'JetBrains Mono', monospace;
 }
 
@@ -220,23 +225,23 @@
 }
 
 .badge.status-open {
-    background: rgba(34, 197, 94, 0.15);
-    color: var(--accent-green);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--white);
 }
 
 .badge.status-in_progress {
-    background: rgba(249, 115, 22, 0.15);
-    color: var(--accent-orange);
+    background: rgba(255, 215, 0, 0.15);
+    color: var(--accent-warning);
 }
 
 .badge.status-closed {
-    background: rgba(156, 163, 175, 0.15);
-    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--gray-light);
 }
 
 .badge.priority {
-    background: var(--surface);
-    color: var(--text-primary);
+    background: var(--gray-medium);
+    color: var(--white);
 }
 
 .ticket-card-body {
@@ -248,46 +253,47 @@
 .ticket-subject {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--white);
     line-height: 1.4;
     margin: 0;
 }
 
 .ticket-admin {
-    color: var(--accent-blue);
+    color: var(--white);
     font-size: 0.9rem;
     font-weight: 500;
     padding: 0.5rem;
-    background: rgba(59, 130, 246, 0.1);
+    background: var(--gray-medium);
     border-radius: 6px;
+    border-left: 3px solid var(--white);
 }
 
 .ticket-meta {
     display: flex;
     gap: 1rem;
-    color: var(--text-muted);
+    color: var(--gray-light);
     font-size: 0.9rem;
 }
 
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    color: var(--text-muted);
+    color: var(--gray-light);
 }
 
 /* Loading */
 .loading {
     text-align: center;
     padding: 3rem;
-    color: var(--text-muted);
+    color: var(--gray-light);
 }
 
 .loading-spinner {
     width: 50px;
     height: 50px;
     margin: 0 auto 1rem;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent-blue);
+    border: 3px solid var(--gray-border);
+    border-top-color: var(--white);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -306,7 +312,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(5px);
     z-index: 9999;
     padding: 2rem;
@@ -320,8 +326,8 @@
 }
 
 .modal-content {
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
+    background: var(--gray-dark);
+    border: 1px solid var(--gray-border);
     border-radius: 12px;
     width: 100%;
     max-width: 800px;
@@ -336,20 +342,20 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--gray-border);
 }
 
 .modal-title h3 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--white);
 }
 
 .modal-close {
     background: none;
     border: none;
     font-size: 2rem;
-    color: var(--text-muted);
+    color: var(--gray-light);
     cursor: pointer;
     padding: 0;
     width: 40px;
@@ -362,8 +368,8 @@
 }
 
 .modal-close:hover {
-    background: var(--surface);
-    color: var(--text-primary);
+    background: var(--gray-medium);
+    color: var(--white);
 }
 
 .modal-body {
@@ -380,7 +386,7 @@
 .ticket-header h2 {
     font-size: 1.75rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--white);
     margin-bottom: 1rem;
 }
 
@@ -393,21 +399,22 @@
 }
 
 .ticket-id {
-    color: var(--text-muted);
+    color: var(--gray-light);
     font-family: 'JetBrains Mono', monospace;
 }
 
 .ticket-assigned-info {
     padding: 1rem;
-    background: rgba(59, 130, 246, 0.1);
-    border-left: 3px solid var(--accent-blue);
+    background: var(--gray-medium);
+    border-left: 3px solid var(--white);
     border-radius: 6px;
-    color: var(--text-primary);
+    color: var(--white);
     margin-top: 1rem;
 }
 
 .ticket-assigned-info strong {
-    color: var(--accent-blue);
+    color: var(--white);
+    font-weight: 700;
 }
 
 /* Messages list */
@@ -421,14 +428,14 @@
 .message {
     padding: 1rem;
     margin-bottom: 1rem;
-    background: var(--surface);
+    background: var(--gray-medium);
     border-radius: 8px;
-    border-left: 3px solid var(--border);
+    border-left: 3px solid var(--gray-border);
 }
 
 .message.admin-reply {
-    border-left-color: var(--accent-blue);
-    background: rgba(59, 130, 246, 0.1);
+    border-left-color: var(--white);
+    background: var(--gray-dark);
 }
 
 .message.new-message {
@@ -455,27 +462,27 @@
 
 .message-author {
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--white);
 }
 
 .message-author.admin {
-    color: var(--accent-blue);
+    color: var(--white);
 }
 
 .message-time {
     font-size: 0.85rem;
-    color: var(--text-muted);
+    color: var(--gray-light);
 }
 
 .message-content {
-    color: var(--text-primary);
+    color: var(--white);
     line-height: 1.6;
     word-wrap: break-word;
 }
 
 /* Message form */
 .message-form {
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--gray-border);
     padding-top: 1.5rem;
 }
 
@@ -483,10 +490,10 @@
     width: 100%;
     min-height: 100px;
     padding: 1rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--gray-medium);
+    border: 1px solid var(--gray-border);
     border-radius: 8px;
-    color: var(--text-primary);
+    color: var(--white);
     font-family: inherit;
     font-size: 0.95rem;
     resize: vertical;
@@ -495,11 +502,11 @@
 
 #message-input:focus {
     outline: none;
-    border-color: var(--accent-blue);
+    border-color: var(--white);
 }
 
 #message-input::placeholder {
-    color: var(--text-muted);
+    color: var(--gray-light);
 }
 
 .form-actions {
@@ -514,10 +521,10 @@
 .ticket-closed-notice {
     text-align: center;
     padding: 2rem;
-    background: var(--surface);
+    background: var(--gray-medium);
     border-radius: 8px;
-    color: var(--text-muted);
-    border: 1px solid var(--border);
+    color: var(--gray-light);
+    border: 1px solid var(--gray-border);
 }
 
 /* Create ticket form */
@@ -528,7 +535,7 @@
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: var(--text-primary);
+    color: var(--white);
     font-weight: 600;
 }
 
@@ -537,10 +544,10 @@
 .form-group select {
     width: 100%;
     padding: 0.75rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--gray-medium);
+    border: 1px solid var(--gray-border);
     border-radius: 8px;
-    color: var(--text-primary);
+    color: var(--white);
     font-family: inherit;
     font-size: 0.95rem;
 }
@@ -549,12 +556,12 @@
 .form-group textarea:focus,
 .form-group select:focus {
     outline: none;
-    border-color: var(--accent-blue);
+    border-color: var(--white);
 }
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-    color: var(--text-muted);
+    color: var(--gray-light);
 }
 
 .form-group select {
@@ -597,7 +604,7 @@
         -webkit-overflow-scrolling: touch;
     }
 
-    .filter-tab {
+    .filter-btn {
         white-space: nowrap;
     }
 

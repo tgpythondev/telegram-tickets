@@ -25,6 +25,9 @@ const Tickets = (() => {
           scrollToBottom();
         }
       }
+
+      // Обновляем список тикетов чтобы показать что есть новое сообщение
+      loadTickets();
       showSuccess(`Новое сообщение в тикете #${ticketId}`);
     });
 
@@ -37,10 +40,16 @@ const Tickets = (() => {
         updateTicketStatusDisplay(status, priority, assignedAdminUsername);
       }
       loadTickets();
+      showSuccess(`Тикет #${ticketId} обновлен`);
     });
 
-    sse.onerror = () => {
-      console.error('SSE connection lost, reconnecting...');
+    sse.addEventListener('open', () => {
+      console.log('SSE connection established');
+    });
+
+    sse.onerror = (err) => {
+      console.error('SSE connection lost, reconnecting...', err);
+      // браузер автоматически переподключится
     };
   }
 
