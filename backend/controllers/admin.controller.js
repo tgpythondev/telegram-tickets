@@ -81,12 +81,16 @@ async function updateTicket(req, res) {
 
         // Отправить SSE события
         sse.send('admins', 'admin:ticket:updated', updatedTicket);
-        sse.sendToUser(updatedTicket.user_id, 'user:ticket:updated', {
-            ticketId: updatedTicket.id,
-            status: updatedTicket.status,
-            priority: updatedTicket.priority,
-            assignedAdminUsername: updatedTicket.assigned_admin_username
-        });
+        if (sse.isUserConnected(updatedTicket.user_id)) {
+            sse.sendToUser(updatedTicket.user_id, 'user:ticket:updated', {
+                ticketId: updatedTicket.id,
+                status: updatedTicket.status,
+                priority: updatedTicket.priority,
+                assignedAdminUsername: updatedTicket.assigned_admin_username
+            });
+        } else {
+            console.warn(`SSE: User ${updatedTicket.user_id} not connected, will see update on page reload`);
+        }
 
         // Отправить уведомления пользователю
         if (updates.status && updates.status !== ticket.status) {
@@ -105,15 +109,17 @@ async function updateTicket(req, res) {
             );
 
             // Отправить SSE событие о новом системном сообщении
-            sse.sendToUser(updatedTicket.user_id, 'user:message:new', {
-                ticketId: updatedTicket.id,
-                message: {
-                    content: `Администратор ${req.user.username} взял ваш тикет в работу`,
-                    username: 'Система',
-                    is_admin_reply: true,
-                    created_at: new Date().toISOString()
-                }
-            });
+            if (sse.isUserConnected(updatedTicket.user_id)) {
+                sse.sendToUser(updatedTicket.user_id, 'user:message:new', {
+                    ticketId: updatedTicket.id,
+                    message: {
+                        content: `Администратор ${req.user.username} взял ваш тикет в работу`,
+                        username: 'Система',
+                        is_admin_reply: true,
+                        created_at: new Date().toISOString()
+                    }
+                });
+            }
         }
 
         res.json({ ticket: updatedTicket });
@@ -149,13 +155,19 @@ async function replyToTicket(req, res) {
                 username: req.user.username
             }
         });
-        sse.sendToUser(ticket.user_id, 'user:message:new', {
-            ticketId: ticket.id,
-            message: {
-                ...message,
-                username: req.user.username
-            }
-        });
+
+        // Проверить подключение пользователя перед отправкой
+        if (sse.isUserConnected(ticket.user_id)) {
+            sse.sendToUser(ticket.user_id, 'user:message:new', {
+                ticketId: ticket.id,
+                message: {
+                    ...message,
+                    username: req.user.username
+                }
+            });
+        } else {
+            console.warn(`SSE: User ${ticket.user_id} not connected, message will be visible on next page load`);
+        }
 
         // Отправить уведомление пользователю
         await sendAdminReplyNotification(ticket, req.user.username, content);

@@ -106,7 +106,15 @@ const Tickets = (() => {
     const loadingEl = document.getElementById('loading');
     const ticketsListEl = document.getElementById('tickets-list');
 
-    if (loadingEl) loadingEl.style.display = 'block';
+    if (loadingEl) {
+      loadingEl.style.display = 'block';
+      const skeletonContainer = loadingEl.querySelector('.skeleton-tickets');
+      if (skeletonContainer) {
+        skeletonContainer.innerHTML = '';
+        const skeleton = createSkeletonTickets(3);
+        skeleton.childNodes.forEach(node => skeletonContainer.appendChild(node));
+      }
+    }
     if (ticketsListEl) ticketsListEl.innerHTML = '';
 
     try {
@@ -132,7 +140,7 @@ const Tickets = (() => {
     } catch (error) {
       console.error('Load tickets error:', error);
       if (ticketsListEl) {
-        ticketsListEl.innerHTML = `<div class="empty-state"><p style="color: #ff6b6b;">Ошибка: ${escapeHtml(error.message)}</p></div>`;
+        ticketsListEl.innerHTML = `<div class="empty-state"><p style="color: var(--accent-urgent);">Ошибка: ${escapeHtml(error.message)}</p></div>`;
       }
       showError('Ошибка загрузки тикетов: ' + error.message);
     } finally {

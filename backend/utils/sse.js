@@ -10,7 +10,14 @@ class SSE {
   addAdmin(userId, res) {
     const existing = Array.from(this.admins.keys()).filter(key => key.startsWith(`${userId}-`));
     if (existing.length >= 3) {
-      throw new Error('Max SSE connections reached');
+      const oldest = existing.sort()[0];
+      const oldRes = this.admins.get(oldest);
+      if (oldRes.writable && !oldRes.destroyed) {
+        oldRes.write('event: connection_closed\ndata: {"reason":"new_connection"}\n\n');
+        oldRes.end();
+      }
+      this.admins.delete(oldest);
+      console.log(`SSE: Closed oldest admin connection ${oldest} (limit reached)`);
     }
 
     const connId = `${userId}-${Date.now()}`;
@@ -27,7 +34,14 @@ class SSE {
   addUser(userId, res) {
     const existing = Array.from(this.users.keys()).filter(key => key.startsWith(`${userId}-`));
     if (existing.length >= 3) {
-      throw new Error('Max SSE connections reached');
+      const oldest = existing.sort()[0];
+      const oldRes = this.users.get(oldest);
+      if (oldRes.writable && !oldRes.destroyed) {
+        oldRes.write('event: connection_closed\ndata: {"reason":"new_connection"}\n\n');
+        oldRes.end();
+      }
+      this.users.delete(oldest);
+      console.log(`SSE: Closed oldest user connection ${oldest} (limit reached)`);
     }
 
     const connId = `${userId}-${Date.now()}`;
@@ -53,10 +67,17 @@ class SSE {
 
     clients.forEach((res, connId) => {
       try {
-        res.write(payload);
-        sent++;
+        if (res.writable && !res.destroyed) {
+          res.write(payload);
+          sent++;
+        } else {
+          failed++;
+          clients.delete(connId);
+          console.error(`SSE: Connection ${connId} not writable, removed`);
+        }
       } catch (err) {
         failed++;
+        clients.delete(connId);
         console.error(`Failed to send to ${connId}:`, err.message);
       }
     });
@@ -67,21 +88,34 @@ class SSE {
   }
 
   sendToUser(userId, event, data) {
-    const connId = Array.from(this.users.keys()).find(key => key.startsWith(`${userId}-`));
-    if (!connId) {
+    const connIds = Array.from(this.users.keys()).filter(key => key.startsWith(`${userId}-`));
+
+    if (connIds.length === 0) {
+      console.warn(`SSE: No active connection for user ${userId}, event ${event} lost`);
       return;
     }
 
-    const res = this.users.get(connId);
     const eventId = Date.now();
     const payload = `id: ${eventId}\nevent: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 
-    try {
-      res.write(payload);
-      console.log(`SSE event ${event} sent to user ${userId}`);
-    } catch (err) {
-      console.error(`Failed to send to user ${userId}:`, err.message);
-    }
+    let sent = 0;
+    connIds.forEach(connId => {
+      const res = this.users.get(connId);
+      try {
+        if (res.writable && !res.destroyed) {
+          res.write(payload);
+          sent++;
+        } else {
+          this.users.delete(connId);
+          console.error(`SSE: User connection ${connId} not writable, removed`);
+        }
+      } catch (err) {
+        this.users.delete(connId);
+        console.error(`SSE: Failed to send to user ${userId} (${connId}):`, err.message);
+      }
+    });
+
+    console.log(`SSE: Sent ${event} to user ${userId} (${sent}/${connIds.length} connections)`);
   }
 
   sendToAdmin(adminId, event, data) {
@@ -96,8 +130,14 @@ class SSE {
     connIds.forEach(connId => {
       const res = this.admins.get(connId);
       try {
-        res.write(payload);
+        if (res.writable && !res.destroyed) {
+          res.write(payload);
+        } else {
+          this.admins.delete(connId);
+          console.error(`SSE: Admin connection ${connId} not writable, removed`);
+        }
       } catch (err) {
+        this.admins.delete(connId);
         console.error(`Failed to send to admin ${adminId}:`, err.message);
       }
     });
@@ -139,12 +179,34 @@ class SSE {
     return this.eventCache.filter(evt => evt.id > lastEventId);
   }
 
+  isUserConnected(userId) {
+    return Array.from(this.users.keys()).some(key => key.startsWith(`${userId}-`));
+  }
+
+  getConnectionStats() {
+    return {
+      admins: this.admins.size,
+      users: this.users.size,
+      cachedEvents: this.eventCache.length,
+      activeAdmins: new Set(Array.from(this.admins.keys()).map(k => k.split('-')[0])).size,
+      activeUsers: new Set(Array.from(this.users.keys()).map(k => k.split('-')[0])).size
+    };
+  }
+
   getStats() {
     return {
       admins: this.admins.size,
       users: this.users.size,
       cachedEvents: this.eventCache.length
     };
+  }
+
+  removeConnection(connId) {
+    const removed = this.users.delete(connId) || this.admins.delete(connId);
+    if (removed) {
+      console.log(`SSE: Connection ${connId} removed`);
+    }
+    return removed;
   }
 }
 

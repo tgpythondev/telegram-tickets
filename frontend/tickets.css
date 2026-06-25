@@ -1,19 +1,5 @@
 /* Tickets page - Black & White с яркими акцентами */
 
-:root {
-    --black: #000000;
-    --white: #FFFFFF;
-    --gray-dark: #1a1a1a;
-    --gray-medium: #333333;
-    --gray-light: #666666;
-    --gray-border: #2a2a2a;
-
-    /* Яркие акценты только для критичных элементов */
-    --accent-urgent: #FF0000;
-    --accent-success: #00FF00;
-    --accent-warning: #FFD700;
-}
-
 .tickets-page {
     min-height: 100vh;
     padding-top: 6rem;
@@ -28,17 +14,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--gray-border);
+    border-bottom: 1px solid var(--gray-700);
 }
 
 .user-info h1 {
-    font-size: 2rem;
+    font-size: var(--text-3xl);
     margin-bottom: 0.5rem;
     color: var(--white);
+    font-weight: 700;
 }
 
 .user-info p {
-    color: var(--gray-light);
+    color: var(--gray-500);
 }
 
 .header-actions {
@@ -48,13 +35,13 @@
 
 .btn {
     padding: 0.75rem 1.5rem;
-    border: 1px solid var(--gray-border);
-    background: var(--gray-medium);
+    border: 1px solid var(--gray-700);
+    background: transparent;
     color: var(--white);
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: 0;
     font-weight: 600;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
     text-decoration: none;
     display: inline-block;
 }
@@ -74,7 +61,7 @@
 
 .btn-logout {
     background: transparent;
-    border-color: var(--gray-border);
+    border-color: var(--gray-700);
 }
 
 .btn-logout:hover {
@@ -85,8 +72,8 @@
 
 .btn-secondary {
     background: transparent;
-    border-color: var(--gray-border);
-    color: var(--gray-light);
+    border-color: var(--gray-700);
+    color: var(--gray-500);
 }
 
 .tickets-container {
@@ -95,9 +82,32 @@
     padding: 3rem 2rem;
 }
 
+/* Skeleton loaders */
+.skeleton-tickets {
+    display: grid;
+    gap: 1rem;
+}
+
+.skeleton-ticket-card {
+    background: var(--gray-800);
+    border: 1px solid var(--gray-700);
+    padding: 1.5rem;
+    height: 120px;
+}
+
+.skeleton-ticket-card .skeleton {
+    height: 20px;
+    margin-bottom: 1rem;
+}
+
+.skeleton-ticket-card .skeleton:last-child {
+    width: 60%;
+    margin-bottom: 0;
+}
+
 /* Telegram section */
 .telegram-section {
-    background: var(--gray-dark) !important;
+    background: var(--gray-900) !important;
     border: 1px solid var(--gray-border) !important;
     border-radius: 12px;
     padding: 2rem !important;
@@ -110,26 +120,26 @@
 }
 
 .telegram-section p {
-    color: var(--gray-light) !important;
+    color: var(--gray-400) !important;
 }
 
 .telegram-section summary {
-    color: var(--gray-light) !important;
+    color: var(--gray-400) !important;
 }
 
 .telegram-section ol {
-    color: var(--gray-light) !important;
+    color: var(--gray-400) !important;
 }
 
 .telegram-section code {
-    background: var(--gray-medium);
+    background: var(--gray-700);
     padding: 0.2rem 0.5rem;
-    border-radius: 4px;
     color: var(--white);
+    font-family: var(--font-mono);
 }
 
 #telegram-status-text {
-    color: var(--gray-light) !important;
+    color: var(--gray-400) !important;
 }
 
 .tickets-header {
@@ -142,9 +152,10 @@
 }
 
 .tickets-header h2 {
-    font-size: 1.5rem;
+    font-size: var(--text-2xl);
     margin: 0;
     color: var(--white);
+    font-weight: 700;
 }
 
 .filter-tabs {
@@ -156,11 +167,11 @@
 .filter-btn {
     padding: 0.5rem 1rem;
     background: transparent;
-    border: 1px solid var(--gray-border);
-    border-radius: 8px;
-    color: var(--gray-light);
+    border: 1px solid var(--gray-700);
+    border-radius: 0;
+    color: var(--gray-500);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
     font-weight: 500;
 }
 
@@ -181,12 +192,12 @@
 }
 
 .ticket-card {
-    background: var(--gray-dark);
-    border: 1px solid var(--gray-border);
-    border-radius: 12px;
+    background: var(--gray-900);
+    border: 1px solid var(--gray-700);
+    border-radius: 0;
     padding: 1.5rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
 }
 
 .ticket-card:hover {

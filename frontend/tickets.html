@@ -16,15 +16,12 @@
     <link rel="stylesheet" href="tickets.css">
 </head>
 <body>
-    <div class="particles"></div>
-
     <header>
         <nav>
             <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;">KALIANG</a></div>
             <ul class="nav-links">
                 <li><a href="index.html#services">Услуги</a></li>
                 <li><a href="index.html#portfolio">Портфолио</a></li>
-                <li><a href="index.html#contact">Контакты</a></li>
             </ul>
         </nav>
     </header>
@@ -74,11 +71,10 @@
             </div>
 
             <div id="loading" class="loading" style="display: none;">
-                <div class="loading-spinner"></div>
-                <p>Загрузка тикетов...</p>
+                <div class="skeleton-tickets"></div>
             </div>
 
-            <div class="tickets-list" id="tickets-list"></div>
+            <div class="tickets-list stagger-container" id="tickets-list"></div>
         </div>
     </div>
 
@@ -140,6 +136,7 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="components/skeleton.js"></script>
     <script src="api.js"></script>
     <script src="tickets.js"></script>
 </body>

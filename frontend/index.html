@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="particles"></div>
     <header>
         <nav>
             <div class="logo">KALIANG</div>
@@ -32,13 +31,13 @@
         </nav>
     </header>
 
-    <section class="hero">
+    <section class="hero fade-in-up">
         <div class="hero-content">
             <h1>Создание Telegram Ботов<br>на Заказ</h1>
             <p>Автоматизация бизнеса через умных ботов.<br>От идеи до запуска.</p>
             <div class="cta-buttons">
-                <a href="configurator.html" class="cta-button primary">Перейти к конфигурации</a>
-                <a href="auth.html" class="cta-button secondary">Создать тикет</a>
+                <a href="configurator.html" class="cta-button primary magnetic-btn liquid-border">Перейти к конфигурации</a>
+                <a href="auth.html" class="cta-button secondary magnetic-btn liquid-border">Создать тикет</a>
             </div>
         </div>
         <div class="hero-visual">
@@ -53,61 +52,58 @@
         </div>
     </section>
 
-    <section id="services" class="services">
+    <section id="services" class="services fade-in-up">
         <h2>Что я делаю</h2>
-        <div class="services-grid">
-            <div class="service-card">
+        <div class="services-grid stagger-container">
+            <div class="service-card liquid-border">
                 <div class="service-icon">→</div>
                 <h3>Боты для бизнеса</h3>
                 <p>Автоматизация продаж, приём заказов, консультации клиентов</p>
             </div>
-            <div class="service-card">
+            <div class="service-card liquid-border">
                 <div class="service-icon">⚙</div>
                 <h3>Интеграции</h3>
                 <p>Подключение к CRM, платёжным системам, API сервисов</p>
             </div>
-            <div class="service-card">
+            <div class="service-card liquid-border">
                 <div class="service-icon">◉</div>
                 <h3>Кастомные решения</h3>
                 <p>Любая логика и функционал под твои задачи</p>
             </div>
-            <div class="service-card">
+            <div class="service-card liquid-border">
                 <div class="service-icon">⟳</div>
                 <h3>Поддержка</h3>
                 <p>Обновления, доработки, техническая поддержка</p>
             </div>
         </div>
         <div class="section-cta">
-            <a href="configurator.html" class="cta-button primary">Перейти к конфигурации</a>
-            <a href="auth.html" class="cta-button secondary">Вход / Регистрация</a>
+            <a href="configurator.html" class="cta-button primary magnetic-btn liquid-border">Перейти к конфигурации</a>
+            <a href="auth.html" class="cta-button secondary magnetic-btn liquid-border">Вход / Регистрация</a>
         </div>
     </section>
 
-    <section id="portfolio" class="portfolio">
+    <section id="portfolio" class="portfolio fade-in-up">
         <h2>Примеры работ</h2>
-        <div class="portfolio-grid">
+        <div class="portfolio-grid stagger-container">
             <div class="portfolio-item">
-                <div class="portfolio-number">01</div>
                 <h3>Бот интернет-магазина</h3>
                 <p>Каталог товаров, корзина, оплата, уведомления о заказах</p>
             </div>
             <div class="portfolio-item">
-                <div class="portfolio-number">02</div>
                 <h3>Бот для записи</h3>
                 <p>Онлайн-запись на услуги, управление расписанием, напоминания</p>
             </div>
             <div class="portfolio-item">
-                <div class="portfolio-number">03</div>
                 <h3>CRM-бот</h3>
                 <p>Управление заявками, воронка продаж, аналитика</p>
             </div>
         </div>
     </section>
 
-    <section class="features">
+    <section class="features fade-in-up">
         <div class="features-content">
             <h2>Почему со мной</h2>
-            <ul class="features-list">
+            <ul class="features-list stagger-container">
                 <li><span class="check">✓</span> Индивидуальный подход к каждому проекту</li>
                 <li><span class="check">✓</span> Чистый код и документация</li>
                 <li><span class="check">✓</span> Соблюдение сроков</li>
@@ -129,6 +125,9 @@
         </div>
     </footer>
 
+    <script src="animations/scroll-reveal.js"></script>
+    <script src="animations/magnetic-hover.js"></script>
+    <script src="animations/liquid-border.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

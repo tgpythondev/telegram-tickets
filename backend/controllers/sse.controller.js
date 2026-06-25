@@ -18,11 +18,19 @@ async function stream(req, res) {
 
     res.write(': connected\n\n');
 
+    const connId = user.isAdmin ? `${user.id}-${Date.now()}` : `${user.id}-${Date.now()}`;
+
     const keepAlive = setInterval(() => {
       try {
-        res.write(': ping\n\n');
+        if (res.writable && !res.destroyed) {
+          res.write(': ping\n\n');
+        } else {
+          throw new Error('Connection closed');
+        }
       } catch (err) {
         clearInterval(keepAlive);
+        sse.removeConnection(connId);
+        console.log(`SSE: Removed dead connection ${connId} during ping`);
       }
     }, 30000);
 
