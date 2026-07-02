@@ -183,15 +183,28 @@ async function addMessage(req, res) {
         const message = await db.createMessage(ticket.id, req.user.id, content.trim(), req.user.isAdmin);
 
         // Отправить SSE события
-        sse.send('admins', 'admin:message:new', {
-            ticketId: ticket.id,
-            message: {
-                ...message,
-                username: req.user.username
-            }
-        });
+        // Админам - если пользователь отправил сообщение
+        if (!req.user.isAdmin) {
+            sse.send('admins', 'admin:message:new', {
+                ticketId: ticket.id,
+                message: {
+                    ...message,
+                    username: req.user.username
+                }
+            });
 
-        if (ticket.assigned_admin_id) {
+            // Отправить пользователю подтверждение
+            sse.sendToUser(ticket.user_id, 'user:message:new', {
+                ticketId: ticket.id,
+                message: {
+                    ...message,
+                    username: req.user.username
+                }
+            });
+        }
+
+        // Админу-исполнителю - если тикет закреплен за конкретным админом
+        if (ticket.assigned_admin_id && req.user.isAdmin) {
             sse.sendToAdmin(ticket.assigned_admin_id, 'admin:message:new', {
                 ticketId: ticket.id,
                 message: {

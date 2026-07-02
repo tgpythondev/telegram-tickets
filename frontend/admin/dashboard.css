@@ -68,7 +68,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--gray-medium);
+    background: var(--gray-800);
     border-radius: 12px;
 }
 
@@ -95,9 +95,9 @@ body {
 }
 
 .admin-container {
-    background: var(--gray-dark);
-    border: 1px solid var(--gray-border);
-    border-radius: 12px;
+    background: var(--gray-900);
+    border: 1px solid var(--gray-700);
+    border-radius: 0;
     padding: 2rem;
 }
 
@@ -118,12 +118,12 @@ body {
 .filter-tab {
     padding: 0.75rem 1.5rem;
     background: transparent;
-    border: 1px solid var(--gray-border);
-    color: var(--gray-light);
+    border: 1px solid var(--gray-700);
+    color: var(--gray-500);
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: 0;
     font-weight: 600;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
 }
 
 .filter-tab:hover {
@@ -139,9 +139,9 @@ body {
 
 .search-box {
     padding: 0.75rem 1rem;
-    background: var(--gray-medium);
-    border: 1px solid var(--gray-border);
-    border-radius: 8px;
+    background: var(--gray-900);
+    border: 1px solid var(--gray-700);
+    border-radius: 0;
     color: var(--white);
     min-width: 250px;
 }
@@ -152,7 +152,7 @@ body {
 }
 
 .search-box::placeholder {
-    color: var(--gray-light);
+    color: var(--gray-500);
 }
 
 /* Таблица */
@@ -162,7 +162,7 @@ body {
 }
 
 .tickets-table thead {
-    background: var(--gray-medium);
+    background: var(--gray-900);
 }
 
 .tickets-table th {
@@ -170,17 +170,17 @@ body {
     text-align: left;
     font-weight: 600;
     color: var(--white);
-    border-bottom: 2px solid var(--gray-border);
+    border-bottom: 2px solid var(--gray-700);
 }
 
 .tickets-table tbody tr {
-    border-bottom: 1px solid var(--gray-border);
+    border-bottom: 1px solid var(--gray-700);
     cursor: pointer;
     transition: background 0.2s;
 }
 
 .tickets-table tbody tr:hover {
-    background: var(--gray-medium);
+    background: var(--gray-800);
 }
 
 .tickets-table td {
@@ -219,7 +219,7 @@ body {
 
 .status-closed {
     background: rgba(255, 255, 255, 0.05);
-    color: var(--gray-light);
+    color: var(--gray-500);
 }
 
 .priority-badge {
