@@ -60,12 +60,6 @@ async function createTicket(req, res) {
                 return res.status(400).json({ error: 'Invalid orderConfig format' });
             }
 
-            // Проверка размера JSON
-            const configSize = JSON.stringify(orderConfig).length;
-            if (configSize > 50000) {
-                return res.status(400).json({ error: 'OrderConfig is too large (max 50KB)' });
-            }
-
             // Валидация основных полей orderConfig
             if (orderConfig.package && typeof orderConfig.package !== 'string') {
                 return res.status(400).json({ error: 'Invalid orderConfig.package' });
@@ -80,10 +74,10 @@ async function createTicket(req, res) {
 
             // Формируем красивое сообщение из конфигурации
             const packagePrices = {
-                'Mini': '$3–5',
-                'Mini+': '$5–10',
-                'Standard': '$20–30',
-                'Max': '$50–70',
+                'Mini': '$35',
+                'Mini+': '$510',
+                'Standard': '$2030',
+                'Max': '$5070',
                 'Custom': 'от $70'
             };
 
@@ -116,42 +110,44 @@ ${orderConfig.detailedDescription || 'Не указано'}
 💰 Итоговая стоимость: $${orderConfig.totalPrice || 0}`;
         }
 
-        if (!finalSubject || !finalMessage) {
-            return res.status(400).json({ error: 'Subject and initial message are required' });
+        if (!finalSubject || finalSubject.trim().length === 0) {
+            return res.status(400).json({ error: 'Subject is required' });
         }
 
-        // Валидация длины
-        if (finalSubject.trim().length === 0) {
-            return res.status(400).json({ error: 'Subject cannot be empty' });
+        if (!finalMessage || finalMessage.trim().length === 0) {
+            return res.status(400).json({ error: 'Message is required' });
         }
 
-        if (finalSubject.length > 200) {
-            return res.status(400).json({ error: 'Subject is too long (max 200 characters)' });
-        }
-
-        if (finalMessage.length > 5000) {
-            return res.status(400).json({ error: 'Message is too long (max 5000 characters)' });
-        }
-
+        // Создаем тикет
         const ticket = await db.createTicket(req.user.id, finalSubject, ticketPriority, orderConfig || null);
+
+        // Создаем первое сообщение
         await db.createMessage(ticket.id, req.user.id, finalMessage, false);
 
-        // Отправить SSE событие админам
-        sse.send('admins', 'admin:ticket:new', {
-            ...ticket,
-            user_username: req.user.username
+        // Уведомляем админов через SSE
+        sse.broadcastToAdmins('admin:ticket:new', {
+            ticket: {
+                id: ticket.id,
+                subject: finalSubject,
+                status: ticket.status,
+                priority: ticket.priority,
+                user_id: req.user.id,
+                user_username: req.user.username,
+                created_at: ticket.created_at
+            }
         });
 
+        // Отправляем уведомление в Telegram
         await sendNewTicketNotification(ticket, req.user.username, finalMessage);
 
         res.status(201).json({ ticket });
     } catch (error) {
-        console.error('Create ticket error:', error.message);
+        console.error('Create ticket error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
 
-// Добавить сообщение в тикет
+// Добавить сообщение к тикету
 async function addMessage(req, res) {
     try {
         const { id } = req.params;
@@ -182,18 +178,17 @@ async function addMessage(req, res) {
 
         const message = await db.createMessage(ticket.id, req.user.id, content.trim(), req.user.isAdmin);
 
-        // Отправить SSE события
-        // Админам - если пользователь отправил сообщение
-        if (!req.user.isAdmin) {
-            sse.send('admins', 'admin:message:new', {
-                ticketId: ticket.id,
-                message: {
-                    ...message,
-                    username: req.user.username
-                }
-            });
+        // Отправляем сообщение всем админам
+        sse.broadcastToAdmins('admin:message:new', {
+            ticketId: ticket.id,
+            message: {
+                ...message,
+                username: req.user.username
+            }
+        });
 
-            // Отправить пользователю подтверждение
+        // Если пользователь отправил сообщение, отправляем ему подтверждение
+        if (!req.user.isAdmin) {
             sse.sendToUser(ticket.user_id, 'user:message:new', {
                 ticketId: ticket.id,
                 message: {
@@ -203,24 +198,14 @@ async function addMessage(req, res) {
             });
         }
 
-        // Админу-исполнителю - если тикет закреплен за конкретным админом
-        if (ticket.assigned_admin_id && req.user.isAdmin) {
-            sse.sendToAdmin(ticket.assigned_admin_id, 'admin:message:new', {
-                ticketId: ticket.id,
-                message: {
-                    ...message,
-                    username: req.user.username
-                }
-            });
-        }
-
+        // Отправляем уведомление в Telegram
         if (!req.user.isAdmin) {
             await sendNewMessageNotification(ticket.id, req.user.username, content);
         }
 
         res.status(201).json({ message });
     } catch (error) {
-        console.error('Add message error:', error.message);
+        console.error('Add message error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 }

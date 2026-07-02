@@ -18,6 +18,9 @@ const Tickets = (() => {
 
     sse.addEventListener('user:message:new', (e) => {
       const { ticketId, message } = JSON.parse(e.data);
+      console.log('Received user:message:new for ticket', ticketId, 'currentTicket:', currentTicket);
+
+      // Всегда добавляем сообщение если тикет открыт
       if (currentTicket && currentTicket.id === ticketId) {
         appendNewMessage(message);
         playNotificationSound();
@@ -27,8 +30,9 @@ const Tickets = (() => {
       }
 
       // Обновляем список тикетов чтобы показать что есть новое сообщение
-      loadTickets();
-      showSuccess(`Новое сообщение в тикете #${ticketId}`);
+      loadTickets().then(() => {
+        showSuccess(`Новое сообщение в тикете #${ticketId}`);
+      });
     });
 
     sse.addEventListener('user:ticket:updated', (e) => {
@@ -496,13 +500,30 @@ const Tickets = (() => {
 
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.is_admin_reply ? 'admin-reply' : ''} new-message`;
-    messageDiv.innerHTML = `
-      <div class="message-header">
-        <span class="message-author ${message.is_admin_reply ? 'admin' : ''}">${escapeHtml(message.username || 'Неизвестный')}</span>
-        <span class="message-time">${new Date(message.created_at).toLocaleString('ru-RU')}</span>
-      </div>
-      <div class="message-content">${escapeHtml(message.content)}</div>
-    `;
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'message-header';
+
+    const author = document.createElement('span');
+    author.className = `message-author ${message.is_admin_reply ? 'admin' : ''}`;
+    author.textContent = message.username || 'Неизвестный';
+
+    const time = document.createElement('span');
+    time.className = 'message-time';
+    time.textContent = new Date(message.created_at).toLocaleString('ru-RU');
+
+    header.appendChild(author);
+    header.appendChild(time);
+
+    // Content
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    content.textContent = message.content;
+
+    messageDiv.appendChild(header);
+    messageDiv.appendChild(content);
+
     messagesList.appendChild(messageDiv);
 
     setTimeout(() => messageDiv.classList.remove('new-message'), 2000);

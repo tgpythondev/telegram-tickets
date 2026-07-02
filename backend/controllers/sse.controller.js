@@ -29,7 +29,11 @@ async function stream(req, res) {
         }
       } catch (err) {
         clearInterval(keepAlive);
-        sse.removeConnection(connId);
+        if (user.isAdmin) {
+          sse.removeAdminConnection(user.id, res);
+        } else {
+          sse.removeUserConnection(user.id, res);
+        }
         console.log(`SSE: Removed dead connection ${connId} during ping`);
       }
     }, 30000);

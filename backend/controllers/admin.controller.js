@@ -58,11 +58,13 @@ async function updateTicket(req, res) {
 
         if (assignedAdminId !== undefined) {
             // Валидация assignedAdminId
-            if (assignedAdminId !== null) {
-                const admin = await db.findUserById(assignedAdminId);
-                if (!admin || !admin.is_admin) {
-                    return res.status(400).json({ error: 'Invalid admin ID or user is not an admin' });
-                }
+            if (!Number.isInteger(assignedAdminId)) {
+                return res.status(400).json({ error: 'Invalid admin ID' });
+            }
+            // Проверяем, что админ существует
+            const adminUser = await db.findUserById(assignedAdminId);
+            if (!adminUser || !adminUser.is_admin) {
+                return res.status(400).json({ error: 'Invalid admin user' });
             }
             updates.assignedAdminId = assignedAdminId;
         }
@@ -74,9 +76,12 @@ async function updateTicket(req, res) {
 
         const updatedTicket = await db.updateTicket(id, updates);
 
-        // Отправить SSE события
-        sse.send('admins', 'admin:ticket:updated', updatedTicket);
+        // Отправить SSE события всем админам
+        sse.broadcastToAdmins('admin:ticket:updated', updatedTicket);
+
+        // Отправить пользователю если подключен
         if (sse.isUserConnected(updatedTicket.user_id)) {
+            console.log(`SSE: Sending user:ticket:updated to user ${updatedTicket.user_id}`);
             sse.sendToUser(updatedTicket.user_id, 'user:ticket:updated', {
                 ticketId: updatedTicket.id,
                 status: updatedTicket.status,
@@ -105,6 +110,7 @@ async function updateTicket(req, res) {
 
             // Отправить SSE событие о новом системном сообщении
             if (sse.isUserConnected(updatedTicket.user_id)) {
+                console.log(`SSE: Sending user:message:new to user ${updatedTicket.user_id} (admin assignment)`);
                 sse.sendToUser(updatedTicket.user_id, 'user:message:new', {
                     ticketId: updatedTicket.id,
                     message: {
@@ -114,12 +120,14 @@ async function updateTicket(req, res) {
                         created_at: new Date().toISOString()
                     }
                 });
+            } else {
+                console.warn(`SSE: User ${updatedTicket.user_id} not connected for admin assignment`);
             }
         }
 
         res.json({ ticket: updatedTicket });
     } catch (error) {
-        console.error('Update ticket error:', error.message);
+        console.error('Update ticket error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
@@ -142,8 +150,8 @@ async function replyToTicket(req, res) {
 
         const message = await db.createMessage(ticket.id, req.user.id, content, true);
 
-        // Отправить SSE события
-        sse.send('admins', 'admin:message:new', {
+        // Отправить SSE события всем админам
+        sse.broadcastToAdmins('admin:message:new', {
             ticketId: ticket.id,
             message: {
                 ...message,
@@ -151,8 +159,8 @@ async function replyToTicket(req, res) {
             }
         });
 
-        // Проверить подключение пользователя перед отправкой
-        console.log(`SSE: Checking connection for user ${ticket.user_id} (type: ${typeof ticket.user_id})`);
+        // Отправить пользователю
+        console.log(`SSE: Checking connection for user ${ticket.user_id}`);
         if (sse.isUserConnected(ticket.user_id)) {
             console.log(`SSE: Sending user:message:new to user ${ticket.user_id}`);
             sse.sendToUser(ticket.user_id, 'user:message:new', {
@@ -164,7 +172,6 @@ async function replyToTicket(req, res) {
             });
         } else {
             console.warn(`SSE: User ${ticket.user_id} not connected, message will be visible on next page load`);
-            console.warn(`SSE: Active users:`, sse.getConnectionStats());
         }
 
         // Отправить уведомление пользователю
