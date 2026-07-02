@@ -74,10 +74,6 @@ async function createTicket(req, res) {
             if (orderConfig.language && typeof orderConfig.language !== 'string') {
                 return res.status(400).json({ error: 'Invalid orderConfig.language' });
             }
-            // Валидация orderConfig
-            if (typeof orderConfig !== 'object') {
-                return res.status(400).json({ error: 'Invalid orderConfig format' });
-            }
 
             // Формируем тему из пакета
             finalSubject = `Заказ бота: ${orderConfig.package}`;

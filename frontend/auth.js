@@ -32,7 +32,11 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     }
 
     button.disabled = true;
-    button.innerHTML = '<span class="loading-spinner"></span> Вход...';
+    const spinner = document.createElement('span');
+    spinner.className = 'loading-spinner';
+    button.innerHTML = '';
+    button.appendChild(spinner);
+    button.appendChild(document.createTextNode(' Вход...'));
 
     try {
         const data = await API.login(username, password);
@@ -91,8 +95,8 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const hasNumber = /[0-9]/.test(password);
     const hasSpecial = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password);
 
-    if (!hasLetter || !hasNumber) {
-        errorEl.textContent = 'Пароль должен содержать буквы и цифры';
+    if (!hasLetter || !hasNumber || password.length < 8) {
+        errorEl.textContent = 'Пароль должен быть минимум 8 символов, содержать буквы и цифры';
         return;
     }
 
@@ -107,7 +111,11 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     }
 
     button.disabled = true;
-    button.innerHTML = '<span class="loading-spinner"></span> Регистрация...';
+    const spinner = document.createElement('span');
+    spinner.className = 'loading-spinner';
+    button.innerHTML = '';
+    button.appendChild(spinner);
+    button.appendChild(document.createTextNode(' Регистрация...'));
 
     try {
         const data = await API.register(username, password);

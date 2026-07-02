@@ -1,5 +1,5 @@
 const { verifyAccessToken } = require('../utils/jwt');
-const { logAuditEvent } = require('../utils/audit');
+const { logAuditEvent, AUDIT_ACTIONS } = require('../utils/audit');
 
 async function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
@@ -8,7 +8,7 @@ async function authenticateToken(req, res, next) {
     if (!token) {
         // Логирование попытки доступа без токена
         try {
-            await logAuditEvent('unauthorized_access_attempt', null, req, {
+            await logAuditEvent(null, AUDIT_ACTIONS.LOGIN_FAILED, req, {
                 endpoint: req.path,
                 method: req.method,
                 reason: 'missing_token'
@@ -26,7 +26,7 @@ async function authenticateToken(req, res, next) {
     } catch (error) {
         // Логирование попытки доступа с невалидным токеном
         try {
-            await logAuditEvent('unauthorized_access_attempt', null, req, {
+            await logAuditEvent(null, AUDIT_ACTIONS.LOGIN_FAILED, req, {
                 endpoint: req.path,
                 method: req.method,
                 reason: 'invalid_token',

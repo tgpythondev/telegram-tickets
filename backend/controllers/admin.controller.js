@@ -36,11 +36,6 @@ async function updateTicket(req, res) {
             return res.status(404).json({ error: 'Ticket not found' });
         }
 
-        // ЗАЩИТА ОТ IDOR: проверка, что тикет не назначен другому админу
-        if (ticket.assigned_admin_id && ticket.assigned_admin_id !== req.user.id) {
-            return res.status(403).json({ error: 'This ticket is assigned to another admin' });
-        }
-
         const updates = {};
 
         if (status !== undefined) {

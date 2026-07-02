@@ -18,9 +18,9 @@ function csrfProtection(req, res, next) {
         return next();
     }
 
-    // Пропускаем CSRF проверку для запросов с Authorization header
-    // (это запросы от telegram бота или других API клиентов)
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    // Для запросов с Authorization header проверяем токен через auth middleware
+    // Если req.user существует, значит токен уже проверен - пропускаем CSRF
+    if (req.user) {
         return next();
     }
 
@@ -30,8 +30,10 @@ function csrfProtection(req, res, next) {
         return res.status(403).json({ error: 'CSRF token missing' });
     }
 
-    // Простая валидация токена (в production используйте более сложную логику)
-    if (token.length === 64 && /^[a-f0-9]+$/.test(token)) {
+    // Проверяем токен в хранилище
+    if (tokenStore.has(token)) {
+        // Опционально: одноразовые токены (удаляем после использования)
+        tokenStore.delete(token);
         return next();
     }
 
@@ -40,5 +42,16 @@ function csrfProtection(req, res, next) {
 
 // Генерация токена для клиента
 csrfProtection.generateToken = generateToken;
+
+// Очистка старых токенов (предотвращение утечки памяти)
+setInterval(() => {
+    const now = Date.now();
+    const maxAge = 3600000; // 1 час
+    for (const [token, data] of tokenStore.entries()) {
+        if (now - data.createdAt > maxAge) {
+            tokenStore.delete(token);
+        }
+    }
+}, 600000); // Очистка каждые 10 минут
 
 module.exports = csrfProtection;

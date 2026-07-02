@@ -202,11 +202,15 @@ async function updateTicketStatus(ticketId, status) {
 }
 
 async function updateTicket(ticketId, updates) {
+    const allowedFields = ['status', 'priority', 'assigned_admin_id'];
     const fields = [];
     const params = [];
     let paramIndex = 1;
 
     if (updates.status !== undefined) {
+        if (!['open', 'in_progress', 'closed'].includes(updates.status)) {
+            throw new Error('Invalid status value');
+        }
         fields.push(`status = $${paramIndex}`);
         params.push(updates.status);
         paramIndex++;
@@ -217,6 +221,9 @@ async function updateTicket(ticketId, updates) {
     }
 
     if (updates.priority !== undefined) {
+        if (!['normal', 'high', 'urgent'].includes(updates.priority)) {
+            throw new Error('Invalid priority value');
+        }
         fields.push(`priority = $${paramIndex}`);
         params.push(updates.priority);
         paramIndex++;

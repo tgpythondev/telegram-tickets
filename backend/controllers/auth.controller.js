@@ -278,17 +278,18 @@ async function linkTelegram(req, res) {
         }
 
         // Валидация telegram chat ID (должен быть числом)
-        if (!Number.isInteger(telegramChatId) && typeof telegramChatId !== 'string') {
+        const chatId = typeof telegramChatId === 'string' ? parseInt(telegramChatId, 10) : telegramChatId;
+        if (!Number.isInteger(chatId) || chatId === 0) {
             return res.status(400).json({ error: 'Invalid Telegram chat ID format' });
         }
 
         // Проверить, не привязан ли этот chat_id к другому пользователю
-        const existingUser = await db.findUserByTelegramChatId(telegramChatId);
+        const existingUser = await db.findUserByTelegramChatId(String(chatId));
         if (existingUser && existingUser.id !== req.user.id) {
             return res.status(409).json({ error: 'This Telegram account is already linked to another user' });
         }
 
-        await db.updateUserTelegramChatId(req.user.id, telegramChatId);
+        await db.updateUserTelegramChatId(req.user.id, String(chatId));
 
         // Audit log: привязка Telegram
         await logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_LINK, req, { telegramChatId });

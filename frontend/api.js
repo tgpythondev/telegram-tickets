@@ -261,7 +261,7 @@ async function refreshAccessToken() {
 function logout() {
     inMemoryAccessToken = null;
     csrfToken = null;
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('user');
     window.location.href = '/auth.html';
 }
 
@@ -279,7 +279,7 @@ async function checkAuth() {
     try {
         const data = await apiRequest('/auth/me');
         if (data && data.user) {
-            localStorage.setItem('user', JSON.stringify(data.user));
+            sessionStorage.setItem('user', JSON.stringify(data.user));
             return data.user;
         }
     } catch (error) {

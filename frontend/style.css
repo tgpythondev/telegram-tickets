@@ -18,6 +18,16 @@
     --gray-400: #999999;
     --gray-300: #cccccc;
 
+    /* Alias variables for backward compatibility */
+    --gray: var(--gray-500);
+    --light-gray: var(--gray-400);
+    --dark-gray: var(--gray-700);
+    --gray-border: var(--gray-600);
+    --gray-medium: var(--gray-600);
+    --gray-light: var(--gray-400);
+    --gray-dark: var(--gray-700);
+    --text-muted: var(--gray-500);
+
     /* Status accents - only for critical info */
     --accent-urgent: #FF0000;
     --accent-success: #00FF00;

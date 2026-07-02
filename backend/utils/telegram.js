@@ -3,6 +3,12 @@ const TelegramBot = require('node-telegram-bot-api');
 let bot = null;
 let adminChatIds = [];
 
+// Экранирование Markdown символов
+function escapeMarkdown(text) {
+    if (!text) return '';
+    return String(text).replace(/([_*\[\]()~`>#+\-=|{}.!])/g, '\\$1');
+}
+
 // Инициализация бота
 function initTelegramBot() {
     const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -45,12 +51,12 @@ async function sendNewTicketNotification(ticket, username, initialMessage) {
 
     const message = `🔎 *Новый тикет!*
 
-👤 От: @${username}
-📋 Тема: *${ticket.subject}*
+👤 От: @${escapeMarkdown(username)}
+📋 Тема: *${escapeMarkdown(ticket.subject)}*
 🕐 ${date} в ${time}
 
 📝 *Описание:*
-${initialMessage.substring(0, 300)}${initialMessage.length > 300 ? '...' : ''}
+${escapeMarkdown(initialMessage.substring(0, 300))}${initialMessage.length > 300 ? '...' : ''}
 
 ℹ️ _Ответьте как можно скорее на тикет!_
 
@@ -84,11 +90,11 @@ async function sendNewMessageNotification(ticketId, username, messageContent) {
 
     const message = `💬 *Новое сообщение в тикете #${ticketId}*
 
-👤 От: @${username}
+👤 От: @${escapeMarkdown(username)}
 🕐 ${date} в ${time}
 
 📝 *Сообщение:*
-${messageContent.substring(0, 300)}${messageContent.length > 300 ? '...' : ''}
+${escapeMarkdown(messageContent.substring(0, 300))}${messageContent.length > 300 ? '...' : ''}
 
 👉 [Ответить в веб-панели](${appUrl}/admin/dashboard.html?ticket=${ticketId})`;
 
@@ -144,15 +150,15 @@ async function sendAdminReplyNotification(ticket, adminUsername, replyContent) {
 ╚══════════════════════════════╝
 
 🎫 *Тикет #${ticket.id}*
-📌 Тема: ${ticket.subject}
+📌 Тема: ${escapeMarkdown(ticket.subject)}
 
-👨‍💼 *Администратор ${adminUsername}*
+👨‍💼 *Администратор ${escapeMarkdown(adminUsername)}*
 ⏰ ${date} в ${time}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📝 *Ответ:*
-${preview}
+${escapeMarkdown(preview)}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -217,7 +223,7 @@ async function sendTicketStatusChangeNotification(ticket, oldStatus, newStatus, 
 ╚══════════════════════════════╝
 
 🎫 *Тикет #${ticket.id}*
-📌 ${ticket.subject}
+📌 ${escapeMarkdown(ticket.subject)}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -227,7 +233,7 @@ ${statusEmoji[newStatus] || '⚪'} *${statusNames[newStatus] || newStatus}*
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-👨‍💼 Администратор: ${adminUsername}
+👨‍💼 Администратор: ${escapeMarkdown(adminUsername)}
 ⏰ ${date} в ${time}`;
 
         const keyboard = {
@@ -274,13 +280,13 @@ async function sendTicketAssignedNotification(ticket, adminUsername) {
 ╚══════════════════════════════╝
 
 🎫 *Тикет #${ticket.id}*
-📌 ${ticket.subject}
+📌 ${escapeMarkdown(ticket.subject)}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ Ваш вопрос рассматривается
 
-👨‍💼 Администратор: *${adminUsername}*
+👨‍💼 Администратор: *${escapeMarkdown(adminUsername)}*
 ⏰ ${date} в ${time}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━

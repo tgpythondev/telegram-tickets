@@ -151,7 +151,9 @@ const Tickets = (() => {
   function createTicketCard(ticket) {
     const card = document.createElement('div');
     card.className = 'ticket-card';
-    card.onclick = () => openTicket(ticket.id);
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.addEventListener('click', () => openTicket(ticket.id));
 
     const statusText = {
       'open': 'Открыт',
@@ -165,26 +167,55 @@ const Tickets = (() => {
       'urgent': '🔴'
     };
 
-    const assignedAdminText = ticket.assigned_admin_username
-      ? `<div class="ticket-admin">👨‍💼 Администратор: ${escapeHtml(ticket.assigned_admin_username)}</div>`
-      : '';
+    // Header
+    const header = document.createElement('div');
+    header.className = 'ticket-card-header';
 
-    card.innerHTML = `
-      <div class="ticket-card-header">
-        <div class="ticket-number">#${ticket.id}</div>
-        <div class="ticket-badges">
-          <span class="badge status-${ticket.status}">${statusText[ticket.status]}</span>
-          <span class="badge priority">${priorityEmoji[ticket.priority]} ${ticket.priority.toUpperCase()}</span>
-        </div>
-      </div>
-      <div class="ticket-card-body">
-        <h3 class="ticket-subject">${escapeHtml(ticket.subject)}</h3>
-        ${assignedAdminText}
-        <div class="ticket-meta">
-          <span>📅 ${new Date(ticket.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-        </div>
-      </div>
-    `;
+    const ticketNumber = document.createElement('div');
+    ticketNumber.className = 'ticket-number';
+    ticketNumber.textContent = `#${ticket.id}`;
+
+    const badges = document.createElement('div');
+    badges.className = 'ticket-badges';
+
+    const statusBadge = document.createElement('span');
+    statusBadge.className = `badge status-${ticket.status}`;
+    statusBadge.textContent = statusText[ticket.status];
+
+    const priorityBadge = document.createElement('span');
+    priorityBadge.className = 'badge priority';
+    priorityBadge.textContent = `${priorityEmoji[ticket.priority]} ${ticket.priority.toUpperCase()}`;
+
+    badges.appendChild(statusBadge);
+    badges.appendChild(priorityBadge);
+
+    header.appendChild(ticketNumber);
+    header.appendChild(badges);
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'ticket-card-body';
+
+    const subject = document.createElement('h3');
+    subject.className = 'ticket-subject';
+    subject.textContent = ticket.subject;
+
+    if (ticket.assigned_admin_username) {
+      const adminDiv = document.createElement('div');
+      adminDiv.className = 'ticket-admin';
+      adminDiv.textContent = `👨‍💼 Администратор: ${ticket.assigned_admin_username}`;
+      body.appendChild(adminDiv);
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'ticket-meta';
+    meta.textContent = `📅 ${new Date(ticket.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
+
+    body.appendChild(subject);
+    body.appendChild(meta);
+
+    card.appendChild(header);
+    card.appendChild(body);
 
     return card;
   }
@@ -259,22 +290,151 @@ const Tickets = (() => {
         `).join('')}
       </div>
 
-      ${ticket.status !== 'closed' ? `
-        <form class="message-form" id="message-form">
-          <textarea id="message-input" placeholder="Напишите сообщение..." required maxlength="5000"></textarea>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Отправить</button>
-            <button type="button" class="btn btn-secondary" onclick="Tickets.closeTicket()">Закрыть тикет</button>
-          </div>
-        </form>
-      ` : '<div class="ticket-closed-notice">Этот тикет закрыт</div>'}
     `;
+  }
+
+  function renderTicketModal(ticket, messages) {
+    const modalBody = document.getElementById('modal-body');
+    if (!modalBody) return;
+
+    modalBody.textContent = '';
+
+    // Render header
+    const header = renderModalHeader(ticket);
+    modalBody.appendChild(header);
+
+    // Render messages list
+    const messagesList = renderMessagesList(messages);
+    modalBody.appendChild(messagesList);
+
+    // Render form if not closed
+    if (ticket.status !== 'closed') {
+      const form = document.createElement('form');
+      form.className = 'message-form';
+      form.id = 'message-form';
+
+      const textarea = document.createElement('textarea');
+      textarea.id = 'message-input';
+      textarea.placeholder = 'Напишите сообщение...';
+      textarea.required = true;
+      textarea.maxLength = 5000;
+
+      const actions = document.createElement('div');
+      actions.className = 'form-actions';
+
+      const submitBtn = document.createElement('button');
+      submitBtn.type = 'submit';
+      submitBtn.className = 'btn btn-primary';
+      submitBtn.textContent = 'Отправить';
+
+      const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'btn btn-secondary';
+      closeBtn.textContent = 'Закрыть тикет';
+
+      actions.appendChild(submitBtn);
+      actions.appendChild(closeBtn);
+      form.appendChild(textarea);
+      form.appendChild(actions);
+      modalBody.appendChild(form);
+
+      // Setup form listener
+      form.addEventListener('submit', handleSendMessage);
+      closeBtn.addEventListener('click', Tickets.closeTicket);
+    } else {
+      const notice = document.createElement('div');
+      notice.className = 'ticket-closed-notice';
+      notice.textContent = 'Этот тикет закрыт';
+      modalBody.appendChild(notice);
+    }
+  }
+
+  // Render messages list using DOM API
+  function renderMessagesList(messages) {
+    const messagesList = document.createElement('div');
+    messagesList.className = 'messages-list';
+    messagesList.id = 'messages-list';
+
+    messages.forEach(msg => {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${msg.is_admin_reply ? 'admin-reply' : ''}`;
+
+      const header = document.createElement('div');
+      header.className = 'message-header';
+
+      const author = document.createElement('span');
+      author.className = `message-author ${msg.is_admin_reply ? 'admin' : ''}`;
+      author.textContent = msg.username || 'Неизвестный';
+
+      const time = document.createElement('span');
+      time.className = 'message-time';
+      time.textContent = new Date(msg.created_at).toLocaleString('ru-RU');
+
+      header.appendChild(author);
+      header.appendChild(time);
+
+      const content = document.createElement('div');
+      content.className = 'message-content';
+      content.textContent = msg.content;
+
+      msgDiv.appendChild(header);
+      msgDiv.appendChild(content);
+      messagesList.appendChild(msgDiv);
+    });
+
+    return messagesList;
+  }
+
+  // Render ticket modal header using DOM API
+  function renderModalHeader(ticket) {
+    const header = document.createElement('div');
+    header.className = 'ticket-header';
+
+    const title = document.createElement('h2');
+    title.textContent = ticket.subject;
+
+    const info = document.createElement('div');
+    info.className = 'ticket-info';
+
+    const statusText = {
+      'open': 'Открыт',
+      'in_progress': 'В работе',
+      'closed': 'Закрыт'
+    };
+
+    const statusBadge = document.createElement('span');
+    statusBadge.className = `badge status-${ticket.status}`;
+    statusBadge.textContent = statusText[ticket.status];
+
+    const priorityBadge = document.createElement('span');
+    priorityBadge.className = 'badge priority';
+    priorityBadge.textContent = ticket.priority.toUpperCase();
+
+    const ticketId = document.createElement('span');
+    ticketId.className = 'ticket-id';
+    ticketId.textContent = `#${ticket.id}`;
+
+    info.appendChild(statusBadge);
+    info.appendChild(priorityBadge);
+    info.appendChild(ticketId);
+
+    header.appendChild(title);
+    header.appendChild(info);
+
+    if (ticket.assigned_admin_username) {
+      const adminInfo = document.createElement('div');
+      adminInfo.className = 'ticket-assigned-info';
+      adminInfo.innerHTML = `👨‍💼 Администратор <strong>${escapeHtml(ticket.assigned_admin_username)}</strong> работает над вашим тикетом`;
+      header.appendChild(adminInfo);
+    }
+
+    return header;
   }
 
   function setupModalEventListeners() {
     const messageForm = document.getElementById('message-form');
     if (messageForm) {
-      messageForm.onsubmit = handleSendMessage;
+      messageForm.addEventListener('submit', handleSendMessage);
     }
   }
 
@@ -437,29 +597,70 @@ const Tickets = (() => {
     const logoutBtn = document.getElementById('logout-btn');
     if (!logoutBtn) return;
 
-    logoutBtn.onclick = async () => {
+    logoutBtn.addEventListener('click', async () => {
       try {
         await API.logout();
       } catch (error) {
         console.error('Logout error:', error);
       }
       logout();
-    };
+    });
   }
 
   function setupModalClose() {
     const modal = document.getElementById('ticket-modal');
     if (!modal) return;
 
-    modal.onclick = (e) => {
+    modal.addEventListener('click', (e) => {
       if (e.target.id === 'ticket-modal') {
         closeModal();
       }
-    };
+    });
 
     const closeBtn = document.getElementById('close-modal-btn');
     if (closeBtn) {
-      closeBtn.onclick = closeModal;
+      closeBtn.addEventListener('click', closeModal);
+    }
+  }
+
+  function setupCreateTicket() {
+    const createBtn = document.getElementById('create-ticket-btn');
+    const createModal = document.getElementById('create-modal');
+    const createForm = document.getElementById('create-ticket-form');
+    const closeModalBtn = document.getElementById('create-modal-close');
+
+    if (createBtn) {
+      createBtn.addEventListener('click', () => createModal.classList.add('active'));
+    }
+
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', () => createModal.classList.remove('active'));
+    }
+
+    if (createForm) {
+      createForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const subject = document.getElementById('ticket-subject').value.trim();
+        const message = document.getElementById('ticket-message').value.trim();
+        const priority = document.getElementById('ticket-priority').value;
+
+        if (!subject || !message) {
+          showError('Заполните все поля');
+          return;
+        }
+
+        try {
+          await API.createTicket(subject, message, priority);
+          createModal.classList.remove('active');
+          document.getElementById('create-ticket-form').reset();
+          await loadTickets();
+          showSuccess('Тикет создан');
+        } catch (error) {
+          console.error('Create ticket error:', error);
+          showError('Ошибка: ' + error.message);
+        }
+      });
     }
   }
 
@@ -497,6 +698,7 @@ const Tickets = (() => {
       setupFilters();
       setupLogout();
       setupModalClose();
+      setupCreateTicket();
     } catch (error) {
       console.error('Initialization error:', error);
       showError('Ошибка инициализации: ' + error.message);
@@ -512,6 +714,3 @@ const Tickets = (() => {
 })();
 
 Tickets.init();
-
-window.openTicket = Tickets.openTicket;
-window.closeModal = Tickets.closeModal;
