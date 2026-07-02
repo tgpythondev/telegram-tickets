@@ -79,6 +79,22 @@
     margin: 0 auto;
 }
 
+/* Watch button */
+.btn-watch {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    background: var(--gray-700);
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-watch:hover {
+    background: var(--gray-600);
+}
+
 /* Portfolio cards */
 .portfolio-grid {
     display: grid;
@@ -88,15 +104,15 @@
 
 .portfolio-card {
     background: var(--gray-800);
-    border-radius: var(--border-radius);
+    border-radius: 8px;
     padding: var(--space-lg);
     cursor: pointer;
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .portfolio-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 255, 0, 0.1);
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .card-header {
@@ -104,11 +120,13 @@
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: var(--space-md);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--gray-700);
 }
 
 .card-title {
     font-size: var(--text-lg);
-    font-weight: 600;
+    font-weight: 700;
     color: var(--white);
     margin: 0;
     line-height: 1.4;
@@ -133,8 +151,6 @@
 .card-meta {
     display: flex;
     gap: var(--space-lg);
-    border-top: 1px solid var(--gray-700);
-    padding-top: var(--space-md);
 }
 
 .meta-item {
@@ -151,8 +167,8 @@
 
 .meta-value {
     font-size: var(--text-base);
-    font-weight: 500;
-    color: var(--white);
+    font-weight: 400;
+    color: var(--gray-400);
 }
 
 /* Modal styles */
@@ -172,10 +188,13 @@
 }
 
 .modal-content {
-    max-width: 1000px;
+    min-width: 600px;
+    max-width: 80%;
     margin: 0 auto;
     background: var(--gray-900);
-    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
     overflow: hidden;
     position: relative;
 }
@@ -242,7 +261,7 @@
 
 .modal-title {
     font-size: var(--text-2xl);
-    font-weight: 600;
+    font-weight: 700;
     color: var(--white);
     margin-bottom: var(--space-xl);
 }
@@ -267,8 +286,8 @@
 
 .info-value {
     font-size: var(--text-lg);
-    font-weight: 500;
-    color: var(--white);
+    font-weight: 400;
+    color: var(--gray-400);
 }
 
 .info-features,
@@ -279,7 +298,7 @@
 .info-features h4,
 .info-description h4 {
     font-size: var(--text-base);
-    font-weight: 600;
+    font-weight: 700;
     color: var(--white);
     margin-bottom: var(--space-md);
 }
@@ -329,6 +348,19 @@
     }
 
     .portfolio-content {
+        padding: var(--space-lg);
+    }
+
+    .modal-content {
+        min-width: auto;
+        max-width: 95%;
+    }
+
+    .modal-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-info {
         padding: var(--space-lg);
     }
 }
