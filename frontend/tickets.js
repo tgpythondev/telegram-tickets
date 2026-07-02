@@ -6,6 +6,8 @@ const Tickets = (() => {
   let sse = null;
   let lastMessageTimestamp = null;
   let isUserAtBottom = true;
+  // Храним timestamp последнего сообщения для каждого тикета
+  let ticketMessageTimestamps = {};
 
   function initSSE() {
     if (!inMemoryAccessToken) {
@@ -18,6 +20,12 @@ const Tickets = (() => {
 
     sse.addEventListener('user:message:new', (e) => {
       const { ticketId, message } = JSON.parse(e.data);
+      console.log('Received user:message:new for ticket', ticketId, 'currentTicket:', currentTicket?.id);
+
+      // Сохраняем timestamp сообщения
+      ticketMessageTimestamps[ticketId] = message.created_at;
+
+      // Если тикет открыт - добавляем сообщение
       if (currentTicket && currentTicket.id === ticketId) {
         appendNewMessage(message);
         playNotificationSound();
@@ -26,9 +34,13 @@ const Tickets = (() => {
         }
       }
 
-      // Обновляем список тикетов чтобы показать что есть новое сообщение
+      // В любом случае обновляем список тикетов (показываем значок нового сообщения)
       loadTickets();
-      showSuccess(`Новое сообщение в тикете #${ticketId}`);
+
+      // Показываем уведомление если тикет не открыт
+      if (!currentTicket || currentTicket.id !== ticketId) {
+        showSuccess(`Новое сообщение от админа в тикете #${ticketId}`);
+      }
     });
 
     sse.addEventListener('user:ticket:updated', (e) => {
@@ -246,10 +258,43 @@ const Tickets = (() => {
       setupModalEventListeners();
       setupScrollTracking();
       scrollToBottom();
+
+      // Загружаем новые сообщения если были получены по SSE пока тикет был закрыт
+      checkForNewMessages(ticketId);
     } catch (error) {
       console.error('Open ticket error:', error);
       modalBody.innerHTML = `<div class="empty-state"><p style="color: #ff6b6b;">Ошибка: ${escapeHtml(error.message)}</p></div>`;
       showError('Ошибка открытия тикета: ' + error.message);
+    }
+  }
+
+  async function checkForNewMessages(ticketId) {
+    try {
+      const data = await API.getTicket(ticketId);
+      if (!data || !data.messages) return;
+
+      const messages = data.messages;
+      if (messages.length === 0) return;
+
+      const lastLocalTime = lastMessageTimestamp;
+      const newMessages = messages.filter(msg => {
+        if (!lastLocalTime) return false;
+        return new Date(msg.created_at) > new Date(lastLocalTime);
+      });
+
+      if (newMessages.length > 0) {
+        console.log('Found', newMessages.length, 'new messages to load');
+        const messagesList = document.getElementById('messages-list');
+        if (messagesList) {
+          newMessages.forEach(msg => {
+            appendNewMessage(msg);
+            lastMessageTimestamp = msg.created_at;
+          });
+          scrollToBottom();
+        }
+      }
+    } catch (error) {
+      console.error('Error checking for new messages:', error);
     }
   }
 

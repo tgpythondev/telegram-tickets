@@ -2,6 +2,7 @@
 // Используем double-submit cookie pattern с header вместо cookie-only
 
 const crypto = require('crypto');
+const { verifyAccessToken } = require('../utils/jwt');
 
 // Хранилище токенов в памяти (для production используйте Redis)
 const tokenStore = new Map();
@@ -18,22 +19,38 @@ function csrfProtection(req, res, next) {
         return next();
     }
 
-    // Для запросов с Authorization header проверяем токен через auth middleware
-    // Если req.user существует, значит токен уже проверен - пропускаем CSRF
-    if (req.user) {
-        return next();
+    // Проверяем Authorization header (JWT token) - это основная аутентификация
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    // Проверяем CSRF токен в header
+    const csrfToken = req.headers['x-csrf-token'];
+
+    // Если есть JWT токен - проверяем, что он валиден
+    if (token) {
+        try {
+            verifyAccessToken(token);
+            // JWT токен действителен - но всё равно проверяем CSRF для защиты от XSRF
+            if (!csrfToken) {
+                return res.status(403).json({ error: 'CSRF token missing' });
+            }
+            if (tokenStore.has(csrfToken)) {
+                tokenStore.delete(csrfToken);
+                return next();
+            }
+            return res.status(403).json({ error: 'Invalid CSRF token' });
+        } catch (err) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
     }
 
-    const token = req.headers['x-csrf-token'];
-
-    if (!token) {
+    // Если нет JWT токена - проверяем только CSRF
+    if (!csrfToken) {
         return res.status(403).json({ error: 'CSRF token missing' });
     }
 
-    // Проверяем токен в хранилище
-    if (tokenStore.has(token)) {
-        // Опционально: одноразовые токены (удаляем после использования)
-        tokenStore.delete(token);
+    if (tokenStore.has(csrfToken)) {
+        tokenStore.delete(csrfToken);
         return next();
     }
 
