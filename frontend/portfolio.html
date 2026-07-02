@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Портфолио — Telegram Боты на Заказ | Kaliang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="portfolio.css">
+</head>
+<body>
+    <header class="portfolio-header">
+        <div class="portfolio-title">KALIANG</div>
+    </header>
+
+    <div class="portfolio-layout">
+        <aside class="portfolio-menu">
+            <nav class="plan-menu">
+                <ul>
+                    <li data-plan="basic" class="plan-item active">Базовый</li>
+                    <li data-plan="starter" class="plan-item">Стартер</li>
+                    <li data-plan="professional" class="plan-item">Профессиональный</li>
+                    <li data-plan="enterprise" class="plan-item">Корпоративный</li>
+                    <li data-plan="custom" class="plan-item">Индивидуальный</li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="portfolio-content">
+            <div id="content-area" class="content-area">
+                <!-- Контент будет загружаться сюда -->
+            </div>
+        </main>
+    </div>
+
+    <script src="animations/scroll-reveal.js"></script>
+    <script src="animations/magnetic-hover.js"></script>
+    <script src="animations/liquid-border.js"></script>
+    <script src="script.js"></script>
+    <script src="portfolio.js"></script>
+</body>
+</html>

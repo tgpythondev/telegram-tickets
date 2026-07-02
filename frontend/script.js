@@ -51,4 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
             header.classList.remove('scrolled');
         }
     });
+
+    // Portfolio watch button
+    const btnWatch = document.getElementById('btn-watch');
+    if (btnWatch) {
+        btnWatch.addEventListener('click', () => {
+            window.location.href = 'portfolio.html';
+        });
+    }
 });
