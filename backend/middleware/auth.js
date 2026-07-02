@@ -4,8 +4,10 @@ const { logAuditEvent, AUDIT_ACTIONS } = require('../utils/audit');
 async function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
+    console.log(`[AUTH MIDDLEWARE] Path: ${req.path}, Token present: ${!!token}`);
 
     if (!token) {
+        console.log('[AUTH MIDDLEWARE] No token, rejecting');
         // Логирование попытки доступа без токена
         try {
             await logAuditEvent(null, AUDIT_ACTIONS.LOGIN_FAILED, req, {
@@ -21,9 +23,11 @@ async function authenticateToken(req, res, next) {
 
     try {
         const user = verifyAccessToken(token);
+        console.log('[AUTH MIDDLEWARE] Token verified, user:', user.username);
         req.user = user;
         next();
     } catch (error) {
+        console.error('[AUTH MIDDLEWARE] Token verification failed:', error.message);
         // Логирование попытки доступа с невалидным токеном
         try {
             await logAuditEvent(null, AUDIT_ACTIONS.LOGIN_FAILED, req, {

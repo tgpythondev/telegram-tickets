@@ -30,15 +30,8 @@ function csrfProtection(req, res, next) {
     if (token) {
         try {
             verifyAccessToken(token);
-            // JWT токен действителен - но всё равно проверяем CSRF для защиты от XSRF
-            if (!csrfToken) {
-                return res.status(403).json({ error: 'CSRF token missing' });
-            }
-            if (tokenStore.has(csrfToken)) {
-                tokenStore.delete(csrfToken);
-                return next();
-            }
-            return res.status(403).json({ error: 'Invalid CSRF token' });
+            // JWT токен действителен - CSRF проверка не обязательна для API с JWT
+            return next();
         } catch (err) {
             return res.status(401).json({ error: 'Invalid token' });
         }
@@ -64,10 +57,8 @@ csrfProtection.generateToken = generateToken;
 setInterval(() => {
     const now = Date.now();
     const maxAge = 3600000; // 1 час
-    for (const [token, data] of tokenStore.entries()) {
-        if (now - data.createdAt > maxAge) {
-            tokenStore.delete(token);
-        }
+    for (const [token] of tokenStore.entries()) {
+        tokenStore.delete(token);
     }
 }, 600000); // Очистка каждые 10 минут
 

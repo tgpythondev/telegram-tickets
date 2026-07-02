@@ -4,8 +4,10 @@ const sse = require('../utils/sse');
 
 // Получить все тикеты (для админов)
 async function listAllTickets(req, res) {
+    console.log('[LIST TICKETS] Starting - User:', req.user.username, 'isAdmin:', req.user.isAdmin);
     try {
         const { status, assigned_to_me } = req.query;
+        console.log('[LIST TICKETS] Filters:', { status, assigned_to_me });
 
         const filters = {};
         if (status) {
@@ -16,21 +18,25 @@ async function listAllTickets(req, res) {
         }
 
         const tickets = await db.findAllTickets(filters);
+        console.log('[LIST TICKETS] Found', tickets.length, 'tickets');
 
         res.json({ tickets });
     } catch (error) {
-        console.error('List all tickets error:', error);
+        console.error('[LIST TICKETS] Error:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
 
 // Обновить тикет (для админов)
 async function updateTicket(req, res) {
+    console.log('[UPDATE TICKET] Starting - User:', req.user.username);
     try {
         const { id } = req.params;
         const { status, priority, assignedAdminId } = req.body;
+        console.log('[UPDATE TICKET] ID:', id, 'Updates:', { status, priority, assignedAdminId });
 
         const ticket = await db.findTicketById(id);
+        console.log('[UPDATE TICKET] Ticket found:', ticket ? ticket.id : 'NOT FOUND');
 
         if (!ticket) {
             return res.status(404).json({ error: 'Ticket not found' });
@@ -126,23 +132,38 @@ async function updateTicket(req, res) {
 
 // Ответить на тикет (для админов)
 async function replyToTicket(req, res) {
+    console.log('[REPLY] Starting replyToTicket');
+    console.log('[REPLY] Request params:', req.params);
+    console.log('[REPLY] Request body:', req.body);
+    console.log('[REPLY] User ID:', req.user.id, 'Username:', req.user.username);
+
     try {
         const { id } = req.params;
         const { content } = req.body;
 
+        console.log('[REPLY] Ticket ID from params:', id);
+        console.log('[REPLY] Content:', content);
+
         if (!content || content.trim().length === 0) {
+            console.log('[REPLY] Empty content rejected');
             return res.status(400).json({ error: 'Reply content is required' });
         }
 
+        console.log('[REPLY] Finding ticket...');
         const ticket = await db.findTicketById(id);
 
         if (!ticket) {
+            console.log('[REPLY] Ticket not found:', id);
             return res.status(404).json({ error: 'Ticket not found' });
         }
 
-        const message = await db.createMessage(ticket.id, req.user.id, content, true);
+        console.log('[REPLY] Ticket found:', ticket.id, 'User ID:', ticket.user_id);
 
-        // Отправить SSE события
+        const message = await db.createMessage(ticket.id, req.user.id, content, true);
+        console.log('[REPLY] Message created:', message.id);
+
+        // Отправить SSE события админам
+        console.log('[REPLY] Sending to admins...');
         sse.send('admins', 'admin:message:new', {
             ticketId: ticket.id,
             message: {
@@ -152,9 +173,9 @@ async function replyToTicket(req, res) {
         });
 
         // Проверить подключение пользователя перед отправкой
-        console.log(`SSE: Checking connection for user ${ticket.user_id} (type: ${typeof ticket.user_id})`);
+        console.log(`[REPLY] Checking connection for user ${ticket.user_id} (type: ${typeof ticket.user_id})`);
         if (sse.isUserConnected(ticket.user_id)) {
-            console.log(`SSE: Sending user:message:new to user ${ticket.user_id}`);
+            console.log(`[REPLY] User ${ticket.user_id} is connected, sending message`);
             sse.sendToUser(ticket.user_id, 'user:message:new', {
                 ticketId: ticket.id,
                 message: {
@@ -163,16 +184,20 @@ async function replyToTicket(req, res) {
                 }
             });
         } else {
-            console.warn(`SSE: User ${ticket.user_id} not connected, message will be visible on next page load`);
-            console.warn(`SSE: Active users:`, sse.getConnectionStats());
+            console.warn(`[REPLY] User ${ticket.user_id} not connected, message will be visible on next page load`);
+            console.warn(`[REPLY] Active users:`, sse.getConnectionStats());
         }
 
         // Отправить уведомление пользователю
+        console.log('[REPLY] Sending Telegram notification...');
         await sendAdminReplyNotification(ticket, req.user.username, content);
+        console.log('[REPLY] Telegram notification sent');
 
         res.status(201).json({ message });
+        console.log('[REPLY] Response sent successfully');
     } catch (error) {
-        console.error('Reply to ticket error:', error);
+        console.error('[REPLY] Error:', error.message);
+        console.error('[REPLY] Stack:', error.stack);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
