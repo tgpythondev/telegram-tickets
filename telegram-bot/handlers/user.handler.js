@@ -1,5 +1,6 @@
 const api = require('../services/api.service');
 const session = require('../utils/session');
+const { checkRateLimit } = require('../utils/rateLimit');
 const {
     getMainMenuKeyboard,
     getTicketsListKeyboard,
@@ -195,6 +196,13 @@ async function handleCreateTicketStart(bot, chatId) {
         return;
     }
 
+    // Проверка rate limit для создания тикетов (1 в минуту)
+    const rateCheck = checkRateLimit(chatId, 'ticket');
+    if (!rateCheck.allowed) {
+        await bot.sendMessage(chatId, `⏳ Слишком много тикетов. Повторите через ${rateCheck.retryAfter} сек.`);
+        return;
+    }
+
     session.updateSession(chatId, {
         state: 'waiting_ticket_subject',
         tempData: {}
@@ -279,33 +287,44 @@ async function handleTicketMessage(bot, msg) {
 }
 
 // Завершение создания тикета
-async function handleTicketPriority(bot, chatId, priority) {
+async function handleTicketPriority(bot, chatId, priority, messageId) {
     const sess = session.getSession(chatId);
 
     if (!sess || sess.state !== 'waiting_ticket_priority') {
         return;
     }
 
-    await bot.sendMessage(chatId, '🔄 Создание тикета...');
+    // Используем edit если messageId передан
+    const sendMessage = messageId ? bot.editMessageText : bot.sendMessage;
+    const sendParams = messageId ? {
+        chat_id: chatId,
+        message_id: messageId
+    } : { chatId };
 
-    const result = await api.createTicket(
-        sess.accessToken,
-        sess.tempData.subject,
-        sess.tempData.message,
-        priority
-    );
+    const ticket = await (async () => {
+        await sendMessage('🔄 Создание тикета...', { ...sendParams, parse_mode: 'Markdown' });
 
-    if (!result.success) {
-        await bot.sendMessage(chatId, `❌ Ошибка: ${result.error}`);
-        session.updateSession(chatId, { state: 'idle', tempData: {} });
-        return;
-    }
+        const result = await api.createTicket(
+            sess.accessToken,
+            sess.tempData.subject,
+            sess.tempData.message,
+            priority
+        );
 
-    const ticket = result.data;
+        if (!result.success) {
+            await sendMessage(`❌ Ошибка: ${result.error}`, { ...sendParams, parse_mode: 'Markdown' });
+            session.updateSession(chatId, { state: 'idle', tempData: {} });
+            return null;
+        }
+
+        return result.data;
+    })();
+
+    if (!ticket) return;
 
     session.updateSession(chatId, { state: 'idle', tempData: {} });
 
-    await bot.sendMessage(chatId,
+    await sendMessage(
         `✅ *Тикет успешно создан!*\n\n` +
         `Номер: #${ticket.id}\n` +
         `Тема: ${ticket.subject}\n` +
@@ -313,6 +332,7 @@ async function handleTicketPriority(bot, chatId, priority) {
         `Администратор ответит в ближайшее время.\n` +
         `Вы получите уведомление, если включите их в настройках.`,
         {
+            ...sendParams,
             parse_mode: 'Markdown',
             reply_markup: getMainMenuKeyboard(sess.notificationsEnabled)
         }
@@ -352,6 +372,13 @@ async function handleTicketReply(bot, msg) {
 
     if (content.length < 1) {
         await bot.sendMessage(chatId, '❌ Сообщение не может быть пустым.');
+        return;
+    }
+
+    // Проверка rate limit для сообщений (15 сек)
+    const rateCheck = checkRateLimit(chatId, 'message');
+    if (!rateCheck.allowed) {
+        await bot.sendMessage(chatId, `⏳ Слишком много сообщений. Повторите через ${rateCheck.retryAfter} сек.`);
         return;
     }
 

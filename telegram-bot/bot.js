@@ -8,7 +8,7 @@ const userHandler = require('./handlers/user.handler');
 const adminHandler = require('./handlers/admin.handler');
 const { checkRateLimit } = require('./utils/rateLimit');
 const { validateCallbackData, validateTicketId, validateStatus, validatePriority, validateFilter, validateChatId } = require('./utils/validation');
-const { acquireLock, releaseLock } = require('./utils/fsmLock');
+const { acquireLock, releaseLock, setMessageToUpdate, getMessageToUpdate, clearMessageToUpdate } = require('./utils/fsmLock');
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BOT_MODE = process.env.BOT_MODE || 'polling'; // polling или webhook
@@ -136,6 +136,7 @@ bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
     const data = query.data;
     const userId = query.from.id;
+    const messageId = query.message.message_id;
 
     try {
         // Rate limiting для callback queries
@@ -264,15 +265,77 @@ bot.on('callback_query', async (query) => {
 
         // Auth callbacks
         if (data === 'auth_login') {
-            await bot.sendMessage(chatId,
-                'Для входа используйте:\n`/login username password`',
-                { parse_mode: 'Markdown' }
-            );
+            // Проверяем есть ли сессия с токеном
+            const sess = session.getSession(chatId);
+            if (sess && sess.accessToken) {
+                // Авто-авторизация - токен уже есть
+                await bot.answerCallbackQuery(query.id, {
+                    text: '🔄 Проверка сессии...',
+                    show_alert: false
+                });
+                await api.checkAuth(sess.accessToken).then(result => {
+                    if (result.success) {
+                        session.setSession(chatId, {
+                            userId: result.data.user.id,
+                            username: result.data.user.username,
+                            isAdmin: result.data.user.isAdmin,
+                            accessToken: sess.accessToken,
+                            notificationsEnabled: sess.notificationsEnabled || true,
+                            state: 'idle'
+                        });
+                        if (result.data.user.isAdmin) {
+                            bot.editMessageText(
+                                `✅ Уже авторизован как администратор!\n\n` +
+                                `Добро пожаловать, ${result.data.user.username}.`,
+                                {
+                                    chat_id: chatId,
+                                    message_id: messageId,
+                                    reply_markup: require('../keyboards/admin.keyboards').getAdminMenuKeyboard()
+                                }
+                            );
+                        } else {
+                            bot.editMessageText(
+                                `✅ Уже авторизован!\n\n` +
+                                `Добро пожаловать, ${result.data.user.username}.`,
+                                {
+                                    chat_id: chatId,
+                                    message_id: messageId,
+                                    reply_markup: require('../keyboards/user.keyboards').getMainMenuKeyboard(sess.notificationsEnabled || true)
+                                }
+                            );
+                        }
+                    } else {
+                        bot.editMessageText(
+                            '❌ Токен недействителен. Войдите заново через сайт или введите /login username password',
+                            {
+                                chat_id: chatId,
+                                message_id: messageId,
+                                reply_markup: require('../keyboards/user.keyboards').getStartKeyboard()
+                            }
+                        );
+                    }
+                }).catch(err => {
+                    bot.editMessageText(
+                        '❌ Ошибка проверки сессии. Войдите заново.',
+                        {
+                            chat_id: chatId,
+                            message_id: messageId,
+                            reply_markup: require('../keyboards/user.keyboards').getStartKeyboard()
+                        }
+                    );
+                });
+            } else {
+                // Нет токена - предложить ввести команду или открыть сайт
+                bot.answerCallbackQuery(query.id, {
+                    text: 'Введите /login username password или откройте сайт для авторизации',
+                    show_alert: true
+                });
+            }
         } else if (data === 'auth_register') {
-            await bot.sendMessage(chatId,
-                'Для регистрации используйте:\n`/register username password`',
-                { parse_mode: 'Markdown' }
-            );
+            bot.answerCallbackQuery(query.id, {
+                text: 'Введите /register username password для регистрации в боте',
+                show_alert: true
+            });
         } else if (data === 'auth_logout') {
             await authHandler.handleLogout(bot, chatId);
         } else if (data === 'help') {
@@ -346,6 +409,34 @@ bot.on('callback_query', async (query) => {
 });
 
 // ========== ОБРАБОТКА ТЕКСТОВЫХ СООБЩЕНИЙ (FSM) ==========
+// Храним ID сообщений для editMessageText
+
+// Отдельная функция для отправки/обновления сообщения
+async function sendOrEditMessage(bot, chatId, text, options = {}) {
+    const messageId = getMessageToUpdate(chatId);
+
+    if (messageId) {
+        // Обновляем существующее сообщение
+        try {
+            await bot.editMessageText(text, {
+                chat_id: chatId,
+                message_id: messageId,
+                ...options,
+                parse_mode: 'Markdown'
+            });
+            return messageId;
+        } catch (error) {
+            console.error('Failed to edit message:', error.message);
+            // Если не удалось отредактировать (например, устарело), отправляем новое
+            clearMessageToUpdate(chatId);
+        }
+    }
+
+    // Отправляем новое сообщение
+    const sentMessage = await bot.sendMessage(chatId, text, options);
+    setMessageToUpdate(chatId, sentMessage.message_id);
+    return sentMessage.message_id;
+}
 
 bot.on('message', async (msg) => {
     // Пропускаем команды (они обрабатываются отдельно)

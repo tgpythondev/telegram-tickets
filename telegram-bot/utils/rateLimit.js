@@ -6,7 +6,9 @@ const LIMITS = {
     command: { max: 10, window: 60000 },    // 10 команд в минуту
     callback: { max: 20, window: 60000 },   // 20 callbacks в минуту
     message: { max: 30, window: 60000 },    // 30 сообщений в минуту
-    login: { max: 5, window: 60000 }        // 5 попыток входа в минуту
+    login: { max: 5, window: 60000 },       // 5 попыток входа в минуту
+    ticket: { max: 1, window: 60000 },      // 1 тикет в минуту (предотвращение спама)
+    config_submit: { max: 1, window: 60000 } // 1 отправка в конфигураторе в минуту
 };
 
 function checkRateLimit(chatId, type = 'command') {

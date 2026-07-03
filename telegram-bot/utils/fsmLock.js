@@ -1,6 +1,7 @@
 // Управление блокировками для FSM
 
 const processingLocks = new Map();
+const messageUpdateMap = new Map(); // Для хранения ID сообщений к обновлению
 
 function acquireLock(chatId) {
     if (processingLocks.has(chatId)) {
@@ -25,7 +26,37 @@ setInterval(() => {
     }
 }, 10000);
 
+// ========== MESSAGE UPDATE MECHANISM ==========
+// Хранит ID последнего сообщения для каждого чата
+// Используется для editMessageText вместо sendMessage
+
+function setMessageToUpdate(chatId, messageId) {
+    const key = `update_${chatId}`;
+    messageUpdateMap.set(key, {
+        messageId,
+        timestamp: Date.now()
+    });
+}
+
+function getMessageToUpdate(chatId) {
+    const key = `update_${chatId}`;
+    const data = messageUpdateMap.get(key);
+    if (data && Date.now() - data.timestamp < 60000) { // 1 минута
+        return data.messageId;
+    }
+    return null;
+}
+
+function clearMessageToUpdate(chatId) {
+    const key = `update_${chatId}`;
+    messageUpdateMap.delete(key);
+}
+
+
 module.exports = {
     acquireLock,
-    releaseLock
+    releaseLock,
+    setMessageToUpdate,
+    getMessageToUpdate,
+    clearMessageToUpdate
 };

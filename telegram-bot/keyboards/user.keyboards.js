@@ -1,12 +1,14 @@
 // Клавиатуры для пользователей
 
+const WEBSITE_URL = process.env.FRONTEND_URL || 'https://telegram-bots.pl';
+
 // Клавиатура при /start (неавторизован)
 function getStartKeyboard() {
     return {
         inline_keyboard: [
             [
-                { text: 'Войти', callback_data: 'auth_login' },
-                { text: 'Регистрация', callback_data: 'auth_register' }
+                { text: '🔑 Войти через сайт', url: `${WEBSITE_URL}/auth.html` },
+                { text: '📝 Регистрация', callback_data: 'auth_register' }
             ],
             [
                 { text: '❓ Справка', callback_data: 'help' }
