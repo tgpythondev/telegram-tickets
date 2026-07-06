@@ -1,4 +1,20 @@
+# Dependencies
 node_modules/
+package-lock.json
+
+# Environment variables
 .env
+.env.local
+
+# Session data
 .sessions.json
+*.session
+.session.key
+
+# Logs
 *.log
+logs/
+
+# Temporary
+*.tmp
+*.temp

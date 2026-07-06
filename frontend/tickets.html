@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src https://telegram-bots-backend.onrender.com https://telegram-bots.pl; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src https://telegram-bots-backend.onrender.com https://telegram-bots.pl http://localhost:3000; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Мои тикеты | Telegram Боты</title>
+    <title>Мои тикеты | KALIANG</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -16,9 +15,9 @@
     <link rel="stylesheet" href="tickets.css">
 </head>
 <body>
-    <header>
+    <header id="site-header">
         <nav>
-            <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;">KALIANG</a></div>
+            <div class="logo"><a href="index.html">KALIANG</a></div>
             <ul class="nav-links">
                 <li><a href="index.html#services">Услуги</a></li>
                 <li><a href="index.html#portfolio">Портфолио</a></li>
@@ -26,89 +25,109 @@
         </nav>
     </header>
 
-    <div class="tickets-page">
-        <div class="user-header">
-            <div class="user-info">
-                <h1>Мои тикеты</h1>
-                <p>Добро пожаловать, <span id="username"></span></p>
+    <div class="tickets-app">
+        <!-- ── Sidebar ──────────────────────── -->
+        <aside class="tickets-sidebar">
+            <div class="sidebar-user">
+                <div class="sidebar-username" id="sidebar-username">Загрузка...</div>
+                <div class="sidebar-role">Клиент</div>
             </div>
-            <div class="header-actions">
-                <button class="btn btn-primary" id="create-ticket-btn">Создать тикет</button>
-                <button class="btn btn-logout" id="logout-btn">Выход</button>
-            </div>
-        </div>
 
-        <div class="tickets-container">
-            <!-- Telegram интеграция -->
-            <div class="telegram-section">
-                <h3>📱 Telegram интеграция</h3>
-                <div id="telegram-status">
-                    <p>Получайте уведомления о новых ответах прямо в Telegram!</p>
-                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                        <button class="btn" id="toggle-telegram-btn">🔔 Включить уведомления</button>
-                        <span id="telegram-status-text"></span>
-                    </div>
-                    <details style="margin-top: 1rem;">
-                        <summary style="cursor: pointer;">Как подключить?</summary>
-                        <ol style="margin-top: 0.5rem; line-height: 1.8;">
-                            <li>Найдите бота в Telegram (имя бота указано в настройках проекта)</li>
-                            <li>Напишите боту <code>/start</code></li>
-                            <li>Войдите используя ваш логин и пароль: <code>/login username password</code></li>
-                            <li>Нажмите кнопку "Включить уведомления" здесь или в боте</li>
-                        </ol>
-                    </details>
+            <div class="sidebar-create">
+                <button class="btn btn-primary" id="create-ticket-btn">+ Новый тикет</button>
+            </div>
+
+            <nav class="sidebar-filters">
+                <div class="filter-label">Фильтр</div>
+                <button class="filter-link active" data-filter="all">
+                    <span>Все</span>
+                    <span class="filter-count" id="count-all">0</span>
+                </button>
+                <button class="filter-link" data-filter="open">
+                    <span>Открытые</span>
+                    <span class="filter-count" id="count-open">0</span>
+                </button>
+                <button class="filter-link" data-filter="in_progress">
+                    <span>В работе</span>
+                    <span class="filter-count" id="count-progress">0</span>
+                </button>
+                <button class="filter-link" data-filter="closed">
+                    <span>Закрытые</span>
+                    <span class="filter-count" id="count-closed">0</span>
+                </button>
+            </nav>
+
+            <!-- Telegram integration -->
+            <div class="sidebar-telegram">
+                <div class="tg-status-row">
+                    <span class="tg-icon">📱</span>
+                    <span class="tg-status-text" id="tg-status-text">Загрузка...</span>
+                </div>
+                <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap;">
+                    <button class="btn tg-btn" id="bind-bot-btn">Привязать</button>
+                    <button class="btn tg-btn" id="toggle-telegram-btn">Уведомления</button>
+                </div>
+                <button class="tg-toggle-btn" id="tg-instructions-toggle">Как подключить? ↓</button>
+                <div class="tg-instructions" id="tg-instructions">
+                    <ol>
+                        <li>Нажмите "Привязать" и напишите боту <code>/start</code></li>
+                        <li>Войдите командой <code>/login username password</code></li>
+                        <li>Вернитесь и включите уведомления</li>
+                    </ol>
                 </div>
             </div>
 
-            <div class="tickets-header">
-                <h2>Список тикетов</h2>
-                <div class="filter-tabs">
-                    <button class="filter-btn active" data-filter="all">Все</button>
-                    <button class="filter-btn" data-filter="open">Открытые</button>
-                    <button class="filter-btn" data-filter="in_progress">В работе</button>
-                    <button class="filter-btn" data-filter="closed">Закрытые</button>
-                </div>
+            <div class="sidebar-footer">
+                <button class="btn btn-logout" id="logout-btn" style="width:100%;justify-content:center;">Выйти</button>
+            </div>
+        </aside>
+
+        <!-- ── Main ────────────────────────── -->
+        <main class="tickets-main">
+            <div class="tickets-main-header">
+                <h1 class="tickets-main-title">Мои тикеты</h1>
+                <span class="tickets-count" id="tickets-count"></span>
             </div>
 
-            <div id="loading" class="loading" style="display: none;">
-                <div class="skeleton-tickets"></div>
+            <div class="tickets-body" id="tickets-body">
+                <!-- skeleton / list rendered by JS -->
             </div>
-
-            <div class="tickets-list stagger-container" id="tickets-list"></div>
-        </div>
+        </main>
     </div>
 
-    <!-- Модальное окно просмотра тикета -->
-    <div class="modal" id="ticket-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <h3>Тикет</h3>
-                </div>
-                <button class="modal-close" onclick="Tickets.closeModal()">&times;</button>
+    <!-- ── Slide-out ticket panel ─────────── -->
+    <div class="ticket-panel-overlay" id="panel-overlay"></div>
+    <div class="ticket-panel" id="ticket-panel">
+        <div class="tp-header">
+            <div class="tp-header-info">
+                <div class="tp-subject" id="tp-subject">—</div>
+                <div class="tp-meta-row" id="tp-meta-row"></div>
             </div>
-            <div class="modal-body" id="modal-body"></div>
+            <button class="tp-close" id="tp-close">×</button>
         </div>
+        <div class="tp-assigned" id="tp-assigned" style="display:none;"></div>
+        <div class="tp-messages" id="tp-messages"></div>
+        <div id="tp-form-area"></div>
     </div>
 
-    <!-- Модальное окно создания тикета -->
-    <div class="modal" id="create-modal">
+    <!-- ── Create ticket modal ────────────── -->
+    <div class="modal create-modal" id="create-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">
-                    <h3>Создать тикет</h3>
-                </div>
-                <button class="modal-close" id="create-modal-close">&times;</button>
+                <div class="modal-title"><h3>Новый тикет</h3></div>
+                <button class="modal-close" id="create-modal-close">×</button>
             </div>
             <div class="modal-body">
-                <form id="create-ticket-form">
+                <form id="create-ticket-form" class="create-form">
                     <div class="form-group">
                         <label for="ticket-subject">Тема</label>
-                        <input type="text" id="ticket-subject" required maxlength="200" placeholder="Например: Сколько стоит бот?">
+                        <input type="text" id="ticket-subject" required maxlength="200"
+                               placeholder="Например: Сколько стоит бот для магазина?">
                     </div>
                     <div class="form-group">
                         <label for="ticket-message">Сообщение</label>
-                        <textarea id="ticket-message" required rows="6" placeholder="Опишите ваш вопрос..."></textarea>
+                        <textarea id="ticket-message" required rows="5"
+                                  placeholder="Опишите ваш вопрос или задачу..."></textarea>
                     </div>
                     <div class="form-group">
                         <label for="ticket-priority">Приоритет</label>
@@ -118,7 +137,9 @@
                             <option value="urgent">Срочный</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Создать тикет</button>
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                        Создать тикет
+                    </button>
                 </form>
             </div>
         </div>

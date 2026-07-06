@@ -6,451 +6,348 @@ let config = {
     shortDescription: '',
     detailedDescription: '',
     language: null,
-    hosting: {
-        type: null,
-        extraStorage: 0,
-        extraBandwidth: 0
-    },
+    hosting: { type: null, extraStorage: 0, extraBandwidth: 0 },
     priority: 'normal',
     priorityCost: 0,
     totalPrice: 0
 };
 
 let currentStep = 1;
-const totalSteps = 7;
+const totalSteps = 6;
 
-// Initialize
+// ── Init ───────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    initializeEventListeners();
-    updatePrice();
+    setupOptionRows();
+    setupTextareas();
+    setupExtraResources();
+    setupNavigation();
+    updateProgress();
+    updateLiveSummary();
+
+    // Sync both submit buttons
+    document.getElementById('cfs-order-btn').addEventListener('click', submitOrder);
 });
 
-// Initialize event listeners
-function initializeEventListeners() {
-    // Package selection
-    document.querySelectorAll('.package-card').forEach(card => {
-        card.addEventListener('click', () => selectPackage(card));
+// ── Option rows (packages, languages, hosting, priority) ──
+function setupOptionRows() {
+    // Package
+    document.querySelectorAll('#package-list .cfg-option-row').forEach(row => {
+        row.addEventListener('click', () => {
+            selectRow('#package-list', row);
+            config.package = row.dataset.package;
+            config.packagePriceMin = parseInt(row.dataset.priceMin);
+            config.packagePriceMax = parseInt(row.dataset.priceMax);
+            updatePrice();
+        });
     });
 
-    // Language selection
-    document.querySelectorAll('.language-card').forEach(card => {
-        card.addEventListener('click', () => selectLanguage(card));
+    // Language
+    document.querySelectorAll('#language-list .cfg-option-row').forEach(row => {
+        row.addEventListener('click', () => {
+            selectRow('#language-list', row);
+            config.language = row.dataset.language;
+            updateLiveSummary();
+        });
     });
 
-    // Hosting selection
-    document.querySelectorAll('.hosting-card').forEach(card => {
-        card.addEventListener('click', () => selectHosting(card));
+    // Hosting
+    document.querySelectorAll('#hosting-list .cfg-option-row').forEach(row => {
+        row.addEventListener('click', () => {
+            selectRow('#hosting-list', row);
+            config.hosting.type = row.dataset.hosting;
+            const extras = document.getElementById('extra-resources');
+            if (config.hosting.type === 'paid') {
+                extras.style.display = 'flex';
+            } else {
+                extras.style.display = 'none';
+                config.hosting.extraStorage = 0;
+                config.hosting.extraBandwidth = 0;
+                document.getElementById('extra-storage').value = 0;
+                document.getElementById('extra-bandwidth').value = 0;
+            }
+            updatePrice();
+        });
     });
 
-    // Priority selection
-    document.querySelectorAll('.priority-card').forEach(card => {
-        card.addEventListener('click', () => selectPriority(card));
+    // Priority — pre-select Normal
+    const normalRow = document.querySelector('#priority-list .cfg-option-row[data-priority="normal"]');
+    if (normalRow) {
+        selectRow('#priority-list', normalRow);
+    }
+
+    document.querySelectorAll('#priority-list .cfg-option-row').forEach(row => {
+        row.addEventListener('click', () => {
+            selectRow('#priority-list', row);
+            config.priority = row.dataset.priority;
+            config.priorityCost = parseInt(row.dataset.cost) || 0;
+            updatePrice();
+        });
     });
+}
 
-    // Description fields
-    const shortDesc = document.getElementById('short-description');
-    const detailedDesc = document.getElementById('detailed-description');
+function selectRow(listSelector, selectedRow) {
+    document.querySelectorAll(`${listSelector} .cfg-option-row`).forEach(r => r.classList.remove('selected'));
+    selectedRow.classList.add('selected');
+}
 
-    shortDesc.addEventListener('input', (e) => {
+// ── Textareas ──────────────────────────────
+function setupTextareas() {
+    const shortInput = document.getElementById('short-description');
+    const detailInput = document.getElementById('detailed-description');
+
+    shortInput.addEventListener('input', e => {
         config.shortDescription = e.target.value;
         document.getElementById('short-counter').textContent = e.target.value.length;
     });
 
-    detailedDesc.addEventListener('input', (e) => {
+    detailInput.addEventListener('input', e => {
         config.detailedDescription = e.target.value;
         document.getElementById('detailed-counter').textContent = e.target.value.length;
     });
+}
 
-    // Extra resources
-    document.getElementById('extra-storage').addEventListener('input', (e) => {
+// ── Extra resources ────────────────────────
+function setupExtraResources() {
+    document.getElementById('extra-storage').addEventListener('input', e => {
         config.hosting.extraStorage = parseInt(e.target.value) || 0;
         updatePrice();
     });
-
-    document.getElementById('extra-bandwidth').addEventListener('input', (e) => {
+    document.getElementById('extra-bandwidth').addEventListener('input', e => {
         config.hosting.extraBandwidth = parseInt(e.target.value) || 0;
         updatePrice();
     });
-
-    // Navigation buttons
-    document.getElementById('btn-back').addEventListener('click', () => previousStep());
-    document.getElementById('btn-next').addEventListener('click', () => nextStep());
-    document.getElementById('btn-submit').addEventListener('click', () => submitOrder());
 }
 
-// Package selection
-function selectPackage(card) {
-    document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-
-    config.package = card.dataset.package;
-    config.packagePriceMin = parseInt(card.dataset.priceMin);
-    config.packagePriceMax = parseInt(card.dataset.priceMax);
-
-    updatePrice();
-}
-
-// Language selection
-function selectLanguage(card) {
-    document.querySelectorAll('.language-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-
-    config.language = card.dataset.language;
-}
-
-// Hosting selection
-function selectHosting(card) {
-    document.querySelectorAll('.hosting-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-
-    config.hosting.type = card.dataset.hosting;
-
-    // Show extra resources only for paid hosting
-    const extraResources = document.getElementById('extra-resources');
-    if (config.hosting.type === 'paid') {
-        extraResources.style.display = 'block';
-    } else {
-        extraResources.style.display = 'none';
-        config.hosting.extraStorage = 0;
-        config.hosting.extraBandwidth = 0;
-        document.getElementById('extra-storage').value = 0;
-        document.getElementById('extra-bandwidth').value = 0;
-    }
-
-    updatePrice();
-}
-
-// Priority selection
-function selectPriority(card) {
-    document.querySelectorAll('.priority-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-
-    config.priority = card.dataset.priority;
-    config.priorityCost = parseInt(card.dataset.cost);
-
-    updatePrice();
-}
-
-// Calculate total price
-function calculatePrice() {
-    let basePrice = config.packagePriceMin;
-
-    // Hosting costs
-    if (config.hosting.type === 'paid') {
-        // For Standard package, paid hosting increases base price
-        if (config.package === 'Standard') {
-            basePrice = 30;
+// ── Navigation ─────────────────────────────
+function setupNavigation() {
+    document.getElementById('btn-next').addEventListener('click', () => {
+        if (!validateStep(currentStep)) return;
+        if (currentStep < totalSteps) {
+            currentStep++;
+            showStep(currentStep);
         }
-        // Extra resources
-        basePrice += config.hosting.extraStorage * 3;
-        basePrice += config.hosting.extraBandwidth * 1;
-    }
+    });
 
-    // Priority cost
-    basePrice += config.priorityCost;
+    document.getElementById('btn-back').addEventListener('click', () => {
+        if (currentStep > 1) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    });
 
-    return basePrice;
+    document.getElementById('btn-submit').addEventListener('click', submitOrder);
 }
 
-// Update price display
-function updatePrice() {
-    const price = calculatePrice();
-    config.totalPrice = price;
+function showStep(n) {
+    document.querySelectorAll('.cfg-step').forEach(s => s.classList.remove('active'));
+    document.getElementById(`step-${n}`).classList.add('active');
 
-    const priceValue = document.getElementById('price-value');
+    updateProgress();
+    updateNavButtons(n);
+    if (n === totalSteps) buildSummaryStep();
 
-    if (config.package === 'Custom') {
-        priceValue.textContent = `от $${price}`;
-    } else {
-        priceValue.textContent = `$${price}`;
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Validate current step
-function validateStep(step) {
-    switch(step) {
+function updateProgress() {
+    const pct = ((currentStep - 1) / (totalSteps - 1)) * 100;
+    document.getElementById('cfg-progress-fill').style.width = pct + '%';
+    document.getElementById('cfg-progress-text').textContent = `Шаг ${currentStep} / ${totalSteps}`;
+    document.getElementById('nav-step-label').textContent = `${currentStep} / ${totalSteps}`;
+}
+
+function updateNavButtons(n) {
+    const backBtn   = document.getElementById('btn-back');
+    const nextBtn   = document.getElementById('btn-next');
+    const submitBtn = document.getElementById('btn-submit');
+    const cfsSend   = document.getElementById('cfs-order-btn');
+
+    backBtn.style.display   = n === 1 ? 'none' : 'inline-flex';
+    nextBtn.style.display   = n === totalSteps ? 'none' : 'inline-flex';
+    submitBtn.style.display = n === totalSteps ? 'inline-flex' : 'none';
+
+    cfsSend.disabled = n !== totalSteps;
+}
+
+// ── Validate ───────────────────────────────
+function validateStep(n) {
+    switch (n) {
         case 1:
-            if (!config.package) {
-                alert('Пожалуйста, выберите пакет');
-                return false;
-            }
+            if (!config.package) { showError('Выберите пакет'); return false; }
             return true;
-
         case 2:
-            if (!config.shortDescription.trim()) {
-                alert('Пожалуйста, введите краткое описание');
-                return false;
-            }
-            if (config.shortDescription.length < 10) {
-                alert('Краткое описание должно содержать минимум 10 символов');
-                return false;
-            }
+            if (!config.shortDescription.trim()) { showError('Введите краткое описание'); return false; }
+            if (config.shortDescription.length < 5) { showError('Минимум 5 символов'); return false; }
             return true;
-
         case 3:
-            if (!config.detailedDescription.trim()) {
-                alert('Пожалуйста, введите подробное описание');
-                return false;
-            }
-            if (config.detailedDescription.length < 50) {
-                alert('Подробное описание должно содержать минимум 50 символов');
-                return false;
-            }
+            if (!config.language) { showError('Выберите язык программирования'); return false; }
             return true;
-
         case 4:
-            if (!config.language) {
-                alert('Пожалуйста, выберите язык программирования');
-                return false;
-            }
+            if (!config.hosting.type) { showError('Выберите вариант хостинга'); return false; }
             return true;
-
-        case 5:
-            if (!config.hosting.type) {
-                alert('Пожалуйста, выберите вариант хостинга');
-                return false;
-            }
-            return true;
-
-        case 6:
-            // Priority has default value
-            return true;
-
         default:
             return true;
     }
 }
 
-// Next step
-function nextStep() {
-    if (!validateStep(currentStep)) {
-        return;
+// ── Price ──────────────────────────────────
+function calculatePrice() {
+    let base = config.packagePriceMin;
+    if (config.hosting.type === 'paid') {
+        if (config.package === 'Standard') base = 30;
+        base += config.hosting.extraStorage * 3;
+        base += config.hosting.extraBandwidth * 1;
     }
+    base += config.priorityCost;
+    return base;
+}
 
-    if (currentStep < totalSteps) {
-        currentStep++;
-        showStep(currentStep);
+function updatePrice() {
+    const price = calculatePrice();
+    config.totalPrice = price;
+    const str = config.package === 'Custom' ? `от $${price}` : `$${price}`;
+    setLive('live-price', str);
+    const el = document.getElementById('live-price');
+    if (el) el.textContent = str;
+    updateLiveSummary();
+}
+
+function updateLiveSummary() {
+    setLive('live-package',  config.package   || '—',  !!config.package);
+    setLive('live-language', config.language  || '—',  !!config.language);
+
+    let hostingStr = '—';
+    if (config.hosting.type === 'free')  hostingStr = 'Бесплатный';
+    else if (config.hosting.type === 'paid')  hostingStr = 'Платный ($5/мес)';
+    else if (config.hosting.type === 'none')  hostingStr = 'Свой сервер';
+    setLive('live-hosting', hostingStr, !!config.hosting.type);
+
+    const prNames = { normal: 'Обычный', high: 'Высокий', urgent: 'Срочный' };
+    setLive('live-priority', prNames[config.priority] || '—', true);
+
+    const price = calculatePrice();
+    const priceStr = config.package === 'Custom' ? `от $${price}` : `$${price}`;
+
+    const livePriceEl = document.getElementById('cfs-price') || document.getElementById('live-price');
+    // The summary panel's price element
+    const cfsPriceEl = document.querySelector('.cfs-price');
+    if (cfsPriceEl) cfsPriceEl.textContent = priceStr;
+}
+
+function setLive(id, val, filled) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val;
+    if (filled !== undefined) {
+        el.classList.toggle('filled', filled);
     }
 }
 
-// Previous step
-function previousStep() {
-    if (currentStep > 1) {
-        currentStep--;
-        showStep(currentStep);
+// ── Build final summary ────────────────────
+function buildSummaryStep() {
+    document.getElementById('sum-package').textContent  = config.package || '—';
+    document.getElementById('sum-short').textContent    = config.shortDescription
+        ? config.shortDescription.slice(0, 80) + (config.shortDescription.length > 80 ? '…' : '')
+        : '—';
+    document.getElementById('sum-language').textContent = config.language || '—';
+
+    let hostingStr = '—';
+    if (config.hosting.type === 'free') hostingStr = 'Бесплатный';
+    else if (config.hosting.type === 'paid') {
+        hostingStr = 'Платный ($5/мес)';
+        if (config.hosting.extraStorage > 0) hostingStr += ` +${config.hosting.extraStorage} ГБ`;
+        if (config.hosting.extraBandwidth > 0) hostingStr += ` +${config.hosting.extraBandwidth} ГБ трафика`;
+    } else if (config.hosting.type === 'none') {
+        hostingStr = 'Свой сервер';
     }
-}
+    document.getElementById('sum-hosting').textContent = hostingStr;
 
-// Show specific step
-function showStep(step) {
-    // Hide all steps
-    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const prNames = { normal: 'Обычный', high: 'Высокий (+$10)', urgent: 'Срочный (+$30)' };
+    document.getElementById('sum-priority').textContent = prNames[config.priority] || '—';
 
-    // Show current step
-    document.getElementById(`step-${step}`).classList.add('active');
+    const price = calculatePrice();
+    document.getElementById('sum-total').textContent = config.package === 'Custom' ? `от $${price}` : `$${price}`;
 
-    // Update progress
-    updateProgress(step);
-
-    // Update buttons
-    updateButtons(step);
-
-    // Update summary if on last step
-    if (step === 7) {
-        updateSummary();
-    }
-
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Update progress indicator
-function updateProgress(step) {
-    // Update step indicators
-    document.querySelectorAll('.progress-step').forEach((el, index) => {
-        const stepNum = index + 1;
-        el.classList.remove('active', 'completed');
-
-        if (stepNum === step) {
-            el.classList.add('active');
-        } else if (stepNum < step) {
-            el.classList.add('completed');
-        }
-    });
-
-    // Update progress line
-    const progressLine = document.getElementById('progress-line');
-    const percentage = ((step - 1) / (totalSteps - 1)) * 100;
-    progressLine.style.width = `${percentage}%`;
-
-    // Update progress text
-    const stepNames = [
-        'Выбор пакета',
-        'Краткое описание',
-        'Подробное описание',
-        'Язык программирования',
-        'Хостинг',
-        'Приоритет',
-        'Подтверждение'
-    ];
-
-    document.getElementById('progress-text').textContent = `Шаг ${step} из ${totalSteps}: ${stepNames[step - 1]}`;
-}
-
-// Update navigation buttons
-function updateButtons(step) {
-    const btnBack = document.getElementById('btn-back');
-    const btnNext = document.getElementById('btn-next');
-    const btnSubmit = document.getElementById('btn-submit');
-
-    // Back button
-    if (step === 1) {
-        btnBack.style.display = 'none';
+    // Detailed description spoiler
+    const details = document.getElementById('desc-details');
+    const detailContent = document.getElementById('sum-detailed');
+    if (config.detailedDescription.trim()) {
+        details.style.display = '';
+        detailContent.textContent = config.detailedDescription;
     } else {
-        btnBack.style.display = 'inline-block';
-    }
-
-    // Next/Submit buttons
-    if (step === totalSteps) {
-        btnNext.style.display = 'none';
-        btnSubmit.style.display = 'inline-block';
-    } else {
-        btnNext.style.display = 'inline-block';
-        btnSubmit.style.display = 'none';
+        details.style.display = 'none';
     }
 }
 
-// Update summary
-function updateSummary() {
-    document.getElementById('summary-package').textContent = config.package;
-    document.getElementById('summary-short').textContent = config.shortDescription.substring(0, 50) + (config.shortDescription.length > 50 ? '...' : '');
-    document.getElementById('summary-language').textContent = config.language;
-
-    // Hosting
-    let hostingText = '';
-    if (config.hosting.type === 'free') {
-        hostingText = 'Бесплатный (входит в пакет)';
-    } else if (config.hosting.type === 'paid') {
-        hostingText = 'Платный ($5/мес)';
-        if (config.hosting.extraStorage > 0) {
-            hostingText += ` + ${config.hosting.extraStorage} ГБ места`;
-        }
-        if (config.hosting.extraBandwidth > 0) {
-            hostingText += ` + ${config.hosting.extraBandwidth} ГБ трафика`;
-        }
-    } else {
-        hostingText = 'Без хостинга';
-    }
-    document.getElementById('summary-hosting').textContent = hostingText;
-
-    // Priority
-    const priorityNames = {
-        'normal': 'Нормальный',
-        'high': 'Высокий (+$10)',
-        'urgent': 'Срочный (+$30)'
-    };
-    document.getElementById('summary-priority').textContent = priorityNames[config.priority];
-
-    // Total price
-    document.getElementById('summary-total').textContent = config.package === 'Custom'
-        ? `от $${config.totalPrice}`
-        : `$${config.totalPrice}`;
-}
-
-// Submit order
+// ── Submit order ───────────────────────────
 async function submitOrder() {
     try {
-        // Check authentication
         const user = await checkAuth();
         if (!user) {
-            // Не сохраняем конфигурацию в sessionStorage (XSS уязвимость)
-            // Вместо этого просто перенаправляем на авторизацию
-            alert('Пожалуйста, войдите в систему для оформления заказа');
-            window.location.href = '/auth.html?redirect=configurator';
+            showError('Войдите в систему для оформления заказа');
+            setTimeout(() => { window.location.href = '/auth.html'; }, 1500);
             return;
         }
 
-        // Show loading
         document.getElementById('loading-overlay').classList.add('active');
 
-        // Prepare ticket data
         const subject = `Заказ бота: ${config.package}`;
-        const initialMessage = 'Automatically generated from configurator'; // Will be replaced by backend
+        const initialMessage = 'Заказ создан через конфигуратор';
 
-        // Create ticket with order config
         await API.createTicket(subject, initialMessage, config.priority, config);
-
-        // Redirect to tickets page
         window.location.href = 'tickets.html';
-
-    } catch (error) {
-        console.error('Submit order error:', error);
+    } catch (err) {
+        console.error('Submit order error:', err);
         document.getElementById('loading-overlay').classList.remove('active');
-        alert('Ошибка при создании заказа: ' + error.message);
+        showError('Ошибка создания заказа: ' + err.message);
     }
 }
 
-// Check if there's a pending order from sessionStorage
+// Restore from pending order in sessionStorage
 window.addEventListener('load', () => {
-    const pendingOrder = sessionStorage.getItem('pendingOrder');
-    if (pendingOrder) {
-        config = JSON.parse(pendingOrder);
-        sessionStorage.removeItem('pendingOrder');
-
-        // Restore UI state
-        restoreConfigState();
-
-        // Go to last step (confirmation)
-        currentStep = 7;
-        showStep(currentStep);
-
-        alert('Теперь вы можете подтвердить ваш заказ');
+    const pending = sessionStorage.getItem('pendingOrder');
+    if (pending) {
+        try {
+            config = JSON.parse(pending);
+            sessionStorage.removeItem('pendingOrder');
+            restoreConfigState();
+            currentStep = totalSteps;
+            showStep(currentStep);
+        } catch (_) {}
     }
 });
 
-// Restore config state to UI
 function restoreConfigState() {
-    // Select package
     if (config.package) {
-        const packageCard = document.querySelector(`.package-card[data-package="${config.package}"]`);
-        if (packageCard) selectPackage(packageCard);
+        const row = document.querySelector(`#package-list .cfg-option-row[data-package="${config.package}"]`);
+        if (row) { selectRow('#package-list', row); updatePrice(); }
     }
-
-    // Set descriptions
     if (config.shortDescription) {
-        document.getElementById('short-description').value = config.shortDescription;
+        const el = document.getElementById('short-description');
+        el.value = config.shortDescription;
         document.getElementById('short-counter').textContent = config.shortDescription.length;
     }
-
     if (config.detailedDescription) {
-        document.getElementById('detailed-description').value = config.detailedDescription;
+        const el = document.getElementById('detailed-description');
+        el.value = config.detailedDescription;
         document.getElementById('detailed-counter').textContent = config.detailedDescription.length;
     }
-
-    // Select language
     if (config.language) {
-        const languageCard = document.querySelector(`.language-card[data-language="${config.language}"]`);
-        if (languageCard) selectLanguage(languageCard);
+        const row = document.querySelector(`#language-list .cfg-option-row[data-language="${config.language}"]`);
+        if (row) selectRow('#language-list', row);
     }
-
-    // Select hosting
     if (config.hosting.type) {
-        const hostingCard = document.querySelector(`.hosting-card[data-hosting="${config.hosting.type}"]`);
-        if (hostingCard) selectHosting(hostingCard);
-
-        if (config.hosting.extraStorage > 0) {
+        const row = document.querySelector(`#hosting-list .cfg-option-row[data-hosting="${config.hosting.type}"]`);
+        if (row) selectRow('#hosting-list', row);
+        if (config.hosting.type === 'paid') {
+            document.getElementById('extra-resources').style.display = 'flex';
             document.getElementById('extra-storage').value = config.hosting.extraStorage;
-        }
-        if (config.hosting.extraBandwidth > 0) {
             document.getElementById('extra-bandwidth').value = config.hosting.extraBandwidth;
         }
     }
-
-    // Select priority
     if (config.priority) {
-        const priorityCard = document.querySelector(`.priority-card[data-priority="${config.priority}"]`);
-        if (priorityCard) selectPriority(priorityCard);
+        const row = document.querySelector(`#priority-list .cfg-option-row[data-priority="${config.priority}"]`);
+        if (row) selectRow('#priority-list', row);
     }
-
     updatePrice();
 }

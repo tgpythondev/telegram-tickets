@@ -3,142 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src https://telegram-bots-backend.onrender.com https://telegram-bots.pl; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src https://telegram-bots-backend.onrender.com https://telegram-bots.pl http://localhost:3000; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Админ панель | Telegram Боты</title>
+    <title>Админ | KALIANG</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="../tickets.css">
     <link rel="stylesheet" href="dashboard.css">
 </head>
-<body>
-    <header>
-        <nav>
-            <div class="logo"><a href="../index.html" style="color: inherit; text-decoration: none;">KALIANG</a></div>
-            <button class="mobile-menu-toggle" aria-label="Меню">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <ul class="nav-links">
-                <li><a href="../index.html#services">Услуги</a></li>
-                <li><a href="../index.html#portfolio">Портфолио</a></li>
-                <li><a href="../auth.html" class="nav-cta">Вход / Регистрация</a></li>
-            </ul>
-        </nav>
-    </header>
+<body class="admin-body">
 
-    <div class="admin-page">
-        <div class="admin-header">
-            <div class="admin-title">
-                <h1>Панель администратора</h1>
-                <p>Добро пожаловать, <span id="admin-username"></span></p>
-            </div>
-            <div class="header-actions">
-                <button class="btn btn-logout" id="logout-btn">Выход</button>
-            </div>
-        </div>
+    <!-- ── Admin layout ───────────────────── -->
+    <div class="admin-layout">
 
-        <!-- Улучшенная статистика -->
-        <div class="stats-enhanced">
-            <div class="stat-card">
-                <div class="stat-icon">🟢</div>
-                <div class="stat-details">
-                    <div class="stat-number" id="stat-open">0</div>
-                    <div class="stat-label">Открытые</div>
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="asb-top">
+                <a href="../index.html" class="asb-logo">KALIANG<span class="logo-dot">·</span></a>
+                <div class="asb-user">
+                    <span class="asb-username" id="admin-username">—</span>
+                    <span class="asb-badge">ADMIN</span>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">🟡</div>
-                <div class="stat-details">
-                    <div class="stat-number" id="stat-progress">0</div>
-                    <div class="stat-label">В работе</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⚫</div>
-                <div class="stat-details">
-                    <div class="stat-number" id="stat-closed">0</div>
-                    <div class="stat-label">Закрытые</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-details">
-                    <div class="stat-number" id="stat-total">0</div>
-                    <div class="stat-label">Всего</div>
-                </div>
-            </div>
-        </div>
 
-        <div class="admin-container">
+            <nav class="asb-nav">
+                <a class="asb-nav-item active" href="#">
+                    <span class="asb-nav-icon">☰</span> Тикеты
+                </a>
+            </nav>
+
+            <div class="asb-bottom">
+                <button class="asb-logout" id="logout-btn">← Выйти</button>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="admin-main">
+
+            <!-- Stats bar -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-num" id="stat-open">—</span>
+                    <span class="stat-lbl">ОТКРЫТЫЕ</span>
+                </div>
+                <div class="stat-sep"></div>
+                <div class="stat-item">
+                    <span class="stat-num" id="stat-progress">—</span>
+                    <span class="stat-lbl">В РАБОТЕ</span>
+                </div>
+                <div class="stat-sep"></div>
+                <div class="stat-item">
+                    <span class="stat-num" id="stat-closed">—</span>
+                    <span class="stat-lbl">ЗАКРЫТЫЕ</span>
+                </div>
+                <div class="stat-sep"></div>
+                <div class="stat-item">
+                    <span class="stat-num" id="stat-total">—</span>
+                    <span class="stat-lbl">ВСЕГО</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
             <div class="admin-controls">
-                <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="all">Все</button>
-                    <button class="filter-tab" data-filter="open">Открытые</button>
-                    <button class="filter-tab" data-filter="in_progress">В работе</button>
-                    <button class="filter-tab" data-filter="mine">Мои</button>
+                <div class="adm-filter-tabs">
+                    <button class="adm-filter-tab active" data-filter="all">Все</button>
+                    <button class="adm-filter-tab" data-filter="open">Открытые</button>
+                    <button class="adm-filter-tab" data-filter="in_progress">В работе</button>
+                    <button class="adm-filter-tab" data-filter="mine">Мои</button>
                 </div>
-                <input type="text" id="search-box" class="search-box" placeholder="Поиск по тикетам...">
+                <input type="text" id="search-box" class="adm-search" placeholder="Поиск по тикетам…" autocomplete="off">
             </div>
 
-            <div id="loading" class="loading" style="display: none;">
+            <!-- Loading -->
+            <div id="loading" class="adm-loading" style="display:none;">
                 <div class="loading-spinner"></div>
-                <p>Загрузка тикетов...</p>
             </div>
 
-            <!-- Desktop: таблица -->
-            <table class="tickets-table desktop-only">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Тема</th>
-                        <th>Пользователь</th>
-                        <th>Статус</th>
-                        <th>Приоритет</th>
-                        <th>Назначен</th>
-                        <th>Дата</th>
-                    </tr>
-                </thead>
-                <tbody id="tickets-tbody"></tbody>
-            </table>
+            <!-- Desktop table -->
+            <div class="adm-table-wrap desktop-only">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Тема</th>
+                            <th>Пользователь</th>
+                            <th>Статус</th>
+                            <th>Приоритет</th>
+                            <th>Назначен</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tickets-tbody"></tbody>
+                </table>
+            </div>
 
-            <!-- Mobile: карточки -->
+            <!-- Mobile cards -->
             <div class="tickets-cards mobile-only" id="tickets-cards"></div>
         </div>
     </div>
 
-    <!-- Модальное окно тикета -->
-    <div class="modal" id="ticket-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <h3>Детали тикета</h3>
-                </div>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+    <!-- ── Slide-out ticket panel ─────────── -->
+    <div class="adm-panel-overlay" id="adm-panel-overlay"></div>
+    <div class="adm-panel" id="adm-panel">
+        <div class="adm-panel-header">
+            <div class="adm-panel-header-info">
+                <div class="adm-panel-subject" id="adm-panel-subject">—</div>
+                <div class="adm-panel-meta" id="adm-panel-meta"></div>
             </div>
-            <div class="admin-modal-body" id="admin-modal-body"></div>
+            <button class="adm-panel-close" id="adm-panel-close">×</button>
+        </div>
+
+        <div class="adm-panel-body" id="admin-modal-body">
+            <!-- rendered by JS -->
         </div>
     </div>
 
-    <!-- Toast notifications -->
+    <!-- Toast -->
     <div id="toast-container"></div>
-
-    <footer>
-        <div class="footer-content">
-            <div class="footer-logo">KALIANG</div>
-            <div class="footer-links">
-                <a href="https://t.me/Kaliang_dev" target="_blank" rel="noopener">Telegram</a>
-                <a href="../auth.html">Поддержка</a>
-            </div>
-            <p class="footer-copyright">© 2026 Kaliang. Все права защищены.</p>
-        </div>
-    </footer>
 
     <script src="../script.js"></script>
     <script src="../api.js"></script>

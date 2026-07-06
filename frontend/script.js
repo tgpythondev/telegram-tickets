@@ -1,62 +1,55 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Mobile menu toggle
-    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
+    // ── Header scroll state ─────────────────
+    const header = document.getElementById('site-header');
+    if (header) {
+        const onScroll = () => {
+            header.classList.toggle('scrolled', window.scrollY > 20);
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
 
-    if (mobileMenuToggle) {
-        mobileMenuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            mobileMenuToggle.classList.toggle('active');
-            document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+    // ── Mobile menu toggle ──────────────────
+    const menuToggle = document.getElementById('menu-toggle');
+    const navLinks   = document.getElementById('nav-links');
+
+    if (menuToggle && navLinks) {
+        menuToggle.addEventListener('click', () => {
+            const open = navLinks.classList.toggle('active');
+            menuToggle.classList.toggle('active', open);
+            menuToggle.setAttribute('aria-expanded', String(open));
+            menuToggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+            document.body.style.overflow = open ? 'hidden' : '';
         });
 
         navLinks.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 navLinks.classList.remove('active');
-                mobileMenuToggle.classList.remove('active');
+                menuToggle.classList.remove('active');
+                menuToggle.setAttribute('aria-expanded', 'false');
+                menuToggle.setAttribute('aria-label', 'Открыть меню');
                 document.body.style.overflow = '';
             });
         });
 
-        document.addEventListener('click', (e) => {
-            if (!mobileMenuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+        document.addEventListener('click', e => {
+            if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
                 navLinks.classList.remove('active');
-                mobileMenuToggle.classList.remove('active');
+                menuToggle.classList.remove('active');
+                menuToggle.setAttribute('aria-expanded', 'false');
                 document.body.style.overflow = '';
             }
         });
     }
 
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+    // ── Smooth scroll for anchor links ──────
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const target = document.querySelector(a.getAttribute('href'));
             if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
     });
-
-    // Header scrolled state
-    const header = document.querySelector('header');
-
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
-    });
-
-    // Portfolio watch button
-    const btnWatch = document.getElementById('btn-watch');
-    if (btnWatch) {
-        btnWatch.addEventListener('click', () => {
-            window.location.href = 'portfolio.html';
-        });
-    }
 });

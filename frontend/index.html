@@ -6,102 +6,348 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Telegram Боты на Заказ | Kaliang</title>
+    <meta name="description" content="Разработка Telegram-ботов под заказ. От $3. Python, JavaScript, Go. Быстро, чисто, с документацией.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <header>
+    <!-- ── Header ─────────────────────────── -->
+    <header id="site-header">
         <nav>
             <div class="logo">KALIANG</div>
-            <button class="mobile-menu-toggle" aria-label="Открыть меню">
-                <span></span>
-                <span></span>
-                <span></span>
+            <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Открыть меню" aria-expanded="false">
+                <span></span><span></span><span></span>
             </button>
-            <ul class="nav-links">
+            <ul class="nav-links" id="nav-links">
                 <li><a href="#services">Услуги</a></li>
+                <li><a href="#process">Процесс</a></li>
                 <li><a href="#portfolio">Портфолио</a></li>
-                <li><a href="auth.html" class="nav-cta">Вход / Регистрация</a></li>
+                <li><a href="#pricing">Цены</a></li>
+                <li><a href="auth.html" class="nav-cta">Войти</a></li>
             </ul>
         </nav>
     </header>
 
-    <section class="hero fade-in-up">
-        <div class="hero-content">
-            <h1>Создание Telegram Ботов<br>на Заказ</h1>
-            <p>Автоматизация бизнеса через умных ботов.<br>От идеи до запуска.</p>
-            <div class="cta-buttons">
-                <a href="configurator.html" class="cta-button primary magnetic-btn liquid-border">Перейти к конфигурации</a>
-                <a href="auth.html" class="cta-button secondary magnetic-btn liquid-border">Создать тикет</a>
+    <!-- ── Hero ───────────────────────────── -->
+    <section class="hero">
+        <div class="hero-inner section-container">
+            <div class="hero-left">
+                <span class="eyebrow eyebrow-border">TELEGRAM BOT DEVELOPMENT</span>
+                <h1 class="hero-title">
+                    Боты, которые<br>
+                    <span class="hero-title-outline">работают</span>
+                </h1>
+                <p class="hero-sub">Автоматизация бизнеса через умных ботов.<br>От идеи до запуска — под ключ.</p>
+                <div class="hero-actions">
+                    <a href="configurator.html" class="btn btn-primary magnetic-btn">Настроить заказ</a>
+                    <a href="auth.html" class="btn btn-ghost magnetic-btn">Создать тикет</a>
+                </div>
+                <div class="hero-social-proof">
+                    <span>5+ ботов запущено</span>
+                    <span class="proof-dot">·</span>
+                    <span>Python · JS · Go</span>
+                    <span class="proof-dot">·</span>
+                    <span>Ответ в течение дня</span>
+                </div>
             </div>
-        </div>
-        <div class="hero-visual">
-            <div class="bot-icon">
-                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="2" fill="none"/>
-                    <circle cx="35" cy="40" r="5" fill="currentColor"/>
-                    <circle cx="65" cy="40" r="5" fill="currentColor"/>
-                    <path d="M 30 60 Q 50 70 70 60" stroke="currentColor" stroke-width="2" fill="none"/>
-                </svg>
+            <div class="hero-right">
+                <div class="hero-card liquid-border">
+                    <div class="hc-header">
+                        <span class="hc-label">Боты на серверах</span>
+                        <span class="hc-dot"></span>
+                    </div>
+
+                    <div class="hc-bot-row">
+                        <div class="hc-bot-info">
+                            <span class="hc-bot-name">@KaliangSupportBot</span>
+                            <span class="hc-bot-desc">Поддержка клиентов · Node.js</span>
+                        </div>
+                        <span class="hc-bot-status online">● online</span>
+                    </div>
+
+                    <div class="hc-bot-row">
+                        <div class="hc-bot-info">
+                            <span class="hc-bot-name">@OrdersHelperBot</span>
+                            <span class="hc-bot-desc">Приём заказов · Python</span>
+                        </div>
+                        <span class="hc-bot-status online">● online</span>
+                    </div>
+
+                    <div class="hc-bot-row hc-ticket-muted">
+                        <div class="hc-bot-info">
+                            <span class="hc-bot-name">@ScheduleNotifyBot</span>
+                            <span class="hc-bot-desc">Рассылка · Python</span>
+                        </div>
+                        <span class="hc-bot-status idle">● idle</span>
+                    </div>
+
+                    <div class="hc-footer">
+                        <span class="hc-stat">
+                            <span class="hc-stat-num">3</span>
+                            <span class="hc-stat-lbl">активных бота</span>
+                        </span>
+                        <span class="hc-stat-sep">·</span>
+                        <span class="hc-stat">
+                            <span class="hc-stat-num">99.8%</span>
+                            <span class="hc-stat-lbl">uptime</span>
+                        </span>
+                        <span class="hc-stat-sep">·</span>
+                        <span class="hc-stat">
+                            <span class="hc-stat-num">24/7</span>
+                            <span class="hc-stat-lbl">мониторинг</span>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="services" class="services fade-in-up">
-        <h2>Что я делаю</h2>
-        <div class="services-grid stagger-container">
-            <div class="service-card liquid-border">
-                <div class="service-icon">→</div>
-                <h3>Боты для бизнеса</h3>
-                <p>Автоматизация продаж, приём заказов, консультации клиентов</p>
+    <!-- ── Numbers ────────────────────────── -->
+    <div class="numbers-bar">
+        <div class="numbers-inner section-container">
+            <div class="num-item">
+                <span class="num-value">5+</span>
+                <span class="num-label">ботов запущено</span>
             </div>
-            <div class="service-card liquid-border">
-                <div class="service-icon">⚙</div>
-                <h3>Интеграции</h3>
-                <p>Подключение к CRM, платёжным системам, API сервисов</p>
+            <div class="num-divider"></div>
+            <div class="num-item">
+                <span class="num-value">3</span>
+                <span class="num-label">языка: Python · JS · Go</span>
             </div>
-            <div class="service-card liquid-border">
-                <div class="service-icon">◉</div>
-                <h3>Кастомные решения</h3>
-                <p>Любая логика и функционал под твои задачи</p>
+            <div class="num-divider"></div>
+            <div class="num-item">
+                <span class="num-value">от $3</span>
+                <span class="num-label">стартовая цена</span>
             </div>
-            <div class="service-card liquid-border">
-                <div class="service-icon">⟳</div>
-                <h3>Поддержка</h3>
-                <p>Обновления, доработки, техническая поддержка</p>
+            <div class="num-divider"></div>
+            <div class="num-item">
+                <span class="num-value">24ч</span>
+                <span class="num-label">первый ответ</span>
             </div>
         </div>
-        <div class="section-cta">
-            <a href="configurator.html" class="cta-button primary magnetic-btn liquid-border">Перейти к конфигурации</a>
-            <a href="auth.html" class="cta-button secondary magnetic-btn liquid-border">Вход / Регистрация</a>
+    </div>
+
+    <!-- ── Services ───────────────────────── -->
+    <section id="services" class="services-section fade-in-up">
+        <div class="section-container">
+            <div class="section-head">
+                <span class="eyebrow">Услуги</span>
+                <h2 class="section-title">Что я делаю</h2>
+            </div>
+            <div class="services-list">
+                <a href="configurator.html" class="service-row">
+                    <span class="srv-num">01</span>
+                    <span class="srv-name">Боты для бизнеса</span>
+                    <span class="srv-desc">Автоматизация продаж, приём заказов, консультации клиентов</span>
+                    <span class="srv-arrow">→</span>
+                </a>
+                <a href="configurator.html" class="service-row">
+                    <span class="srv-num">02</span>
+                    <span class="srv-name">Интеграции</span>
+                    <span class="srv-desc">Подключение к CRM, платёжным системам, внешним API</span>
+                    <span class="srv-arrow">→</span>
+                </a>
+                <a href="configurator.html" class="service-row">
+                    <span class="srv-num">03</span>
+                    <span class="srv-name">Кастомные решения</span>
+                    <span class="srv-desc">Любая логика и функционал под конкретные задачи</span>
+                    <span class="srv-arrow">→</span>
+                </a>
+                <a href="auth.html" class="service-row">
+                    <span class="srv-num">04</span>
+                    <span class="srv-name">Поддержка</span>
+                    <span class="srv-desc">Обновления, доработки, техническая поддержка 24/7</span>
+                    <span class="srv-arrow">→</span>
+                </a>
+            </div>
         </div>
     </section>
 
-    <section id="portfolio" class="portfolio fade-in-up">
-        <h2>Примеры работ</h2>
-        <div class="section-cta">
-            <a href="portfolio.html" class="cta-button secondary magnetic-btn liquid-border">Смотреть</a>
+    <!-- ── Process ────────────────────────── -->
+    <section id="process" class="process-section fade-in-up">
+        <div class="section-container">
+            <div class="section-head">
+                <span class="eyebrow">Как это работает</span>
+                <h2 class="section-title">Три шага до готового бота</h2>
+            </div>
+            <div class="process-steps">
+                <div class="process-step">
+                    <span class="ps-number">01</span>
+                    <h3 class="ps-title">Настрой конфигуратор</h3>
+                    <p class="ps-desc">Выбери пакет, опиши задачу, укажи язык и хостинг — получишь точную стоимость.</p>
+                </div>
+                <div class="process-line"></div>
+                <div class="process-step">
+                    <span class="ps-number">02</span>
+                    <h3 class="ps-title">Получи предложение</h3>
+                    <p class="ps-desc">Я свяжусь с тобой в течение дня, уточню детали и подтвержу заказ через тикет.</p>
+                </div>
+                <div class="process-line"></div>
+                <div class="process-step">
+                    <span class="ps-number">03</span>
+                    <h3 class="ps-title">Получи готового бота</h3>
+                    <p class="ps-desc">Бот с документацией и исходным кодом. Поддержка на всех этапах.</p>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section class="features fade-in-up">
-        <div class="features-content">
-            <h2>Почему со мной</h2>
-            <ul class="features-list stagger-container">
-                <li><span class="check">✓</span> Индивидуальный подход к каждому проекту</li>
-                <li><span class="check">✓</span> Чистый код и документация</li>
-                <li><span class="check">✓</span> Соблюдение сроков</li>
-                <li><span class="check">✓</span> Постоянная связь на всех этапах</li>
-                <li><span class="check">✓</span> Гарантия на все работы</li>
-            </ul>
+    <!-- ── Portfolio preview ──────────────── -->
+    <section id="portfolio" class="portfolio-section fade-in-up">
+        <div class="section-container">
+            <div class="section-head">
+                <span class="eyebrow">Портфолио</span>
+                <h2 class="section-title">Примеры работ</h2>
+            </div>
+
+            <div class="portfolio-coming">
+                <div class="pcoming-icon">⬡</div>
+                <div class="pcoming-text">
+                    <strong>Раздел в процессе наполнения</strong>
+                    <span>Реальные кейсы появятся после завершения первых проектов. Вы можете стать первым.</span>
+                </div>
+                <a href="portfolio.html" class="btn btn-ghost pcoming-btn">Открыть портфолио →</a>
+            </div>
         </div>
     </section>
 
+    <!-- ── Pricing ────────────────────────── -->
+    <section id="pricing" class="pricing-section fade-in-up">
+        <div class="section-container">
+            <div class="section-head">
+                <span class="eyebrow">Цены</span>
+                <h2 class="section-title">Выбери пакет</h2>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pc-name">Mini</div>
+                    <div class="pc-price">$3–5</div>
+                    <ul class="pc-features">
+                        <li>Простые автоответчики</li>
+                        <li>Рассылки, уведомления</li>
+                        <li>Без базы данных</li>
+                    </ul>
+                    <div class="pc-time">1–1.5 дня</div>
+                    <a href="configurator.html" class="btn btn-ghost pc-btn">Выбрать</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="pc-name">Mini+</div>
+                    <div class="pc-price">$5–10</div>
+                    <ul class="pc-features">
+                        <li>С базой данных</li>
+                        <li>Бесплатный хостинг</li>
+                        <li>Кастомная логика</li>
+                    </ul>
+                    <div class="pc-time">1–3 дня</div>
+                    <a href="configurator.html" class="btn btn-ghost pc-btn">Выбрать</a>
+                </div>
+                <div class="pricing-card pricing-card-featured">
+                    <div class="pc-badge-pop">Популярный</div>
+                    <div class="pc-name">Standard</div>
+                    <div class="pc-price">$20–30</div>
+                    <ul class="pc-features">
+                        <li>Магазины, каталоги, квизы</li>
+                        <li>База данных + хостинг</li>
+                        <li>Красивый дизайн</li>
+                    </ul>
+                    <div class="pc-time">4–7 дней</div>
+                    <a href="configurator.html" class="btn btn-primary pc-btn">Выбрать</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="pc-name">Max</div>
+                    <div class="pc-price">$50–70</div>
+                    <ul class="pc-features">
+                        <li>Сложные интеграции</li>
+                        <li>Высокая нагрузка</li>
+                        <li>Топовый хостинг</li>
+                    </ul>
+                    <div class="pc-time">1–2.5 нед.</div>
+                    <a href="configurator.html" class="btn btn-ghost pc-btn">Выбрать</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="pc-name">Custom</div>
+                    <div class="pc-price">от $70</div>
+                    <ul class="pc-features">
+                        <li>Индивидуальная разработка</li>
+                        <li>Любой функционал</li>
+                        <li>Цена после обсуждения</li>
+                    </ul>
+                    <div class="pc-time">обсуждается</div>
+                    <a href="auth.html" class="btn btn-ghost pc-btn">Обсудить</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Why me ──────────────────────────── -->
+    <section class="why-section fade-in-up">
+        <div class="section-container">
+            <div class="why-inner">
+                <div class="why-left">
+                    <span class="eyebrow">Почему я</span>
+                    <h2 class="section-title why-title">Работаем<br>как надо</h2>
+                </div>
+                <ul class="why-list stagger-container">
+                    <li class="why-item">
+                        <span class="why-check">✓</span>
+                        <div>
+                            <strong>Индивидуальный подход</strong>
+                            <p>Каждый проект разбираем отдельно, без шаблонов</p>
+                        </div>
+                    </li>
+                    <li class="why-item">
+                        <span class="why-check">✓</span>
+                        <div>
+                            <strong>Чистый код и документация</strong>
+                            <p>Отдаю исходник с комментариями и README</p>
+                        </div>
+                    </li>
+                    <li class="why-item">
+                        <span class="why-check">✓</span>
+                        <div>
+                            <strong>Соблюдение сроков</strong>
+                            <p>Называю реальные сроки и держу их</p>
+                        </div>
+                    </li>
+                    <li class="why-item">
+                        <span class="why-check">✓</span>
+                        <div>
+                            <strong>Постоянная связь</strong>
+                            <p>Держу в курсе на всех этапах через тикеты</p>
+                        </div>
+                    </li>
+                    <li class="why-item">
+                        <span class="why-check">✓</span>
+                        <div>
+                            <strong>Гарантия на все работы</strong>
+                            <p>Правлю баги бесплатно после сдачи</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── CTA Final ───────────────────────── -->
+    <section class="cta-final fade-in-up">
+        <div class="section-container">
+            <div class="cta-final-inner">
+                <h2 class="cta-final-title">Готов обсудить проект?</h2>
+                <p class="cta-final-sub">Настрой конфигуратор или создай тикет — отвечу в течение нескольких часов.</p>
+                <div class="cta-final-actions">
+                    <a href="configurator.html" class="btn btn-primary magnetic-btn">Настроить конфигуратор</a>
+                    <a href="auth.html" class="btn btn-ghost magnetic-btn">Создать тикет</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Footer ─────────────────────────── -->
     <footer>
         <div class="footer-content">
             <div class="footer-logo">KALIANG</div>
@@ -109,6 +355,7 @@
                 <a href="https://t.me/Kaliang_dev" target="_blank" rel="noopener">Telegram</a>
                 <a href="auth.html">Поддержка</a>
                 <a href="configurator.html">Конфигуратор</a>
+                <a href="portfolio.html">Портфолио</a>
             </div>
             <p class="footer-copyright">© 2026 Kaliang. Все права защищены.</p>
         </div>

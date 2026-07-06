@@ -6,43 +6,84 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Портфолио — Telegram Боты на Заказ | Kaliang</title>
+    <title>Портфолио | KALIANG</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="portfolio.css">
 </head>
 <body>
-    <header class="portfolio-header">
-        <div class="portfolio-title">KALIANG</div>
+    <header id="site-header">
+        <nav>
+            <div class="logo"><a href="index.html">KALIANG</a></div>
+            <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Открыть меню" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html#services">Услуги</a></li>
+                <li><a href="index.html#pricing">Цены</a></li>
+                <li><a href="configurator.html" class="nav-cta">Заказать</a></li>
+            </ul>
+        </nav>
     </header>
 
-    <div class="portfolio-layout">
-        <aside class="portfolio-menu">
-            <nav class="plan-menu">
-                <ul>
-                    <li data-plan="basic" class="plan-item active">Базовый</li>
-                    <li data-plan="starter" class="plan-item">Стартер</li>
-                    <li data-plan="professional" class="plan-item">Профессиональный</li>
-                    <li data-plan="enterprise" class="plan-item">Корпоративный</li>
-                    <li data-plan="custom" class="plan-item">Индивидуальный</li>
-                </ul>
-            </nav>
-        </aside>
+    <div class="pf-layout">
+        <!-- Header -->
+        <div class="pf-page-header section-container">
+            <span class="eyebrow">Портфолио</span>
+            <h1 class="pf-title">Примеры работ</h1>
+            <p class="pf-sub">Реальные проекты появятся здесь по мере завершения работ. Сейчас раздел в процессе наполнения.</p>
+        </div>
 
-        <main class="portfolio-content">
-            <div id="content-area" class="content-area">
-                <!-- Контент будет загружаться сюда -->
+        <!-- Filters -->
+        <div class="pf-filters section-container">
+            <button class="pf-filter-btn active" data-plan="all">Все</button>
+            <button class="pf-filter-btn" data-plan="mini">Mini</button>
+            <button class="pf-filter-btn" data-plan="miniplus">Mini+</button>
+            <button class="pf-filter-btn" data-plan="standard">Standard</button>
+            <button class="pf-filter-btn" data-plan="max">Max</button>
+            <button class="pf-filter-btn" data-plan="custom">Custom</button>
+        </div>
+
+        <!-- Cases list -->
+        <div class="pf-list section-container" id="pf-list">
+            <!-- rendered by JS -->
+        </div>
+
+        <!-- CTA block -->
+        <div class="pf-cta-block section-container">
+            <div class="pf-cta-inner">
+                <p class="pf-cta-text">Хочешь стать первым кейсом в этом разделе?</p>
+                <div class="pf-cta-actions">
+                    <a href="configurator.html" class="btn btn-primary">Настроить заказ</a>
+                    <a href="auth.html" class="btn btn-ghost">Создать тикет</a>
+                </div>
             </div>
-        </main>
+        </div>
     </div>
 
-    <script src="animations/scroll-reveal.js"></script>
-    <script src="animations/magnetic-hover.js"></script>
-    <script src="animations/liquid-border.js"></script>
+    <!-- Detail modal -->
+    <div class="pf-modal" id="pf-modal">
+        <div class="pf-modal-content" id="pf-modal-content">
+            <button class="pf-modal-close" id="pf-modal-close">×</button>
+            <!-- rendered by JS -->
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">KALIANG</div>
+            <div class="footer-links">
+                <a href="index.html">Главная</a>
+                <a href="configurator.html">Конфигуратор</a>
+                <a href="auth.html">Поддержка</a>
+            </div>
+            <p class="footer-copyright">© 2026 Kaliang. Все права защищены.</p>
+        </div>
+    </footer>
+
     <script src="script.js"></script>
     <script src="portfolio.js"></script>
 </body>

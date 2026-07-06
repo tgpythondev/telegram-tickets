@@ -5,11 +5,20 @@ function createSkeletonTickets(count = 3) {
     for (let i = 0; i < count; i++) {
         const card = document.createElement('div');
         card.className = 'skeleton-ticket-card';
-        card.innerHTML = `
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-        `;
+        
+        // Создаём элементы через DOM API для безопасности
+        const skeleton1 = document.createElement('div');
+        skeleton1.className = 'skeleton';
+        
+        const skeleton2 = document.createElement('div');
+        skeleton2.className = 'skeleton';
+        
+        const skeleton3 = document.createElement('div');
+        skeleton3.className = 'skeleton';
+        
+        card.appendChild(skeleton1);
+        card.appendChild(skeleton2);
+        card.appendChild(skeleton3);
         container.appendChild(card);
     }
 

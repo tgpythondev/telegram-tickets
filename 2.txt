@@ -1,0 +1,50 @@
+2026-07-02T23:25:20.434736553Z POST /api/admin/tickets/9/reply
+2026-07-02T23:25:20.435169984Z [ADMIN ROUTE] POST /tickets/9/reply | User: no user | Admin: false
+2026-07-02T23:25:20.435267127Z [AUTH MIDDLEWARE] Path: /tickets/9/reply, Token present: true
+2026-07-02T23:25:20.435607376Z [AUTH MIDDLEWARE] Token verified, user: dev
+2026-07-02T23:25:20.436056948Z [ADMIN AUTH] User: dev, isAdmin: true
+2026-07-02T23:25:20.436200482Z [ADMIN AUTH] Access granted
+2026-07-02T23:25:20.436755956Z [REPLY] Starting replyToTicket
+2026-07-02T23:25:20.437531467Z [REPLY] Request params: { id: '9' }
+2026-07-02T23:25:20.437540837Z [REPLY] Request body: { content: 'бебебе' }
+2026-07-02T23:25:20.437546177Z [REPLY] User ID: 2 Username: dev
+2026-07-02T23:25:20.437550527Z [REPLY] Ticket ID from params: 9
+2026-07-02T23:25:20.437554587Z [REPLY] Content: бебебе
+2026-07-02T23:25:20.437558758Z [REPLY] Finding ticket...
+2026-07-02T23:25:20.505111422Z [REPLY] Ticket found: 9 User ID: 4
+2026-07-02T23:25:20.573597812Z [REPLY] Message created: 53
+2026-07-02T23:25:20.573624062Z [REPLY] Sending to admins...
+2026-07-02T23:25:20.573721865Z SSE event admin:message:new sent to admins: 1 ok, 0 failed
+2026-07-02T23:25:20.573739636Z [REPLY] Checking connection for user 4 (type: number)
+2026-07-02T23:25:20.574512386Z SSE: isUserConnected(4) = true
+2026-07-02T23:25:20.574527066Z [REPLY] User 4 is connected, sending message
+2026-07-02T23:25:20.574532677Z SSE: Attempting to send user:message:new to user 4 (type: string)
+2026-07-02T23:25:20.574537467Z SSE: Found 1 active connections for user 4
+2026-07-02T23:25:20.574542387Z SSE: Sent user:message:new to user 4 (1/1 connections)
+2026-07-02T23:25:20.574546957Z [REPLY] Sending Telegram notification...
+2026-07-02T23:25:20.574554617Z 📤 Попытка отправить уведомление пользователю о ответе на тикет #9
+2026-07-02T23:25:20.641765303Z ⚠️ У пользователя test не привязан Telegram
+2026-07-02T23:25:20.641850865Z [REPLY] Telegram notification sent
+2026-07-02T23:25:20.642232285Z [REPLY] Response sent successfully
+2026-07-02T23:25:20.784349721Z OPTIONS /api/tickets
+2026-07-02T23:25:20.835042348Z OPTIONS /api/tickets/9
+2026-07-02T23:25:20.967869997Z GET /api/tickets
+2026-07-02T23:25:20.967903948Z [AUTH MIDDLEWARE] Path: /, Token present: true
+2026-07-02T23:25:20.96837203Z [AUTH MIDDLEWARE] Token verified, user: test
+2026-07-02T23:25:21.027615614Z GET /api/tickets/9
+2026-07-02T23:25:21.02782586Z [AUTH MIDDLEWARE] Path: /9, Token present: true
+2026-07-02T23:25:21.028192519Z [AUTH MIDDLEWARE] Token verified, user: dev
+2026-07-02T23:25:27.46880332Z OPTIONS /api/tickets/9/messages
+2026-07-02T23:25:27.65058686Z POST /api/tickets/9/messages
+2026-07-02T23:25:27.651038352Z [AUTH MIDDLEWARE] Path: /9/messages, Token present: true
+2026-07-02T23:25:27.65136758Z [AUTH MIDDLEWARE] Token verified, user: test
+2026-07-02T23:25:27.791799601Z SSE event admin:message:new sent to admins: 1 ok, 0 failed
+2026-07-02T23:25:27.976365865Z Ошибка отправки уведомления в chat 123456789: ETELEGRAM: 400 Bad Request: chat not found
+2026-07-02T23:25:28.162642074Z Ошибка отправки уведомления в chat 987654321: ETELEGRAM: 400 Bad Request: chat not found
+2026-07-02T23:25:28.350863394Z OPTIONS /api/tickets/9
+2026-07-02T23:25:28.537838731Z GET /api/tickets/9
+2026-07-02T23:25:28.538034227Z [AUTH MIDDLEWARE] Path: /9, Token present: true
+2026-07-02T23:25:28.538404916Z [AUTH MIDDLEWARE] Token verified, user: test
+2026-07-02T23:25:28.873748635Z GET /api/tickets/9
+2026-07-02T23:25:28.873978052Z [AUTH MIDDLEWARE] Path: /9, Token present: true
+2026-07-02T23:25:28.874333781Z [AUTH MIDDLEWARE] Token verified, user: test

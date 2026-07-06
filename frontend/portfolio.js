@@ -1,488 +1,230 @@
-// Portfolio module - IIFE for clean scope
-(function() {
+(function () {
     'use strict';
 
-    // Shared escapeHtml helper (consistent with project)
-    function escapeHtml(text) {
-        if (!text) return '';
-        const map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+    function escapeHtml(t) {
+        if (!t) return '';
+        return String(t).replace(/[&<>"']/g, m =>
+            ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
     }
 
-    // Mock data for portfolio categories
-    var mockData = {
-        basic: [
-            {
-                id: 'b1',
-                title: 'Бот для опросов',
-                description: 'Сбор мнений пользователей',
-                price: '5 000 ₽',
-                term: '3 дня',
-                videoUrl: 'https://example.com/video/b1',
-                features: ['Опросы с вариантами ответов', 'Анализ результатов', 'Экспорт данных']
-            },
-            {
-                id: 'b2',
-                title: 'Чат-бот поддержки',
-                description: 'Ответы на частые вопросы',
-                price: '7 500 ₽',
-                term: '5 дней',
-                videoUrl: 'https://example.com/video/b2',
-                features: ['База знаний', 'Переадресация оператору', 'Статистика запросов']
-            }
-        ],
-        starter: [
-            {
-                id: 's1',
-                title: 'Магазин через Telegram',
-                description: 'Каталог товаров с корзиной',
-                price: '15 000 ₽',
-                term: '1 неделя',
-                videoUrl: 'https://example.com/video/s1',
-                features: ['Каталог с категориями', 'Корзина и заказы', 'Уведомления о статусе']
-            },
-            {
-                id: 's2',
-                title: 'Бот для записи',
-                description: 'Онлайн-запись на услуги',
-                price: '12 000 ₽',
-                term: '5 дней',
-                videoUrl: 'https://example.com/video/s2',
-                features: ['Расписание', 'Напоминания', 'Буфер времени']
-            },
-            {
-                id: 's3',
-                title: 'Онлайн-консультант',
-                description: 'Анкетирование и предложение',
-                price: '18 000 ₽',
-                term: '1 неделя',
-                videoUrl: 'https://example.com/video/s3',
-                features: ['Конструктор анкет', 'Формирование предложения', 'Переход к покупке']
-            }
-        ],
-        professional: [
-            {
-                id: 'p1',
-                title: 'CRM-бот для продаж',
-                description: 'Управление воронкой продаж',
-                price: '35 000 ₽',
-                term: '2 недели',
-                videoUrl: 'https://example.com/video/p1',
-                features: ['Воронка продаж', 'Этапы сделки', 'Аналитика и отчёты']
-            },
-            {
-                id: 'p2',
-                title: 'Бот с интеграцией',
-                description: 'Подключение к вашему API',
-                price: '28 000 ₽',
-                term: '10 дней',
-                videoUrl: 'https://example.com/video/p2',
-                features: ['API интеграция', 'Синхронизация данных', 'Ошибка в логи']
-            },
-            {
-                id: 'p3',
-                title: 'Платёжный бот',
-                description: 'Приём оплаты через Telegram',
-                price: '45 000 ₽',
-                term: '2 недели',
-                videoUrl: 'https://example.com/video/p3',
-                features: ['Триггерные платежи', 'Абонентская плата', 'Возвраты']
-            }
-        ],
-        enterprise: [
-            {
-                id: 'e1',
-                title: 'Корпоративная система',
-                description: 'Внутренний коммуникационный хаб',
-                price: '150 000 ₽',
-                term: '1 месяц',
-                videoUrl: 'https://example.com/video/e1',
-                features: ['Ролевая модель', 'Документооборот', 'Аудит действий']
-            },
-            {
-                id: 'e2',
-                title: 'Мульти-channel агрегатор',
-                description: 'Управление всеми каналами',
-                price: '200 000 ₽',
-                term: '1.5 месяца',
-                videoUrl: 'https://example.com/video/e2',
-                features: ['Единая панель', 'Рассылки', 'Аналитика по каналам']
-            }
-        ],
-        custom: [
-            {
-                id: 'c1',
-                title: 'Геймификация',
-                description: 'Игровая механика в боте',
-                price: 'от 100 000 ₽',
-                term: '2 недели',
-                videoUrl: 'https://example.com/video/c1',
-                features: ['Очки и уровни', 'Таблицы лидеров', 'События и задания']
-            },
-            {
-                id: 'c2',
-                title: 'AI ассистент',
-                description: 'Интеграция с LLM для уникальных решений',
-                price: 'от 200 000 ₽',
-                term: '3 недели',
-                videoUrl: 'https://example.com/video/c2',
-                features: ['Нейросеть в диалоге', 'Генерация контента', 'Адаптивность']
-            }
-        ]
+    var planLabels = {
+        mini:     'Mini',
+        miniplus: 'Mini+',
+        standard: 'Standard',
+        max:      'Max',
+        custom:   'Custom'
     };
 
-    // Get category data
-    function getCategoryData(category) {
-        return mockData[category] || [];
+    var mockData = {
+        mini: [],
+        miniplus: [],
+        standard: [],
+        max: [],
+        custom: []
+    };
+
+    var allItems = (function () {
+        var res = [];
+        Object.keys(mockData).forEach(function (plan) {
+            mockData[plan].forEach(function (item) {
+                res.push(Object.assign({}, item, { plan: plan }));
+            });
+        });
+        return res;
+    })();
+
+    var currentPlan = 'all';
+
+    function getItems(plan) {
+        if (plan === 'all') return allItems;
+        return mockData[plan] ? mockData[plan].map(function (i) {
+            return Object.assign({}, i, { plan: plan });
+        }) : [];
     }
 
-    // Create card element using DOM API (no innerHTML)
-    function createCardItem(item) {
-        var card = document.createElement('div');
-        card.className = 'portfolio-card liquid-border';
-        card.setAttribute('data-id', item.id);
-        card.setAttribute('data-category', item.category);
+    function render(plan) {
+        var list = document.getElementById('pf-list');
+        if (!list) return;
+        list.innerHTML = '';
 
-        // Header
-        var header = document.createElement('div');
-        header.className = 'card-header';
+        var items = getItems(plan);
 
-        var title = document.createElement('h3');
-        title.className = 'card-title';
-        title.textContent = item.title;
+        if (items.length === 0) {
+            var empty = document.createElement('div');
+            empty.className = 'pf-empty';
 
-        var tag = document.createElement('span');
-        tag.className = 'card-tag';
-        tag.textContent = item.category;
+            var emptyIcon = document.createElement('div');
+            emptyIcon.className = 'pf-empty-icon';
+            emptyIcon.textContent = '⬡';
 
-        header.appendChild(title);
-        header.appendChild(tag);
+            var emptyTitle = document.createElement('div');
+            emptyTitle.className = 'pf-empty-title';
+            emptyTitle.textContent = 'Проекты скоро появятся';
 
-        // Description
-        var description = document.createElement('p');
-        description.className = 'card-description';
-        description.textContent = item.description;
+            var emptySub = document.createElement('div');
+            emptySub.className = 'pf-empty-sub';
+            emptySub.textContent = 'Раздел пополняется по мере завершения новых работ';
 
-        // Meta
-        var meta = document.createElement('div');
-        meta.className = 'card-meta';
-
-        // Price
-        var priceItem = document.createElement('div');
-        priceItem.className = 'meta-item';
-
-        var priceLabel = document.createElement('span');
-        priceLabel.className = 'meta-label';
-        priceLabel.textContent = 'Цена';
-
-        var priceValue = document.createElement('span');
-        priceValue.className = 'meta-value';
-        priceValue.textContent = item.price;
-
-        priceItem.appendChild(priceLabel);
-        priceItem.appendChild(priceValue);
-
-        // Term
-        var termItem = document.createElement('div');
-        termItem.className = 'meta-item';
-
-        var termLabel = document.createElement('span');
-        termLabel.className = 'meta-label';
-        termLabel.textContent = 'Срок';
-
-        var termValue = document.createElement('span');
-        termValue.className = 'meta-value';
-        termValue.textContent = item.term;
-
-        termItem.appendChild(termLabel);
-        termItem.appendChild(termValue);
-
-        meta.appendChild(priceItem);
-        meta.appendChild(termItem);
-
-        card.appendChild(header);
-        card.appendChild(description);
-        card.appendChild(meta);
-
-        return card;
-    }
-
-    // Render cards for a category using DOM API
-    function renderCards(category) {
-        var contentArea = document.getElementById('content-area');
-        if (!contentArea) return;
-
-        var data = getCategoryData(category);
-
-        if (!data || data.length === 0) {
-            contentArea.textContent = '';
-            var emptyState = document.createElement('div');
-            emptyState.className = 'no-data';
-            emptyState.textContent = 'Нет данных для выбранной категории';
-            contentArea.appendChild(emptyState);
+            empty.appendChild(emptyIcon);
+            empty.appendChild(emptyTitle);
+            empty.appendChild(emptySub);
+            list.appendChild(empty);
             return;
         }
 
-        // Clear and create grid container
-        contentArea.textContent = '';
-        var grid = document.createElement('div');
-        grid.className = 'portfolio-grid';
+        items.forEach(function (item, idx) {
+            var row = document.createElement('div');
+            row.className = 'pf-case-row';
 
-        // Add items
-        data.forEach(function(item) {
-            var card = createCardItem({
-                id: item.id,
-                title: item.title,
-                description: item.description,
-                price: item.price,
-                term: item.term,
-                category: category
-            });
-            grid.appendChild(card);
-        });
+            // Left
+            var left = document.createElement('div');
+            left.className = 'pcr-left';
+            left.innerHTML = `
+                <span class="pcr-num">${String(idx + 1).padStart(2, '0')}</span>
+                <span class="badge priority-normal">${escapeHtml(planLabels[item.plan] || item.plan)}</span>
+            `;
 
-        contentArea.appendChild(grid);
+            // Center
+            var center = document.createElement('div');
+            center.className = 'pcr-center';
+            var title = document.createElement('span');
+            title.className = 'pcr-title';
+            title.textContent = item.title;
+            var desc = document.createElement('span');
+            desc.className = 'pcr-desc';
+            desc.textContent = item.desc;
+            center.appendChild(title);
+            center.appendChild(desc);
 
-        // Add click handlers to cards
-        document.querySelectorAll('.portfolio-card').forEach(function(card) {
-            card.addEventListener('click', function() {
-                var id = card.getAttribute('data-id');
-                var cat = card.getAttribute('data-category');
-                openCardModal(id, cat);
-            });
+            // Right
+            var right = document.createElement('div');
+            right.className = 'pcr-right';
+
+            var metaLang = makeMeta('Язык', item.lang);
+            var metaTerm = makeMeta('Срок',  item.term);
+            var metaPrice = makeMeta('Цена', item.price);
+            var arrow = document.createElement('span');
+            arrow.className = 'pcr-arrow';
+            arrow.textContent = '→';
+
+            right.appendChild(metaLang);
+            right.appendChild(metaTerm);
+            right.appendChild(metaPrice);
+            right.appendChild(arrow);
+
+            row.appendChild(left);
+            row.appendChild(center);
+            row.appendChild(right);
+
+            row.addEventListener('click', function () { openModal(item); });
+            list.appendChild(row);
         });
     }
 
-    // Create modal video placeholder using DOM API
-    function createVideoPlaceholder() {
-        var placeholder = document.createElement('div');
-        placeholder.className = 'video-placeholder';
-
-        var icon = document.createElement('div');
-        icon.className = 'video-icon';
-
-        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '0 0 100 100');
-        svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
-        var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', '50');
-        circle.setAttribute('cy', '50');
-        circle.setAttribute('r', '45');
-        circle.setAttribute('stroke', 'currentColor');
-        circle.setAttribute('stroke-width', '2');
-        circle.setAttribute('fill', 'none');
-
-        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', 'M 40 35 L 65 50 L 40 65 Z');
-        path.setAttribute('fill', 'currentColor');
-
-        svg.appendChild(circle);
-        svg.appendChild(path);
-        icon.appendChild(svg);
-
-        var label = document.createElement('span');
-        label.className = 'video-label';
-        label.textContent = 'Демонстрация работы';
-
-        placeholder.appendChild(icon);
-        placeholder.appendChild(label);
-
-        return placeholder;
+    function makeMeta(key, val) {
+        var div = document.createElement('div');
+        div.className = 'pcr-meta';
+        div.innerHTML = `<span class="pcr-meta-key">${escapeHtml(key)}</span><span class="pcr-meta-val">${escapeHtml(val)}</span>`;
+        return div;
     }
 
-    // Create modal info section using DOM API
-    function createModalInfo(data) {
-        var info = document.createElement('div');
-        info.className = 'modal-info';
+    function openModal(item) {
+        var modal   = document.getElementById('pf-modal');
+        var content = document.getElementById('pf-modal-content');
+        if (!modal || !content) return;
 
-        // Title
-        var title = document.createElement('h2');
-        title.className = 'modal-title';
-        title.textContent = data.title;
-
-        // Meta
-        var meta = document.createElement('div');
-        meta.className = 'info-meta';
-
-        // Price
-        var priceItem = document.createElement('div');
-        priceItem.className = 'info-item';
-
-        var priceLabel = document.createElement('span');
-        priceLabel.className = 'info-label';
-        priceLabel.textContent = 'Цена';
-
-        var priceValue = document.createElement('span');
-        priceValue.className = 'info-value';
-        priceValue.textContent = data.price;
-
-        priceItem.appendChild(priceLabel);
-        priceItem.appendChild(priceValue);
-
-        // Term
-        var termItem = document.createElement('div');
-        termItem.className = 'info-item';
-
-        var termLabel = document.createElement('span');
-        termLabel.className = 'info-label';
-        termLabel.textContent = 'Срок выполнения';
-
-        var termValue = document.createElement('span');
-        termValue.className = 'info-value';
-        termValue.textContent = data.term;
-
-        termItem.appendChild(termLabel);
-        termItem.appendChild(termValue);
-
-        meta.appendChild(priceItem);
-        meta.appendChild(termItem);
-
-        // Features
-        var features = document.createElement('div');
-        features.className = 'info-features';
-
-        var featuresTitle = document.createElement('h4');
-        featuresTitle.textContent = 'Возможности';
-
-        var featuresList = document.createElement('ul');
-        data.features.forEach(function(feature) {
-            var li = document.createElement('li');
-            li.textContent = feature;
-            featuresList.appendChild(li);
-        });
-
-        features.appendChild(featuresTitle);
-        features.appendChild(featuresList);
-
-        // Description
-        var desc = document.createElement('div');
-        desc.className = 'info-description';
-
-        var descTitle = document.createElement('h4');
-        descTitle.textContent = 'Описание';
-
-        var descText = document.createElement('p');
-        descText.textContent = data.description;
-
-        desc.appendChild(descTitle);
-        desc.appendChild(descText);
-
-        info.appendChild(title);
-        info.appendChild(meta);
-        info.appendChild(features);
-        info.appendChild(desc);
-
-        return info;
-    }
-
-    // Open modal with card details using DOM API
-    function openCardModal(id, category) {
-        var data = getCategoryData(category).find(function(item) {
-            return item.id === id;
-        });
-
-        if (!data) return;
-
-        // Create modal container
-        var modal = document.createElement('div');
-        modal.className = 'portfolio-modal';
-        modal.style.display = 'block';
-        modal.style.opacity = '1';
-
-        // Modal content
-        var content = document.createElement('div');
-        content.className = 'modal-content';
-
-        // Close button
-        var closeBtn = document.createElement('button');
-        closeBtn.className = 'modal-close';
-        closeBtn.textContent = '×';
-
-        // Layout
-        var layout = document.createElement('div');
-        layout.className = 'modal-layout';
-
-        // Video section
-        var videoSection = document.createElement('div');
-        videoSection.className = 'modal-video';
-
-        var placeholder = createVideoPlaceholder();
-        videoSection.appendChild(placeholder);
-
-        // Video player (with src attribute if available)
-        var videoPlayer = document.createElement('video');
-        videoPlayer.setAttribute('controls', '');
-        videoPlayer.className = 'video-player';
-
-        if (data.videoUrl) {
-            videoPlayer.setAttribute('src', data.videoUrl);
-        }
-
-        // Only append if there's a URL (otherwise just show placeholder)
-        if (data.videoUrl) {
-            videoSection.appendChild(videoPlayer);
-        }
-
-        // Info section
-        var infoSection = createModalInfo(data);
-
-        layout.appendChild(videoSection);
-        layout.appendChild(infoSection);
-
+        // Clear old content (keep close button)
+        var closeBtn = document.getElementById('pf-modal-close');
+        content.innerHTML = '';
         content.appendChild(closeBtn);
-        content.appendChild(layout);
-        modal.appendChild(content);
-        document.body.appendChild(modal);
 
-        // Close handlers
-        function closeModal() {
-            modal.style.opacity = '0';
-            setTimeout(function() {
-                modal.remove();
-            }, 300);
+        // Header
+        var header = document.createElement('div');
+        header.className = 'pf-modal-header';
+        header.innerHTML = `<h2 class="pf-modal-title">${escapeHtml(item.title)}</h2>`;
+
+        var meta = document.createElement('div');
+        meta.className = 'pf-modal-meta';
+        [['Пакет', planLabels[item.plan]], ['Язык', item.lang], ['Срок', item.term], ['Цена', item.price]].forEach(function (pair) {
+            var div = document.createElement('div');
+            div.className = 'pmm-item';
+            div.innerHTML = `<span class="pmm-label">${escapeHtml(pair[0])}</span><span class="pmm-value">${escapeHtml(pair[1])}</span>`;
+            meta.appendChild(div);
+        });
+
+        header.appendChild(meta);
+        content.appendChild(header);
+
+        // Body
+        var body = document.createElement('div');
+        body.className = 'pf-modal-body';
+
+        var features = document.createElement('div');
+        features.className = 'pf-modal-features';
+        var fTitle = document.createElement('h4');
+        fTitle.textContent = 'Возможности';
+        var ul = document.createElement('ul');
+        (item.features || []).forEach(function (f) {
+            var li = document.createElement('li');
+            li.textContent = f;
+            ul.appendChild(li);
+        });
+        features.appendChild(fTitle);
+        features.appendChild(ul);
+
+        var descDiv = document.createElement('div');
+        descDiv.className = 'pf-modal-desc';
+        var dTitle = document.createElement('h4');
+        dTitle.textContent = 'Описание';
+        var dP = document.createElement('p');
+        dP.textContent = item.desc;
+        descDiv.appendChild(dTitle);
+        descDiv.appendChild(dP);
+
+        body.appendChild(features);
+        body.appendChild(descDiv);
+        content.appendChild(body);
+
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        var modal = document.getElementById('pf-modal');
+        if (modal) modal.classList.remove('active');
+    }
+
+    function init() {
+        render('all');
+
+        // Filters
+        document.querySelectorAll('.pf-filter-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.pf-filter-btn').forEach(function (b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                currentPlan = btn.dataset.plan;
+                render(currentPlan);
+            });
+        });
+
+        // Close modal
+        var closeBtn = document.getElementById('pf-modal-close');
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+        var modal = document.getElementById('pf-modal');
+        if (modal) {
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) closeModal();
+            });
         }
 
-        closeBtn.addEventListener('click', closeModal);
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeModal();
-        });
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') closeModal();
         });
     }
 
-    // Initialize
-    function init() {
-        // Plan menu click handlers
-        var planItems = document.querySelectorAll('.plan-item');
-        planItems.forEach(function(item) {
-            item.addEventListener('click', function() {
-                // Update active class
-                planItems.forEach(function(i) { i.classList.remove('active'); });
-                item.classList.add('active');
-
-                // Render cards for selected plan
-                var plan = item.getAttribute('data-plan');
-                renderCards(plan);
-            });
-        });
-
-        // Initial render for basic plan
-        renderCards('basic');
-    }
-
-    // Run on DOM ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
-
 })();

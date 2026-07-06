@@ -1,565 +1,550 @@
 const Dashboard = (() => {
-  let user = null;
-  let tickets = [];
-  let currentTicket = null;
-  let filters = {};
-  let stats = {};
-  let sse = null;
-
-  function initSSE() {
-    if (!inMemoryAccessToken) {
-      console.error('No access token for SSE');
-      return;
-    }
-
-    const token = inMemoryAccessToken;
-    sse = new EventSource(`${API_URL}/events?token=${token}`);
-
-    sse.addEventListener('admin:ticket:new', (e) => {
-      const ticket = JSON.parse(e.data);
-      tickets.unshift(ticket);
-      renderTickets();
-      loadStats();
-      showSuccess(`Новый тикет #${ticket.id}`);
-      pulseStatCard('stat-open');
-    });
-
-    sse.addEventListener('admin:ticket:updated', (e) => {
-      const updated = JSON.parse(e.data);
-      const idx = tickets.findIndex(t => t.id === updated.id);
-      if (idx !== -1) {
-        tickets[idx] = updated;
-        renderTickets();
-      }
-
-      if (currentTicket && currentTicket.id === updated.id) {
-        currentTicket = updated;
-        refreshModalTicketInfo();
-      }
-
-      loadStats();
-      showSuccess(`Тикет #${updated.id} обновлен`);
-    });
-
-    sse.addEventListener('admin:message:new', (e) => {
-      const { ticketId, message } = JSON.parse(e.data);
-      if (currentTicket && currentTicket.id === ticketId) {
-        appendMessageToModal(message);
-      }
-      showSuccess(`Новое сообщение в #${ticketId}`);
-    });
-
-    sse.onerror = () => {
-      console.error('SSE connection lost, reconnecting...');
-    };
-  }
-
-  function pulseStatCard(statId) {
-    const el = document.getElementById(statId);
-    if (!el) return;
-    el.closest('.stat-card').classList.add('pulse');
-    setTimeout(() => {
-      el.closest('.stat-card').classList.remove('pulse');
-    }, 1000);
-  }
-
-  async function loadStats() {
-    try {
-      const data = await API.getStats();
-      if (!data || !data.stats) {
-        throw new Error('Неверный формат данных статистики');
-      }
-
-      stats = data.stats;
-      document.getElementById('stat-open').textContent = stats.open_tickets || 0;
-      document.getElementById('stat-progress').textContent = stats.in_progress_tickets || 0;
-      document.getElementById('stat-closed').textContent = stats.closed_tickets || 0;
-      document.getElementById('stat-total').textContent = stats.total_tickets || 0;
-    } catch (error) {
-      console.error('Stats load error:', error);
-      ['stat-open', 'stat-progress', 'stat-closed', 'stat-total'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = '—';
-      });
-    }
-  }
-
-  async function loadTickets() {
-    const loadingEl = document.getElementById('loading');
-    const tableBody = document.getElementById('tickets-tbody');
-
-    if (loadingEl) loadingEl.style.display = 'block';
-    if (tableBody) tableBody.innerHTML = '';
-
-    try {
-      const data = await API.getAllTickets(filters);
-      if (!data || !Array.isArray(data.tickets)) {
-        throw new Error('Неверный формат данных');
-      }
-
-      tickets = data.tickets;
-
-      if (tableBody) {
-        if (tickets.length === 0) {
-          tableBody.innerHTML = `
-            <tr>
-              <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                Нет тикетов
-              </td>
-            </tr>
-          `;
-        } else {
-          tickets.forEach(ticket => {
-            const row = createTicketRow(ticket);
-            tableBody.appendChild(row);
-          });
-        }
-      }
-
-      renderTicketCards(tickets);
-    } catch (error) {
-      console.error('Load tickets error:', error);
-      if (tableBody) {
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--accent-red);">
-              Ошибка загрузки: ${escapeHtml(error.message)}
-            </td>
-          </tr>
-        `;
-      }
-      showError('Ошибка загрузки тикетов: ' + error.message);
-    } finally {
-      if (loadingEl) loadingEl.style.display = 'none';
-    }
-  }
-
-  function createTicketRow(ticket) {
-    const row = document.createElement('tr');
-    row.onclick = () => openTicket(ticket.id);
-
-    const statusText = {
-      'open': 'Открыт',
-      'in_progress': 'В работе',
-      'closed': 'Закрыт'
-    };
-
-    const priorityClass = {
-      'normal': 'priority-normal',
-      'high': 'priority-high',
-      'urgent': 'priority-urgent'
-    };
-
-    const date = new Date(ticket.created_at).toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    row.innerHTML = `
-      <td>#${ticket.id}</td>
-      <td><a class="ticket-link" onclick="event.stopPropagation(); Dashboard.openTicket(${ticket.id})">${escapeHtml(ticket.subject)}</a></td>
-      <td>${escapeHtml(ticket.user_username)}</td>
-      <td><span class="ticket-status status-${ticket.status}">${statusText[ticket.status]}</span></td>
-      <td><span class="priority-badge ${priorityClass[ticket.priority]}">${ticket.priority.toUpperCase()}</span></td>
-      <td class="assigned-to">${ticket.assigned_admin_username || '—'}</td>
-      <td>${date}</td>
-    `;
-
-    return row;
-  }
-
-  async function openTicket(ticketId) {
-    const modal = document.getElementById('ticket-modal');
-    const modalBody = document.getElementById('admin-modal-body');
-
-    if (!modal || !modalBody) return;
-
-    modal.classList.add('active');
-    modalBody.innerHTML = '<div class="loading">Загрузка...</div>';
-
-    try {
-      const data = await API.getTicket(ticketId);
-      if (!data || !data.ticket || !Array.isArray(data.messages)) {
-        throw new Error('Неверный формат данных тикета');
-      }
-
-      currentTicket = data.ticket;
-      const messages = data.messages;
-
-      renderTicketModal(currentTicket, messages);
-      setupModalEventListeners();
-    } catch (error) {
-      console.error('Open ticket error:', error);
-      modalBody.innerHTML = `<div class="empty-state"><p style="color: var(--accent-red);">Ошибка: ${escapeHtml(error.message)}</p></div>`;
-      showError('Ошибка открытия тикета: ' + error.message);
-    }
-  }
-
-  function renderTicketModal(ticket, messages) {
-    const modalBody = document.getElementById('admin-modal-body');
-    if (!modalBody) return;
-
-    const statusText = {
-      'open': 'Открыт',
-      'in_progress': 'В работе',
-      'closed': 'Закрыт'
-    };
-
-    modalBody.innerHTML = `
-      <div class="ticket-details">
-        <h3>${escapeHtml(ticket.subject)}</h3>
-        <div class="ticket-details-grid">
-          <div class="detail-item">
-            <div class="detail-label">ID</div>
-            <div class="detail-value">#${ticket.id}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Пользователь</div>
-            <div class="detail-value">${escapeHtml(ticket.user_username || 'Неизвестный')}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Статус</div>
-            <div class="detail-value status-${ticket.status}">${statusText[ticket.status]}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Приоритет</div>
-            <div class="detail-value">${ticket.priority}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Создан</div>
-            <div class="detail-value">${new Date(ticket.created_at).toLocaleString('ru-RU')}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Назначен</div>
-            <div class="detail-value">${escapeHtml(ticket.assigned_admin_username) || '—'}</div>
-          </div>
-        </div>
-
-        <div class="admin-actions">
-          <div class="status-btns">
-            <button class="status-btn ${ticket.status === 'open' ? 'active' : ''}" data-status="open">Открыт</button>
-            <button class="status-btn ${ticket.status === 'in_progress' ? 'active' : ''}" data-status="in_progress">В работе</button>
-            <button class="status-btn ${ticket.status === 'closed' ? 'active' : ''}" data-status="closed">Закрыт</button>
-          </div>
-
-          <div class="priority-btns">
-            <button class="priority-btn ${ticket.priority === 'normal' ? 'active' : ''}" data-priority="normal">Normal</button>
-            <button class="priority-btn ${ticket.priority === 'high' ? 'active' : ''}" data-priority="high">High</button>
-            <button class="priority-btn ${ticket.priority === 'urgent' ? 'active' : ''}" data-priority="urgent">Urgent</button>
-          </div>
-
-          <button class="assign-btn" id="assign-btn">
-            <span id="assign-text">${ticket.assigned_admin_id === user.id ? 'Снять с себя' : 'Назначить себе'}</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="messages-list">
-        ${messages.map(msg => `
-          <div class="message ${msg.is_admin_reply ? 'admin-reply' : ''}">
-            <div class="message-header">
-              <span class="message-author ${msg.is_admin_reply ? 'admin' : ''}">${escapeHtml(msg.username || 'Неизвестный')}</span>
-              <span class="message-time">${new Date(msg.created_at).toLocaleString('ru-RU')}</span>
-            </div>
-            <div class="message-content">${escapeHtml(msg.content)}</div>
-          </div>
-        `).join('')}
-      </div>
-
-      ${ticket.status !== 'closed' ? `
-        <form class="admin-reply-form" id="admin-reply-form">
-          <textarea id="admin-reply-content" placeholder="Напишите ответ пользователю..." required maxlength="5000"></textarea>
-          <button type="submit" class="btn btn-primary">Отправить ответ</button>
-        </form>
-      ` : ''}
-    `;
-  }
-
-  function setupModalEventListeners() {
-    document.querySelectorAll('.status-btn').forEach(btn => {
-      btn.onclick = () => updateTicketField('status', btn.dataset.status);
-    });
-
-    document.querySelectorAll('.priority-btn').forEach(btn => {
-      btn.onclick = () => updateTicketField('priority', btn.dataset.priority);
-    });
-
-    const assignBtn = document.getElementById('assign-btn');
-    if (assignBtn) {
-      assignBtn.onclick = toggleAssignment;
-    }
-
-    const replyForm = document.getElementById('admin-reply-form');
-    if (replyForm) {
-      replyForm.onsubmit = handleReply;
-    }
-  }
-
-  async function updateTicketField(field, value) {
-    if (!currentTicket) return;
-
-    const currentValue = currentTicket[field];
-    if (currentValue === value) return;
-
-    document.querySelectorAll(`.${field}-btn`).forEach(b => b.classList.remove('active'));
-    const btn = document.querySelector(`[data-${field}="${value}"]`);
-    if (btn) btn.classList.add('active');
-
-    try {
-      const updates = {};
-      updates[field] = value;
-      await API.updateTicket(currentTicket.id, updates);
-    } catch (err) {
-      document.querySelector(`[data-${field}="${currentValue}"]`)?.classList.add('active');
-      if (btn) btn.classList.remove('active');
-      showError('Ошибка: ' + err.message);
-    }
-  }
-
-  async function toggleAssignment() {
-    if (!currentTicket) return;
-
-    const isAssigned = currentTicket.assigned_admin_id === user.id;
-    const newAssignedId = isAssigned ? null : user.id;
-
-    try {
-      await API.updateTicket(currentTicket.id, { assignedAdminId: newAssignedId });
-    } catch (err) {
-      showError('Ошибка: ' + err.message);
-    }
-  }
-
-  async function handleReply(e) {
-    e.preventDefault();
-
-    const textarea = document.getElementById('admin-reply-content');
-    const content = textarea.value.trim();
-
-    if (!content) return;
-
-    if (content.length > 5000) {
-      showError('Сообщение слишком длинное (максимум 5000 символов)');
-      return;
-    }
-
-    const button = e.target.querySelector('button[type="submit"]');
-    button.disabled = true;
-    button.textContent = 'Отправка...';
-
-    try {
-      await API.replyToTicket(currentTicket.id, content);
-      textarea.value = '';
-      await openTicket(currentTicket.id);
-    } catch (error) {
-      console.error('Reply error:', error);
-      showError('Ошибка: ' + error.message);
-      button.disabled = false;
-      button.textContent = 'Отправить ответ';
-    }
-  }
-
-  function refreshModalTicketInfo() {
-    if (!currentTicket) return;
-
-    const assignBtn = document.getElementById('assign-btn');
-    const assignText = document.getElementById('assign-text');
-    if (assignBtn && assignText) {
-      const isAssigned = currentTicket.assigned_admin_id === user.id;
-      assignText.textContent = isAssigned ? 'Снять с себя' : 'Назначить себе';
-    }
-
-    document.querySelectorAll('.status-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.status === currentTicket.status);
-    });
-
-    document.querySelectorAll('.priority-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.priority === currentTicket.priority);
-    });
-  }
-
-  function appendMessageToModal(message) {
-    const messagesList = document.querySelector('.messages-list');
-    if (!messagesList) return;
-
-    const msgEl = document.createElement('div');
-    msgEl.className = `message ${message.is_admin_reply ? 'admin-reply' : ''}`;
-    msgEl.innerHTML = `
-      <div class="message-header">
-        <span class="message-author ${message.is_admin_reply ? 'admin' : ''}">${escapeHtml(message.username || 'Неизвестный')}</span>
-        <span class="message-time">${new Date(message.created_at).toLocaleString('ru-RU')}</span>
-      </div>
-      <div class="message-content">${escapeHtml(message.content)}</div>
-    `;
-
-    messagesList.appendChild(msgEl);
-    messagesList.scrollTop = messagesList.scrollHeight;
-  }
-
-  function closeModal() {
-    const modal = document.getElementById('ticket-modal');
-    if (modal) modal.classList.remove('active');
-    currentTicket = null;
-  }
-
-  function renderTicketCards(tickets) {
-    const container = document.getElementById('tickets-cards');
-    if (!container) return;
-
-    if (tickets.length === 0) {
-      container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-muted);">Нет тикетов</div>';
-      return;
-    }
-
-    container.innerHTML = tickets.map(ticket => `
-      <div class="ticket-card" onclick="Dashboard.openTicket(${ticket.id})">
-        <div class="ticket-card-header">
-          <div class="ticket-card-id">🎫 #${ticket.id}</div>
-          <div class="ticket-card-badges">
-            <span class="ticket-badge status-${ticket.status}">${getStatusEmoji(ticket.status)}</span>
-            <span class="ticket-badge priority-${ticket.priority}">${getPriorityEmoji(ticket.priority)}</span>
-          </div>
-        </div>
-        <div class="ticket-card-body">
-          <div class="ticket-card-subject">${escapeHtml(ticket.subject)}</div>
-          <div class="ticket-card-meta">
-            <div>👤 ${escapeHtml(ticket.user_username)}</div>
-            <div>⏰ ${new Date(ticket.created_at).toLocaleDateString('ru-RU')}</div>
-            ${ticket.assigned_admin_username ? `<div>👨‍💼 ${escapeHtml(ticket.assigned_admin_username)}</div>` : ''}
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function getStatusEmoji(status) {
-    const emojis = { 'open': '🟢', 'in_progress': '🟡', 'closed': '⚫' };
-    return emojis[status] || '⚪';
-  }
-
-  function getPriorityEmoji(priority) {
-    const emojis = { 'normal': '🔵', 'high': '🟠', 'urgent': '🔴' };
-    return emojis[priority] || '⚪';
-  }
-
-  function escapeHtml(text) {
-    if (!text) return '';
-    const map = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;'
-    };
-    return String(text).replace(/[&<>"']/g, m => map[m]);
-  }
-
-  function setupFilters() {
-    document.querySelectorAll('.filter-tab').forEach(tab => {
-      tab.onclick = async () => {
-        const filter = tab.dataset.filter;
-
-        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        if (filter === 'all') {
-          filters = {};
-        } else if (filter === 'mine') {
-          filters = { assigned_to_me: true };
-        } else {
-          filters = { status: filter };
-        }
-
-        await loadTickets();
-      };
-    });
-  }
-
-  function setupSearch() {
-    let searchTimeout;
-    const searchBox = document.getElementById('search-box');
-    if (!searchBox) return;
-
-    searchBox.oninput = (e) => {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        const query = e.target.value.toLowerCase();
-        const rows = document.querySelectorAll('#tickets-tbody tr');
-
-        rows.forEach(row => {
-          const text = row.textContent.toLowerCase();
-          row.style.display = text.includes(query) ? '' : 'none';
+    let user = null;
+    let tickets = [];
+    let currentTicket = null;
+    let filters = {};
+    let sse = null;
+
+    // ── SSE ────────────────────────────────
+    function initSSE() {
+        if (!inMemoryAccessToken) return;
+        sse = new EventSource(`${API_URL}/events?token=${inMemoryAccessToken}`);
+
+        sse.addEventListener('admin:ticket:new', e => {
+            const ticket = JSON.parse(e.data);
+            tickets.unshift(ticket);
+            renderTickets();
+            loadStats();
+            showToastMsg(`Новый тикет #${ticket.id}`, 'success');
+            pulseStat('stat-open');
         });
-      }, 300);
-    };
-  }
 
-  function setupLogout() {
-    const logoutBtn = document.getElementById('logout-btn');
-    if (!logoutBtn) return;
+        sse.addEventListener('admin:ticket:updated', e => {
+            const updated = JSON.parse(e.data);
+            const idx = tickets.findIndex(t => t.id === updated.id);
+            if (idx !== -1) { tickets[idx] = updated; renderTickets(); }
+            if (currentTicket && currentTicket.id === updated.id) {
+                currentTicket = updated;
+                refreshPanelMeta();
+            }
+            loadStats();
+        });
 
-    logoutBtn.onclick = async () => {
-      try {
-        await API.logout();
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
-      logout();
-    };
-  }
+        sse.addEventListener('admin:message:new', e => {
+            const { ticketId, message } = JSON.parse(e.data);
+            if (currentTicket && currentTicket.id === ticketId) appendMessageToPanel(message);
+            showToastMsg(`Новое сообщение в #${ticketId}`, 'success');
+        });
 
-  function setupModalClose() {
-    const modal = document.getElementById('ticket-modal');
-    if (!modal) return;
-
-    modal.onclick = (e) => {
-      if (e.target.id === 'ticket-modal') {
-        closeModal();
-      }
-    };
-  }
-
-  async function init() {
-    try {
-      user = await checkAuth();
-      if (!user) {
-        window.location.href = '../auth.html';
-        return;
-      }
-
-      if (!user.isAdmin) {
-        window.location.href = '../tickets.html';
-        return;
-      }
-
-      const usernameEl = document.getElementById('admin-username');
-      if (usernameEl) usernameEl.textContent = user.username || 'Администратор';
-
-      await loadStats();
-      await loadTickets();
-      initSSE();
-      setupFilters();
-      setupSearch();
-      setupLogout();
-      setupModalClose();
-    } catch (error) {
-      console.error('Initialization error:', error);
-      showError('Ошибка инициализации: ' + error.message);
+        sse.onerror = () => {};
     }
-  }
 
-  function renderTickets() {
-    loadTickets();
-  }
+    function pulseStat(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add('pulse-anim');
+        setTimeout(() => el.classList.remove('pulse-anim'), 450);
+    }
 
-  return {
-    init,
-    openTicket,
-    closeModal
-  };
+    // ── Stats ──────────────────────────────
+    async function loadStats() {
+        try {
+            const data = await API.getStats();
+            if (!data || !data.stats) throw new Error('no stats');
+            const s = data.stats;
+            setText('stat-open',     s.open_tickets     || 0);
+            setText('stat-progress', s.in_progress_tickets || 0);
+            setText('stat-closed',   s.closed_tickets   || 0);
+            setText('stat-total',    s.total_tickets    || 0);
+        } catch (_) {
+            ['stat-open','stat-progress','stat-closed','stat-total'].forEach(id => setText(id, '—'));
+        }
+    }
+
+    // ── Load tickets ───────────────────────
+    async function loadTickets() {
+        const loading = document.getElementById('loading');
+        const tbody   = document.getElementById('tickets-tbody');
+        const cards   = document.getElementById('tickets-cards');
+
+        if (loading) loading.style.display = 'flex';
+        if (tbody)  tbody.innerHTML = '';
+        if (cards)  cards.innerHTML = '';
+
+        try {
+            const data = await API.getAllTickets(filters);
+            if (!data || !Array.isArray(data.tickets)) throw new Error('Неверный формат');
+            tickets = data.tickets;
+            renderTickets();
+        } catch (err) {
+            const msg = `Ошибка загрузки: ${escapeHtml(err.message)}`;
+            if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${msg}</td></tr>`;
+            if (cards) cards.innerHTML = `<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${msg}</div>`;
+        } finally {
+            if (loading) loading.style.display = 'none';
+        }
+    }
+
+    function renderTickets() {
+        const tbody  = document.getElementById('tickets-tbody');
+        const cards  = document.getElementById('tickets-cards');
+        const statusLabels = { open: 'Открыт', in_progress: 'В работе', closed: 'Закрыт' };
+        const priorityDot  = { normal: 'rgba(255,255,255,0.5)', high: '#FFD700', urgent: '#FF3333' };
+
+        if (tbody) {
+            tbody.innerHTML = '';
+            if (tickets.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">Нет тикетов</td></tr>`;
+            } else {
+                tickets.forEach(t => {
+                    const tr = document.createElement('tr');
+                    if (currentTicket && currentTicket.id === t.id) tr.classList.add('row-active');
+                    const date = new Date(t.created_at).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+                    tr.innerHTML = `
+                        <td class="td-id">#${t.id}</td>
+                        <td class="td-subject">${escapeHtml(t.subject)}</td>
+                        <td class="td-user">${escapeHtml(t.user_username)}</td>
+                        <td><span class="badge status-${t.status}">${statusLabels[t.status]}</span></td>
+                        <td>
+                            <span class="priority-dot">
+                                <span class="status-dot" style="background:${priorityDot[t.priority]}"></span>
+                                ${t.priority.toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="td-assigned">${escapeHtml(t.assigned_admin_username) || '—'}</td>
+                        <td class="td-date">${date}</td>
+                    `;
+                    tr.addEventListener('click', () => openTicket(t.id));
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        if (cards) {
+            cards.innerHTML = '';
+            if (tickets.length === 0) {
+                cards.innerHTML = `<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">Нет тикетов</div>`;
+            } else {
+                tickets.forEach(t => {
+                    const card = document.createElement('div');
+                    card.className = 'adm-ticket-card';
+                    card.innerHTML = `
+                        <div class="atc-header">
+                            <span class="atc-id">#${t.id}</span>
+                            <div class="atc-badges">
+                                <span class="badge status-${t.status}">${statusLabels[t.status]}</span>
+                                <span class="badge priority-${t.priority}">${t.priority.toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <div class="atc-subject">${escapeHtml(t.subject)}</div>
+                        <div class="atc-meta">
+                            <span>${escapeHtml(t.user_username)}</span>
+                            <span>${new Date(t.created_at).toLocaleDateString('ru-RU')}</span>
+                            ${t.assigned_admin_username ? `<span>${escapeHtml(t.assigned_admin_username)}</span>` : ''}
+                        </div>
+                    `;
+                    card.addEventListener('click', () => openTicket(t.id));
+                    cards.appendChild(card);
+                });
+            }
+        }
+    }
+
+    // ── Open ticket panel ──────────────────
+    async function openTicket(ticketId) {
+        const panel   = document.getElementById('adm-panel');
+        const overlay = document.getElementById('adm-panel-overlay');
+        const body    = document.getElementById('admin-modal-body');
+
+        panel.classList.add('open');
+        overlay.classList.add('active');
+        body.innerHTML = '<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">Загрузка…</div>';
+
+        // Mark active row
+        document.querySelectorAll('#tickets-tbody tr').forEach(r => {
+            r.classList.toggle('row-active', r.querySelector('.td-id') && r.querySelector('.td-id').textContent === `#${ticketId}`);
+        });
+
+        try {
+            const data = await API.getTicket(ticketId);
+            if (!data || !data.ticket) throw new Error('Неверный формат');
+            currentTicket = data.ticket;
+            renderPanelHeader(currentTicket);
+            renderPanelBody(currentTicket, data.messages || []);
+        } catch (err) {
+            body.innerHTML = `<div style="padding:3rem;text-align:center;color:var(--accent-urgent);">Ошибка: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    function renderPanelHeader(ticket) {
+        const statusLabels = { open: 'Открыт', in_progress: 'В работе', closed: 'Закрыт' };
+        document.getElementById('adm-panel-subject').textContent = ticket.subject;
+
+        const meta = document.getElementById('adm-panel-meta');
+        meta.innerHTML = '';
+
+        const idS = document.createElement('span');
+        idS.style.fontFamily = 'var(--font-mono)';
+        idS.textContent = `#${ticket.id}`;
+
+        const st = document.createElement('span');
+        st.className = `badge status-${ticket.status}`;
+        st.textContent = statusLabels[ticket.status];
+
+        const pr = document.createElement('span');
+        pr.className = `badge priority-${ticket.priority}`;
+        pr.textContent = ticket.priority.toUpperCase();
+
+        meta.appendChild(idS);
+        meta.appendChild(st);
+        meta.appendChild(pr);
+    }
+
+    function renderPanelBody(ticket, messages) {
+        const body = document.getElementById('admin-modal-body');
+        body.innerHTML = '';
+
+        // ── Details section
+        const details = document.createElement('div');
+        details.className = 'adm-ticket-details';
+
+        const grid = document.createElement('div');
+        grid.className = 'adm-details-grid';
+
+        const fields = [
+            ['Пользователь', ticket.user_username || '—'],
+            ['Создан',       new Date(ticket.created_at).toLocaleString('ru-RU')],
+            ['Назначен',     ticket.assigned_admin_username || '—']
+        ];
+
+        fields.forEach(([label, value]) => {
+            const item = document.createElement('div');
+            item.className = 'adm-detail-item';
+            item.innerHTML = `<span class="adm-detail-label">${label}</span><span class="adm-detail-value">${escapeHtml(String(value))}</span>`;
+            grid.appendChild(item);
+        });
+
+        // ── Actions
+        const actions = document.createElement('div');
+        actions.className = 'adm-actions';
+
+        // Status
+        const statusGroup = makeActionGroup('Статус', [
+            { label: 'Открыт',   key: 'status', val: 'open',        active: ticket.status === 'open' },
+            { label: 'В работе', key: 'status', val: 'in_progress', active: ticket.status === 'in_progress' },
+            { label: 'Закрыт',   key: 'status', val: 'closed',      active: ticket.status === 'closed' }
+        ]);
+
+        // Priority
+        const priorityGroup = makeActionGroup('Приоритет', [
+            { label: '● Обычный', key: 'priority', val: 'normal',  active: ticket.priority === 'normal',  attr: 'data-priority=normal' },
+            { label: '● Высокий', key: 'priority', val: 'high',    active: ticket.priority === 'high',    attr: 'data-priority=high' },
+            { label: '● Срочный', key: 'priority', val: 'urgent',  active: ticket.priority === 'urgent',  attr: 'data-priority=urgent' }
+        ]);
+
+        // Assign
+        const assignBtn = document.createElement('button');
+        assignBtn.className = 'adm-assign-btn';
+        assignBtn.id = 'adm-assign-btn';
+        assignBtn.textContent = ticket.assigned_admin_id === user.id ? 'Снять с себя' : 'Назначить себе';
+        assignBtn.addEventListener('click', toggleAssign);
+
+        actions.appendChild(statusGroup);
+        actions.appendChild(priorityGroup);
+        actions.appendChild(assignBtn);
+
+        details.appendChild(grid);
+        details.appendChild(actions);
+        body.appendChild(details);
+
+        // ── Messages
+        const msgsSection = document.createElement('div');
+        msgsSection.className = 'adm-messages-section';
+
+        const msgsLabel = document.createElement('div');
+        msgsLabel.className = 'adm-messages-label';
+        msgsLabel.textContent = 'Переписка';
+
+        const msgsList = document.createElement('div');
+        msgsList.className = 'adm-messages-list';
+        msgsList.id = 'adm-messages-list';
+
+        messages.forEach(msg => msgsList.appendChild(makeMessageEl(msg)));
+
+        msgsSection.appendChild(msgsLabel);
+        msgsSection.appendChild(msgsList);
+        body.appendChild(msgsSection);
+
+        // ── Reply form
+        if (ticket.status !== 'closed') {
+            const replyForm = document.createElement('div');
+            replyForm.className = 'adm-reply-form';
+
+            const ta = document.createElement('textarea');
+            ta.className = 'adm-reply-textarea';
+            ta.id = 'adm-reply-content';
+            ta.placeholder = 'Написать ответ пользователю…';
+            ta.maxLength = 5000;
+
+            const sendBtn = document.createElement('button');
+            sendBtn.className = 'btn btn-primary';
+            sendBtn.style.cssText = 'width:100%;justify-content:center;';
+            sendBtn.textContent = 'Отправить ответ';
+
+            sendBtn.addEventListener('click', async () => {
+                const content = ta.value.trim();
+                if (!content) return;
+                if (content.length > 5000) { showToastMsg('Максимум 5000 символов', 'error'); return; }
+                sendBtn.disabled = true;
+                sendBtn.textContent = 'Отправка…';
+                try {
+                    await API.replyToTicket(currentTicket.id, content);
+                    ta.value = '';
+                    const data = await API.getTicket(currentTicket.id);
+                    if (data && data.messages) {
+                        const list = document.getElementById('adm-messages-list');
+                        if (list) {
+                            list.innerHTML = '';
+                            data.messages.forEach(m => list.appendChild(makeMessageEl(m)));
+                            list.scrollTop = list.scrollHeight;
+                        }
+                    }
+                } catch (err) {
+                    showToastMsg('Ошибка: ' + err.message, 'error');
+                } finally {
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = 'Отправить ответ';
+                }
+            });
+
+            replyForm.appendChild(ta);
+            replyForm.appendChild(sendBtn);
+            body.appendChild(replyForm);
+        }
+
+        // Scroll messages to bottom
+        setTimeout(() => {
+            const list = document.getElementById('adm-messages-list');
+            if (list) list.scrollTop = list.scrollHeight;
+        }, 50);
+    }
+
+    function makeActionGroup(labelText, buttons) {
+        const group = document.createElement('div');
+        group.className = 'adm-action-group';
+
+        const label = document.createElement('div');
+        label.className = 'adm-action-label';
+        label.textContent = labelText;
+
+        const btns = document.createElement('div');
+        btns.className = 'adm-action-btns';
+
+        buttons.forEach(({ label: btnLabel, key, val, active, attr }) => {
+            const btn = document.createElement('button');
+            btn.className = `adm-action-btn${active ? ' btn-active' : ''}`;
+            btn.dataset[key === 'status' ? 'status' : 'priority'] = val;
+            btn.textContent = btnLabel;
+            if (attr) {
+                const [k, v] = attr.split('=');
+                btn.setAttribute(k, v);
+            }
+            btn.addEventListener('click', () => updateTicketField(key, val, btn));
+            btns.appendChild(btn);
+        });
+
+        group.appendChild(label);
+        group.appendChild(btns);
+        return group;
+    }
+
+    function makeMessageEl(msg) {
+        const wrap = document.createElement('div');
+        wrap.className = `adm-message ${msg.is_admin_reply ? 'admin-reply' : 'user-message'}`;
+
+        const meta = document.createElement('div');
+        meta.className = 'adm-msg-meta';
+
+        const author = document.createElement('span');
+        author.className = 'adm-msg-author';
+        author.textContent = msg.username || '—';
+
+        const time = document.createElement('span');
+        time.textContent = new Date(msg.created_at).toLocaleString('ru-RU');
+
+        meta.appendChild(author);
+        meta.appendChild(time);
+
+        const body = document.createElement('div');
+        body.className = 'adm-msg-body';
+        body.textContent = msg.content;
+
+        wrap.appendChild(meta);
+        wrap.appendChild(body);
+        return wrap;
+    }
+
+    function appendMessageToPanel(msg) {
+        const list = document.getElementById('adm-messages-list');
+        if (!list) return;
+        list.appendChild(makeMessageEl(msg));
+        list.scrollTop = list.scrollHeight;
+    }
+
+    function refreshPanelMeta() {
+        if (!currentTicket) return;
+        renderPanelHeader(currentTicket);
+        // Update active buttons
+        document.querySelectorAll('[data-status]').forEach(btn => {
+            btn.classList.toggle('btn-active', btn.dataset.status === currentTicket.status);
+        });
+        document.querySelectorAll('[data-priority]').forEach(btn => {
+            btn.classList.toggle('btn-active', btn.dataset.priority === currentTicket.priority);
+        });
+        const ab = document.getElementById('adm-assign-btn');
+        if (ab) ab.textContent = currentTicket.assigned_admin_id === user.id ? 'Снять с себя' : 'Назначить себе';
+    }
+
+    async function updateTicketField(field, value, clickedBtn) {
+        if (!currentTicket) return;
+        if (currentTicket[field] === value) return;
+
+        const prevValue = currentTicket[field];
+
+        // Optimistic UI
+        const selector = field === 'status' ? '[data-status]' : '[data-priority]';
+        document.querySelectorAll(selector).forEach(b => b.classList.remove('btn-active'));
+        clickedBtn.classList.add('btn-active');
+        currentTicket[field] = value;
+
+        try {
+            await API.updateTicket(currentTicket.id, { [field]: value });
+            renderPanelHeader(currentTicket);
+            renderTickets();
+        } catch (err) {
+            // Rollback
+            currentTicket[field] = prevValue;
+            refreshPanelMeta();
+            showToastMsg('Ошибка: ' + err.message, 'error');
+        }
+    }
+
+    async function toggleAssign() {
+        if (!currentTicket) return;
+        const isAssigned = currentTicket.assigned_admin_id === user.id;
+        try {
+            await API.updateTicket(currentTicket.id, { assignedAdminId: isAssigned ? null : user.id });
+        } catch (err) {
+            showToastMsg('Ошибка: ' + err.message, 'error');
+        }
+    }
+
+    // ── Close panel ────────────────────────
+    function closePanel() {
+        document.getElementById('adm-panel').classList.remove('open');
+        document.getElementById('adm-panel-overlay').classList.remove('active');
+        document.querySelectorAll('#tickets-tbody tr').forEach(r => r.classList.remove('row-active'));
+        currentTicket = null;
+    }
+
+    // ── Filters ────────────────────────────
+    function setupFilters() {
+        document.querySelectorAll('.adm-filter-tab').forEach(tab => {
+            tab.addEventListener('click', async () => {
+                document.querySelectorAll('.adm-filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const f = tab.dataset.filter;
+                filters = f === 'all' ? {} : f === 'mine' ? { assigned_to_me: true } : { status: f };
+                await loadTickets();
+            });
+        });
+    }
+
+    // ── Search ─────────────────────────────
+    function setupSearch() {
+        let timer;
+        const box = document.getElementById('search-box');
+        if (!box) return;
+        box.addEventListener('input', e => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                const q = e.target.value.toLowerCase();
+                document.querySelectorAll('#tickets-tbody tr').forEach(r => {
+                    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+                });
+                document.querySelectorAll('.adm-ticket-card').forEach(c => {
+                    c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+                });
+            }, 250);
+        });
+    }
+
+    // ── Toast ──────────────────────────────
+    function showToastMsg(msg, type) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const t = document.createElement('div');
+        t.className = 'adm-toast';
+        t.textContent = msg;
+        if (type === 'error') t.style.borderColor = 'rgba(255,51,51,0.3)';
+        container.appendChild(t);
+        requestAnimationFrame(() => t.classList.add('show'));
+        setTimeout(() => {
+            t.classList.remove('show');
+            setTimeout(() => t.remove(), 350);
+        }, 3500);
+    }
+
+    // Override global toast for admin page
+    window.showSuccess = msg => showToastMsg(msg, 'success');
+    window.showError   = msg => showToastMsg(msg, 'error');
+
+    // ── Helpers ────────────────────────────
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    function setText(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    }
+
+    // ── Init ───────────────────────────────
+    async function init() {
+        try {
+            user = await checkAuth();
+            if (!user) { window.location.href = '../auth.html'; return; }
+            if (!user.isAdmin) { window.location.href = '../tickets.html'; return; }
+
+            setText('admin-username', user.username || 'Admin');
+
+            await loadStats();
+            await loadTickets();
+            initSSE();
+            setupFilters();
+            setupSearch();
+
+            // Logout
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+                try { await API.logout(); } catch (_) {}
+                logout();
+            });
+
+            // Panel close
+            document.getElementById('adm-panel-close').addEventListener('click', closePanel);
+            document.getElementById('adm-panel-overlay').addEventListener('click', closePanel);
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && document.getElementById('adm-panel').classList.contains('open')) closePanel();
+            });
+
+        } catch (err) {
+            console.error('Init error:', err);
+        }
+    }
+
+    return { init, openTicket, closeModal: closePanel };
 })();
 
 Dashboard.init();
-
 window.closeModal = Dashboard.closeModal;

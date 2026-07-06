@@ -1,159 +1,144 @@
-// Переключение табов
-document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', () => {
-        const tab = button.dataset.tab;
-
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-
-        document.querySelectorAll('.auth-form').forEach(form => form.classList.add('hidden'));
-        document.getElementById(`${tab}-form`).classList.remove('hidden');
-
-        // Очистить ошибки
-        document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+// ── View switching ─────────────────────────
+document.querySelectorAll('.auth-switch-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const targetId = btn.dataset.show;
+        document.querySelectorAll('.auth-view').forEach(v => v.classList.remove('active'));
+        document.getElementById(targetId).classList.add('active');
+        document.querySelectorAll('.error-message').forEach(el => { el.textContent = ''; });
     });
 });
 
-// Обработка входа
-document.getElementById('login-form').addEventListener('submit', async (e) => {
+// ── Password strength checklist ────────────
+const pwdInput = document.getElementById('register-password');
+if (pwdInput) {
+    pwdInput.addEventListener('input', () => {
+        const val = pwdInput.value;
+        toggle('pwd-len', val.length >= 8);
+        toggle('pwd-let', /[a-zA-Z]/.test(val) && /[0-9]/.test(val));
+        toggle('pwd-spc', /[!@#$%^&*()\-_=+\[\]{}|;:,.<>?]/.test(val));
+    });
+}
+
+function toggle(id, ok) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (ok) el.classList.add('ok'); else el.classList.remove('ok');
+}
+
+// ── Login ──────────────────────────────────
+document.getElementById('login-form').addEventListener('submit', async e => {
     e.preventDefault();
 
     const username = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value;
-    const errorEl = document.getElementById('login-error');
-    const button = e.target.querySelector('button[type="submit"]');
-
-    errorEl.textContent = '';
-
-    // Валидация на клиенте
-    if (password.length < 8) {
-        errorEl.textContent = 'Пароль должен быть не менее 8 символов';
-        return;
-    }
-
-    button.disabled = true;
-    const spinner = document.createElement('span');
-    spinner.className = 'loading-spinner';
-    button.innerHTML = '';
-    button.appendChild(spinner);
-    button.appendChild(document.createTextNode(' Вход...'));
-
-    try {
-        const data = await API.login(username, password);
-
-        if (!data) {
-            throw new Error('Ошибка подключения к серверу');
-        }
-
-        // Проверяем наличие необходимых данных
-        if (!data.accessToken || !data.user) {
-            throw new Error('Неверный формат ответа сервера');
-        }
-
-        // Сохраняем токен в память (не в localStorage)
-        inMemoryAccessToken = data.accessToken;
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        // Перенаправляем в соответствующую панель
-        if (data.user && data.user.isAdmin) {
-            window.location.href = 'admin/dashboard.html';
-        } else {
-            window.location.href = 'tickets.html';
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        errorEl.textContent = error.message || 'Ошибка входа. Проверьте логин и пароль.';
-        button.disabled = false;
-        button.textContent = 'Войти';
-    }
-});
-
-// Обработка регистрации
-document.getElementById('register-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const username = document.getElementById('register-username').value.trim();
-    const password = document.getElementById('register-password').value;
-    const passwordConfirm = document.getElementById('register-password-confirm').value;
-    const errorEl = document.getElementById('register-error');
-    const button = e.target.querySelector('button[type="submit"]');
+    const errorEl  = document.getElementById('login-error');
+    const btn      = document.getElementById('login-btn');
 
     errorEl.textContent = '';
 
     if (username.length < 3) {
-        errorEl.textContent = 'Логин должен быть не менее 3 символов';
+        document.getElementById('login-username-error').textContent = 'Минимум 3 символа';
         return;
     }
-
     if (password.length < 8) {
-        errorEl.textContent = 'Пароль должен быть не менее 8 символов';
+        document.getElementById('login-password-error').textContent = 'Минимум 8 символов';
         return;
     }
 
-    // Проверка сложности пароля
-    const hasLetter = /[a-zA-Z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password);
-
-    if (!hasLetter || !hasNumber || password.length < 8) {
-        errorEl.textContent = 'Пароль должен быть минимум 8 символов, содержать буквы и цифры';
-        return;
-    }
-
-    if (!hasSpecial) {
-        errorEl.textContent = 'Пароль должен содержать хотя бы один спецсимвол (!@#$%^&*()_+-=[]{}|;:,.<>?)';
-        return;
-    }
-
-    if (password !== passwordConfirm) {
-        errorEl.textContent = 'Пароли не совпадают';
-        return;
-    }
-
-    button.disabled = true;
-    const spinner = document.createElement('span');
-    spinner.className = 'loading-spinner';
-    button.innerHTML = '';
-    button.appendChild(spinner);
-    button.appendChild(document.createTextNode(' Регистрация...'));
+    setLoading(btn, true, 'Вход...');
 
     try {
-        const data = await API.register(username, password);
+        const data = await API.login(username, password);
 
-        if (!data) {
-            throw new Error('Ошибка подключения к серверу');
-        }
-
-        // Проверяем наличие необходимых данных
-        if (!data.accessToken || !data.user) {
+        if (!data || !data.accessToken || !data.user) {
             throw new Error('Неверный формат ответа сервера');
         }
 
         inMemoryAccessToken = data.accessToken;
-        localStorage.setItem('user', JSON.stringify(data.user));
+        sessionStorage.setItem('user', JSON.stringify(data.user));
 
-        window.location.href = 'tickets.html';
-    } catch (error) {
-        console.error('Registration error:', error);
-        errorEl.textContent = error.message || 'Ошибка регистрации';
-        button.disabled = false;
-        button.textContent = 'Зарегистрироваться';
+        window.location.href = data.user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
+    } catch (err) {
+        console.error('Login error:', err);
+        errorEl.textContent = err.message || 'Неверный логин или пароль';
+        setLoading(btn, false, 'Войти');
     }
 });
 
-// Проверка, если уже залогинен
+// ── Register ───────────────────────────────
+document.getElementById('register-form').addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const username = document.getElementById('register-username').value.trim();
+    const password = document.getElementById('register-password').value;
+    const confirm  = document.getElementById('register-password-confirm').value;
+    const errorEl  = document.getElementById('register-error');
+    const btn      = document.getElementById('register-btn');
+
+    errorEl.textContent = '';
+    clearFieldErrors();
+
+    if (username.length < 3) {
+        document.getElementById('register-username-error').textContent = 'Минимум 3 символа';
+        return;
+    }
+    if (password.length < 8) {
+        document.getElementById('register-password-error').textContent = 'Минимум 8 символов';
+        return;
+    }
+    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+        document.getElementById('register-password-error').textContent = 'Нужны буквы и цифры';
+        return;
+    }
+    if (!/[!@#$%^&*()\-_=+\[\]{}|;:,.<>?]/.test(password)) {
+        document.getElementById('register-password-error').textContent = 'Нужен спецсимвол';
+        return;
+    }
+    if (password !== confirm) {
+        document.getElementById('register-password-confirm-error').textContent = 'Пароли не совпадают';
+        return;
+    }
+
+    setLoading(btn, true, 'Регистрация...');
+
+    try {
+        const data = await API.register(username, password);
+
+        if (!data || !data.accessToken || !data.user) {
+            throw new Error('Неверный формат ответа сервера');
+        }
+
+        inMemoryAccessToken = data.accessToken;
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+
+        window.location.href = 'tickets.html';
+    } catch (err) {
+        console.error('Register error:', err);
+        errorEl.textContent = err.message || 'Ошибка регистрации';
+        setLoading(btn, false, 'Зарегистрироваться');
+    }
+});
+
+// ── Helpers ────────────────────────────────
+function setLoading(btn, loading, label) {
+    btn.disabled = loading;
+    if (loading) {
+        btn.innerHTML = `<span class="btn-spinner"></span>${label}`;
+    } else {
+        btn.textContent = label;
+    }
+}
+
+function clearFieldErrors() {
+    document.querySelectorAll('.error-message').forEach(el => { el.textContent = ''; });
+}
+
+// ── Auto-redirect if already logged in ─────
 (async () => {
     try {
         const user = await checkAuth();
         if (user) {
-            if (user.isAdmin) {
-                window.location.href = 'admin/dashboard.html';
-            } else {
-                window.location.href = 'tickets.html';
-            }
+            window.location.href = user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
         }
-    } catch (error) {
-        console.error('Auth check failed:', error);
-        // Пользователь не авторизован, остаемся на странице логина
-    }
+    } catch (_) { /* not logged in */ }
 })();
