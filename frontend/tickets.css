@@ -583,15 +583,31 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
 
+    /* На мобильном показываем только фильтры + кнопку создать тикет */
+    .sidebar-user    { display: none; }
+    .sidebar-footer  { display: none; }
+    .sidebar-telegram { display: none; }
+
+    /* Верхняя строка: кнопка + фильтры */
+    .sidebar-create {
+        border-bottom: none;
+        padding: var(--sp-4) var(--sp-4) var(--sp-2);
+    }
+
+    .sidebar-create .btn {
+        width: 100%;
+        justify-content: center;
+        font-size: var(--text-sm);
+    }
+
     .sidebar-filters {
         display: flex;
         flex-direction: row;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding: 0;
+        flex-wrap: wrap;
+        overflow-x: visible;
+        padding: var(--sp-3) var(--sp-4);
         border-bottom: none;
-        gap: 0;
-        -webkit-overflow-scrolling: touch;
+        gap: var(--sp-2);
     }
 
     .filter-label { display: none; }
@@ -599,18 +615,24 @@
     .filter-link {
         white-space: nowrap;
         border-left: none;
-        border-bottom: 2px solid transparent;
-        padding: var(--sp-3) var(--sp-4);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-sm);
+        padding: var(--sp-2) var(--sp-4);
         flex-shrink: 0;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: var(--text-sm);
+    }
+
+    .filter-link:hover {
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.75);
     }
 
     .filter-link.active {
-        border-bottom-color: var(--white);
-        border-left-color: transparent;
-        background: transparent;
+        background: var(--white);
+        color: var(--black);
+        border-color: var(--white);
     }
-
-    .sidebar-telegram { display: none; }
 
     .ticket-row {
         grid-template-columns: 8px 44px 1fr auto;
