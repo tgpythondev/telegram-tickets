@@ -41,9 +41,13 @@
                 botUrl: 'https://t.me/@Mini_review_bot',
                 sourcesUrl: 'https://example.com/mini-review-sources.zip', // TODO: replace with real link
                 screenshots: [
-                    { src: 'images/mini-review-1.jpg', alt: 'Mini-review bot interface 1' },
-                    { src: 'images/mini-review-2.jpg', alt: 'Mini-review bot interface 2' },
-                    { src: 'images/mini-review-3.jpg', alt: 'Mini-review bot interface 3' }
+                    { src: 'images/Mini-review/1.png', alt: 'Mini-review bot screenshot 1' },
+                    { src: 'images/Mini-review/2.png', alt: 'Mini-review bot screenshot 2' },
+                    { src: 'images/Mini-review/3.png', alt: 'Mini-review bot screenshot 3' },
+                    { src: 'images/Mini-review/4.png', alt: 'Mini-review bot screenshot 4' },
+                    { src: 'images/Mini-review/5.png', alt: 'Mini-review bot screenshot 5' },
+                    { src: 'images/Mini-review/6.png', alt: 'Mini-review bot screenshot 6' },
+                    { src: 'images/Mini-review/7.png', alt: 'Mini-review bot screenshot 7' }
                 ]
             }
         ],
