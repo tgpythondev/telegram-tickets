@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="pl" data-title-key="page_title_portfolio">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,24 +7,25 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Портфолио | KALIANG</title>
+    <title>Portfolio | KALIANG</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="portfolio.css">
+    <link rel="stylesheet" href="i18n/i18n.css">
 </head>
 <body>
     <header id="site-header">
         <nav>
             <div class="logo"><a href="index.html">KALIANG</a></div>
-            <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Открыть меню" aria-expanded="false">
+            <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Открыть меню" aria-expanded="false" data-i18n-aria="nav_open_menu">
                 <span></span><span></span><span></span>
             </button>
             <ul class="nav-links" id="nav-links">
-                <li><a href="index.html#services">Услуги</a></li>
-                <li><a href="index.html#pricing">Цены</a></li>
-                <li><a href="configurator.html" class="nav-cta">Заказать</a></li>
+                <li><a href="index.html#services" data-i18n="nav_services">Usługi</a></li>
+                <li><a href="index.html#pricing" data-i18n="nav_pricing">Cennik</a></li>
+                <li><a href="configurator.html" class="nav-cta" data-i18n="nav_order">Zamów</a></li>
             </ul>
         </nav>
     </header>
@@ -32,14 +33,14 @@
     <div class="pf-layout">
         <!-- Header -->
         <div class="pf-page-header section-container">
-            <span class="eyebrow">Портфолио</span>
-            <h1 class="pf-title">Примеры работ</h1>
-            <p class="pf-sub">Реальные проекты появятся здесь по мере завершения работ. Сейчас раздел в процессе наполнения.</p>
+            <span class="eyebrow" data-i18n="pf_eyebrow">Portfolio</span>
+            <h1 class="pf-title" data-i18n="pf_title">Przykłady prac</h1>
+            <p class="pf-sub" data-i18n="pf_sub">Prawdziwe projekty pojawią się tutaj w miarę ukończenia prac. Sekcja jest w trakcie uzupełniania.</p>
         </div>
 
         <!-- Filters -->
         <div class="pf-filters section-container">
-            <button class="pf-filter-btn active" data-plan="all">Все</button>
+            <button class="pf-filter-btn active" data-plan="all" data-i18n="pf_filter_all">Wszystkie</button>
             <button class="pf-filter-btn" data-plan="mini">Mini</button>
             <button class="pf-filter-btn" data-plan="miniplus">Mini+</button>
             <button class="pf-filter-btn" data-plan="standard">Standard</button>
@@ -55,10 +56,10 @@
         <!-- CTA block -->
         <div class="pf-cta-block section-container">
             <div class="pf-cta-inner">
-                <p class="pf-cta-text">Хочешь стать первым кейсом в этом разделе?</p>
+                <p class="pf-cta-text" data-i18n="pf_cta_text">Chcesz być pierwszym projektem w tej sekcji?</p>
                 <div class="pf-cta-actions">
-                    <a href="configurator.html" class="btn btn-primary">Настроить заказ</a>
-                    <a href="auth.html" class="btn btn-ghost">Создать тикет</a>
+                    <a href="configurator.html" class="btn btn-primary" data-i18n="pf_cta_order">Skonfiguruj zamówienie</a>
+                    <a href="auth.html" class="btn btn-ghost" data-i18n="pf_cta_ticket">Utwórz zgłoszenie</a>
                 </div>
             </div>
         </div>
@@ -76,14 +77,18 @@
         <div class="footer-content">
             <div class="footer-logo">KALIANG</div>
             <div class="footer-links">
-                <a href="index.html">Главная</a>
-                <a href="configurator.html">Конфигуратор</a>
-                <a href="auth.html">Поддержка</a>
+                <a href="index.html" data-i18n="footer_home">Strona główna</a>
+                <a href="configurator.html" data-i18n="footer_config">Konfigurator</a>
+                <a href="auth.html" data-i18n="footer_support">Wsparcie</a>
             </div>
-            <p class="footer-copyright">© 2026 Kaliang. Все права защищены.</p>
+            <p class="footer-copyright" data-i18n="footer_copyright">© 2026 Kaliang. Wszelkie prawa zastrzeżone.</p>
         </div>
     </footer>
 
+    <script src="i18n/ru.js"></script>
+    <script src="i18n/pl.js"></script>
+    <script src="i18n/en.js"></script>
+    <script src="i18n/i18n.js"></script>
     <script src="script.js"></script>
     <script src="portfolio.js"></script>
 </body>

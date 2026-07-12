@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="pl" data-title-key="page_title_index">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,21 +14,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="i18n/i18n.css">
 </head>
 <body>
     <!-- ── Header ─────────────────────────── -->
     <header id="site-header">
         <nav>
             <div class="logo">KALIANG</div>
-            <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Открыть меню" aria-expanded="false">
+            <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Открыть меню" aria-expanded="false" data-i18n-aria="nav_open_menu">
                 <span></span><span></span><span></span>
             </button>
             <ul class="nav-links" id="nav-links">
-                <li><a href="#services">Услуги</a></li>
-                <li><a href="#process">Процесс</a></li>
-                <li><a href="#portfolio">Портфолио</a></li>
-                <li><a href="#pricing">Цены</a></li>
-                <li><a href="auth.html" class="nav-cta">Войти</a></li>
+                <li><a href="#services" data-i18n="nav_services">Услуги</a></li>
+                <li><a href="#process" data-i18n="nav_process">Процесс</a></li>
+                <li><a href="#portfolio" data-i18n="nav_portfolio">Портфолио</a></li>
+                <li><a href="#pricing" data-i18n="nav_pricing">Цены</a></li>
+                <li><a href="auth.html" class="nav-cta" data-i18n="nav_login">Войти</a></li>
             </ul>
         </nav>
     </header>
@@ -37,69 +38,47 @@
     <section class="hero">
         <div class="hero-inner section-container">
             <div class="hero-left">
-                <span class="eyebrow eyebrow-border">TELEGRAM BOT DEVELOPMENT</span>
+                <span class="eyebrow eyebrow-border" data-i18n="hero_eyebrow">TELEGRAM BOT DEVELOPMENT</span>
                 <h1 class="hero-title">
-                    Боты, которые<br>
-                    <span class="hero-title-outline">работают</span>
+                    <span data-i18n="hero_title_line1">Боты, которые</span><br>
+                    <span class="hero-title-outline" data-i18n="hero_title_line2">работают</span>
                 </h1>
-                <p class="hero-sub">Автоматизация бизнеса через умных ботов.<br>От идеи до запуска — под ключ.</p>
+                <p class="hero-sub" data-i18n-html="hero_sub">Автоматизация бизнеса через умных ботов.<br>От идеи до запуска — под ключ.</p>
                 <div class="hero-actions">
-                    <a href="configurator.html" class="btn btn-primary magnetic-btn">Настроить заказ</a>
-                    <a href="auth.html" class="btn btn-ghost magnetic-btn">Создать тикет</a>
+                    <a href="configurator.html" class="btn btn-primary magnetic-btn" data-i18n="hero_btn_configure">Настроить заказ</a>
+                    <a href="auth.html" class="btn btn-ghost magnetic-btn" data-i18n="hero_btn_ticket">Создать тикет</a>
                 </div>
                 <div class="hero-social-proof">
-                    <span>5+ ботов запущено</span>
+                    <span data-i18n="hero_proof_bots">5+ ботов запущено</span>
                     <span class="proof-dot">·</span>
-                    <span>Python · JS · Go</span>
+                    <span data-i18n="hero_proof_langs">Python · JS · Go</span>
                     <span class="proof-dot">·</span>
-                    <span>Ответ в течение дня</span>
+                    <span data-i18n="hero_proof_reply">Ответ в течение дня</span>
                 </div>
             </div>
             <div class="hero-right">
                 <div class="hero-card liquid-border">
                     <div class="hc-header">
-                        <span class="hc-label">Боты на серверах</span>
+                        <span class="hc-label" data-i18n="hero_card_label">Боты на серверах</span>
                         <span class="hc-dot"></span>
                     </div>
 
-                    <div class="hc-bot-row">
-                        <div class="hc-bot-info">
-                            <span class="hc-bot-name">@KaliangSupportBot</span>
-                            <span class="hc-bot-desc">Поддержка клиентов · Node.js</span>
-                        </div>
-                        <span class="hc-bot-status online">● online</span>
-                    </div>
-
-                    <div class="hc-bot-row">
-                        <div class="hc-bot-info">
-                            <span class="hc-bot-name">@OrdersHelperBot</span>
-                            <span class="hc-bot-desc">Приём заказов · Python</span>
-                        </div>
-                        <span class="hc-bot-status online">● online</span>
-                    </div>
-
-                    <div class="hc-bot-row hc-ticket-muted">
-                        <div class="hc-bot-info">
-                            <span class="hc-bot-name">@ScheduleNotifyBot</span>
-                            <span class="hc-bot-desc">Рассылка · Python</span>
-                        </div>
-                        <span class="hc-bot-status idle">● idle</span>
-                    </div>
+                    <!-- Bot placeholders removed as per user request -->
 
                     <div class="hc-footer">
                         <span class="hc-stat">
                             <span class="hc-stat-num">3</span>
-                            <span class="hc-stat-lbl">активных бота</span>
+                            <span class="hc-stat-lbl" data-i18n="hero_stat_bots">активных бота</span>
                         </span>
                         <span class="hc-stat-sep">·</span>
                         <span class="hc-stat">
                             <span class="hc-stat-num">99.8%</span>
-                            <span class="hc-stat-lbl">uptime</span>
+                            <span class="hc-stat-lbl" data-i18n="hero_stat_uptime">uptime</span>
                         </span>
                         <span class="hc-stat-sep">·</span>
                         <span class="hc-stat">
                             <span class="hc-stat-num">24/7</span>
-                            <span class="hc-stat-lbl">мониторинг</span>
+                            <span class="hc-stat-lbl" data-i18n="hero_stat_monitor">мониторинг</span>
                         </span>
                     </div>
                 </div>
@@ -112,22 +91,22 @@
         <div class="numbers-inner section-container">
             <div class="num-item">
                 <span class="num-value">5+</span>
-                <span class="num-label">ботов запущено</span>
+                <span class="num-label" data-i18n="num_bots_label">ботов запущено</span>
             </div>
             <div class="num-divider"></div>
             <div class="num-item">
                 <span class="num-value">3</span>
-                <span class="num-label">языка: Python · JS · Go</span>
+                <span class="num-label" data-i18n="num_langs_label">языка: Python · JS · Go</span>
             </div>
             <div class="num-divider"></div>
             <div class="num-item">
                 <span class="num-value">от $3</span>
-                <span class="num-label">стартовая цена</span>
+                <span class="num-label" data-i18n="num_price_label">стартовая цена</span>
             </div>
             <div class="num-divider"></div>
             <div class="num-item">
                 <span class="num-value">24ч</span>
-                <span class="num-label">первый ответ</span>
+                <span class="num-label" data-i18n="num_reply_label">первый ответ</span>
             </div>
         </div>
     </div>
@@ -136,32 +115,32 @@
     <section id="services" class="services-section fade-in-up">
         <div class="section-container">
             <div class="section-head">
-                <span class="eyebrow">Услуги</span>
-                <h2 class="section-title">Что я делаю</h2>
+                <span class="eyebrow" data-i18n="section_services">Услуги</span>
+                <h2 class="section-title" data-i18n="services_title">Что я делаю</h2>
             </div>
             <div class="services-list">
                 <a href="configurator.html" class="service-row">
                     <span class="srv-num">01</span>
-                    <span class="srv-name">Боты для бизнеса</span>
-                    <span class="srv-desc">Автоматизация продаж, приём заказов, консультации клиентов</span>
+                    <span class="srv-name" data-i18n="srv1_name">Боты для бизнеса</span>
+                    <span class="srv-desc" data-i18n="srv1_desc">Автоматизация продаж, приём заказов, консультации клиентов</span>
                     <span class="srv-arrow">→</span>
                 </a>
                 <a href="configurator.html" class="service-row">
                     <span class="srv-num">02</span>
-                    <span class="srv-name">Интеграции</span>
-                    <span class="srv-desc">Подключение к CRM, платёжным системам, внешним API</span>
+                    <span class="srv-name" data-i18n="srv2_name">Интеграции</span>
+                    <span class="srv-desc" data-i18n="srv2_desc">Подключение к CRM, платёжным системам, внешним API</span>
                     <span class="srv-arrow">→</span>
                 </a>
                 <a href="configurator.html" class="service-row">
                     <span class="srv-num">03</span>
-                    <span class="srv-name">Кастомные решения</span>
-                    <span class="srv-desc">Любая логика и функционал под конкретные задачи</span>
+                    <span class="srv-name" data-i18n="srv3_name">Кастомные решения</span>
+                    <span class="srv-desc" data-i18n="srv3_desc">Любая логика и функционал под конкретные задачи</span>
                     <span class="srv-arrow">→</span>
                 </a>
                 <a href="auth.html" class="service-row">
                     <span class="srv-num">04</span>
-                    <span class="srv-name">Поддержка</span>
-                    <span class="srv-desc">Обновления, доработки, техническая поддержка 24/7</span>
+                    <span class="srv-name" data-i18n="srv4_name">Поддержка</span>
+                    <span class="srv-desc" data-i18n="srv4_desc">Обновления, доработки, техническая поддержка 24/7</span>
                     <span class="srv-arrow">→</span>
                 </a>
             </div>
@@ -172,26 +151,26 @@
     <section id="process" class="process-section fade-in-up">
         <div class="section-container">
             <div class="section-head">
-                <span class="eyebrow">Как это работает</span>
-                <h2 class="section-title">Три шага до готового бота</h2>
+                <span class="eyebrow" data-i18n="section_process">Как это работает</span>
+                <h2 class="section-title" data-i18n="process_title">Три шага до готового бота</h2>
             </div>
             <div class="process-steps">
                 <div class="process-step">
                     <span class="ps-number">01</span>
-                    <h3 class="ps-title">Настрой конфигуратор</h3>
-                    <p class="ps-desc">Выбери пакет, опиши задачу, укажи язык и хостинг — получишь точную стоимость.</p>
+                    <h3 class="ps-title" data-i18n="step1_title">Настрой конфигуратор</h3>
+                    <p class="ps-desc" data-i18n="step1_desc">Выбери пакет, опиши задачу, укажи язык и хостинг — получишь точную стоимость.</p>
                 </div>
                 <div class="process-line"></div>
                 <div class="process-step">
                     <span class="ps-number">02</span>
-                    <h3 class="ps-title">Получи предложение</h3>
-                    <p class="ps-desc">Я свяжусь с тобой в течение дня, уточню детали и подтвержу заказ через тикет.</p>
+                    <h3 class="ps-title" data-i18n="step2_title">Получи предложение</h3>
+                    <p class="ps-desc" data-i18n="step2_desc">Я свяжусь с тобой в течение дня, уточню детали и подтвержу заказ через тикет.</p>
                 </div>
                 <div class="process-line"></div>
                 <div class="process-step">
                     <span class="ps-number">03</span>
-                    <h3 class="ps-title">Получи готового бота</h3>
-                    <p class="ps-desc">Бот с документацией и исходным кодом. Поддержка на всех этапах.</p>
+                    <h3 class="ps-title" data-i18n="step3_title">Получи готового бота</h3>
+                    <p class="ps-desc" data-i18n="step3_desc">Бот с документацией и исходным кодом. Поддержка на всех этапах.</p>
                 </div>
             </div>
         </div>
@@ -201,17 +180,17 @@
     <section id="portfolio" class="portfolio-section fade-in-up">
         <div class="section-container">
             <div class="section-head">
-                <span class="eyebrow">Портфолио</span>
-                <h2 class="section-title">Примеры работ</h2>
+                <span class="eyebrow" data-i18n="section_portfolio">Портфолио</span>
+                <h2 class="section-title" data-i18n="portfolio_title">Примеры работ</h2>
             </div>
 
             <div class="portfolio-coming">
                 <div class="pcoming-icon">⬡</div>
                 <div class="pcoming-text">
-                    <strong>Раздел в процессе наполнения</strong>
-                    <span>Реальные кейсы появятся после завершения первых проектов. Вы можете стать первым.</span>
+                    <strong data-i18n="portfolio_coming_strong">Раздел в процессе наполнения</strong>
+                    <span data-i18n="portfolio_coming_span">Реальные кейсы появятся после завершения первых проектов. Вы можете стать первым.</span>
                 </div>
-                <a href="portfolio.html" class="btn btn-ghost pcoming-btn">Открыть портфолио →</a>
+                <a href="portfolio.html" class="btn btn-ghost pcoming-btn" data-i18n="portfolio_open_btn">Открыть портфолио →</a>
             </div>
         </div>
     </section>
@@ -220,65 +199,65 @@
     <section id="pricing" class="pricing-section fade-in-up">
         <div class="section-container">
             <div class="section-head">
-                <span class="eyebrow">Цены</span>
-                <h2 class="section-title">Выбери пакет</h2>
+                <span class="eyebrow" data-i18n="section_pricing">Цены</span>
+                <h2 class="section-title" data-i18n="pricing_title">Выбери пакет</h2>
             </div>
             <div class="pricing-grid">
                 <div class="pricing-card">
                     <div class="pc-name">Mini</div>
                     <div class="pc-price">$3–5</div>
                     <ul class="pc-features">
-                        <li>Простые автоответчики</li>
-                        <li>Рассылки, уведомления</li>
-                        <li>Без базы данных</li>
+                        <li data-i18n="pc_mini_f1">Простые автоответчики</li>
+                        <li data-i18n="pc_mini_f2">Рассылки, уведомления</li>
+                        <li data-i18n="pc_mini_f3">Без базы данных</li>
                     </ul>
-                    <div class="pc-time">1–1.5 дня</div>
-                    <a href="configurator.html" class="btn btn-ghost pc-btn">Выбрать</a>
+                    <div class="pc-time" data-i18n="pc_mini_time">1–1.5 дня</div>
+                    <a href="configurator.html" class="btn btn-ghost pc-btn" data-i18n="pc_btn_select">Выбрать</a>
                 </div>
                 <div class="pricing-card">
                     <div class="pc-name">Mini+</div>
                     <div class="pc-price">$5–10</div>
                     <ul class="pc-features">
-                        <li>С базой данных</li>
-                        <li>Бесплатный хостинг</li>
-                        <li>Кастомная логика</li>
+                        <li data-i18n="pc_miniplus_f1">С базой данных</li>
+                        <li data-i18n="pc_miniplus_f2">Бесплатный хостинг</li>
+                        <li data-i18n="pc_miniplus_f3">Кастомная логика</li>
                     </ul>
-                    <div class="pc-time">1–3 дня</div>
-                    <a href="configurator.html" class="btn btn-ghost pc-btn">Выбрать</a>
+                    <div class="pc-time" data-i18n="pc_miniplus_time">1–3 дня</div>
+                    <a href="configurator.html" class="btn btn-ghost pc-btn" data-i18n="pc_btn_select">Выбрать</a>
                 </div>
                 <div class="pricing-card pricing-card-featured">
-                    <div class="pc-badge-pop">Популярный</div>
+                    <div class="pc-badge-pop" data-i18n="pc_popular">Популярный</div>
                     <div class="pc-name">Standard</div>
                     <div class="pc-price">$20–30</div>
                     <ul class="pc-features">
-                        <li>Магазины, каталоги, квизы</li>
-                        <li>База данных + хостинг</li>
-                        <li>Красивый дизайн</li>
+                        <li data-i18n="pc_std_f1">Магазины, каталоги, квизы</li>
+                        <li data-i18n="pc_std_f2">База данных + хостинг</li>
+                        <li data-i18n="pc_std_f3">Красивый дизайн</li>
                     </ul>
-                    <div class="pc-time">4–7 дней</div>
-                    <a href="configurator.html" class="btn btn-primary pc-btn">Выбрать</a>
+                    <div class="pc-time" data-i18n="pc_std_time">4–7 дней</div>
+                    <a href="configurator.html" class="btn btn-primary pc-btn" data-i18n="pc_btn_select">Выбрать</a>
                 </div>
                 <div class="pricing-card">
                     <div class="pc-name">Max</div>
                     <div class="pc-price">$50–70</div>
                     <ul class="pc-features">
-                        <li>Сложные интеграции</li>
-                        <li>Высокая нагрузка</li>
-                        <li>Топовый хостинг</li>
+                        <li data-i18n="pc_max_f1">Сложные интеграции</li>
+                        <li data-i18n="pc_max_f2">Высокая нагрузка</li>
+                        <li data-i18n="pc_max_f3">Топовый хостинг</li>
                     </ul>
-                    <div class="pc-time">1–2.5 нед.</div>
-                    <a href="configurator.html" class="btn btn-ghost pc-btn">Выбрать</a>
+                    <div class="pc-time" data-i18n="pc_max_time">1–2.5 нед.</div>
+                    <a href="configurator.html" class="btn btn-ghost pc-btn" data-i18n="pc_btn_select">Выбрать</a>
                 </div>
                 <div class="pricing-card">
                     <div class="pc-name">Custom</div>
                     <div class="pc-price">от $70</div>
                     <ul class="pc-features">
-                        <li>Индивидуальная разработка</li>
-                        <li>Любой функционал</li>
-                        <li>Цена после обсуждения</li>
+                        <li data-i18n="pc_custom_f1">Индивидуальная разработка</li>
+                        <li data-i18n="pc_custom_f2">Любой функционал</li>
+                        <li data-i18n="pc_custom_f3">Цена после обсуждения</li>
                     </ul>
-                    <div class="pc-time">обсуждается</div>
-                    <a href="auth.html" class="btn btn-ghost pc-btn">Обсудить</a>
+                    <div class="pc-time" data-i18n="pc_custom_time">обсуждается</div>
+                    <a href="auth.html" class="btn btn-ghost pc-btn" data-i18n="pc_btn_discuss">Обсудить</a>
                 </div>
             </div>
         </div>
@@ -289,43 +268,43 @@
         <div class="section-container">
             <div class="why-inner">
                 <div class="why-left">
-                    <span class="eyebrow">Почему я</span>
-                    <h2 class="section-title why-title">Работаем<br>как надо</h2>
+                    <span class="eyebrow" data-i18n="section_why">Почему я</span>
+                    <h2 class="section-title why-title" data-i18n-html="why_title">Работаем<br>как надо</h2>
                 </div>
                 <ul class="why-list stagger-container">
                     <li class="why-item">
                         <span class="why-check">✓</span>
                         <div>
-                            <strong>Индивидуальный подход</strong>
-                            <p>Каждый проект разбираем отдельно, без шаблонов</p>
+                            <strong data-i18n="why1_strong">Индивидуальный подход</strong>
+                            <p data-i18n="why1_p">Каждый проект разбираем отдельно, без шаблонов</p>
                         </div>
                     </li>
                     <li class="why-item">
                         <span class="why-check">✓</span>
                         <div>
-                            <strong>Чистый код и документация</strong>
-                            <p>Отдаю исходник с комментариями и README</p>
+                            <strong data-i18n="why2_strong">Чистый код и документация</strong>
+                            <p data-i18n="why2_p">Отдаю исходник с комментариями и README</p>
                         </div>
                     </li>
                     <li class="why-item">
                         <span class="why-check">✓</span>
                         <div>
-                            <strong>Соблюдение сроков</strong>
-                            <p>Называю реальные сроки и держу их</p>
+                            <strong data-i18n="why3_strong">Соблюдение сроков</strong>
+                            <p data-i18n="why3_p">Называю реальные сроки и держу их</p>
                         </div>
                     </li>
                     <li class="why-item">
                         <span class="why-check">✓</span>
                         <div>
-                            <strong>Постоянная связь</strong>
-                            <p>Держу в курсе на всех этапах через тикеты</p>
+                            <strong data-i18n="why4_strong">Постоянная связь</strong>
+                            <p data-i18n="why4_p">Держу в курсе на всех этапах через тикеты</p>
                         </div>
                     </li>
                     <li class="why-item">
                         <span class="why-check">✓</span>
                         <div>
-                            <strong>Гарантия на все работы</strong>
-                            <p>Правлю баги бесплатно после сдачи</p>
+                            <strong data-i18n="why5_strong">Гарантия на все работы</strong>
+                            <p data-i18n="why5_p">Правлю баги бесплатно после сдачи</p>
                         </div>
                     </li>
                 </ul>
@@ -337,11 +316,11 @@
     <section class="cta-final fade-in-up">
         <div class="section-container">
             <div class="cta-final-inner">
-                <h2 class="cta-final-title">Готов обсудить проект?</h2>
-                <p class="cta-final-sub">Настрой конфигуратор или создай тикет — отвечу в течение нескольких часов.</p>
+                <h2 class="cta-final-title" data-i18n="cta_title">Готов обсудить проект?</h2>
+                <p class="cta-final-sub" data-i18n="cta_sub">Настрой конфигуратор или создай тикет — отвечу в течение нескольких часов.</p>
                 <div class="cta-final-actions">
-                    <a href="configurator.html" class="btn btn-primary magnetic-btn">Настроить конфигуратор</a>
-                    <a href="auth.html" class="btn btn-ghost magnetic-btn">Создать тикет</a>
+                    <a href="configurator.html" class="btn btn-primary magnetic-btn" data-i18n="cta_btn_config">Настроить конфигуратор</a>
+                    <a href="auth.html" class="btn btn-ghost magnetic-btn" data-i18n="cta_btn_ticket">Создать тикет</a>
                 </div>
             </div>
         </div>
@@ -353,17 +332,21 @@
             <div class="footer-logo">KALIANG</div>
             <div class="footer-links">
                 <a href="https://t.me/Kaliang_dev" target="_blank" rel="noopener">Telegram</a>
-                <a href="auth.html">Поддержка</a>
-                <a href="configurator.html">Конфигуратор</a>
-                <a href="portfolio.html">Портфолио</a>
+                <a href="auth.html" data-i18n="footer_support">Поддержка</a>
+                <a href="configurator.html" data-i18n="footer_config">Конфигуратор</a>
+                <a href="portfolio.html" data-i18n="footer_portfolio">Портфолио</a>
             </div>
-            <p class="footer-copyright">© 2026 Kaliang. Все права защищены.</p>
+            <p class="footer-copyright" data-i18n="footer_copyright">© 2026 Kaliang. Все права защищены.</p>
         </div>
     </footer>
 
     <script src="animations/scroll-reveal.js"></script>
     <script src="animations/magnetic-hover.js"></script>
     <script src="animations/liquid-border.js"></script>
+    <script src="i18n/ru.js"></script>
+    <script src="i18n/pl.js"></script>
+    <script src="i18n/en.js"></script>
+    <script src="i18n/i18n.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

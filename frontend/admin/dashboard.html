@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="pl" data-title-key="page_title_admin">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +7,13 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Админ | KALIANG</title>
+    <title>Admin | KALIANG</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="../i18n/i18n.css">
 </head>
 <body class="admin-body">
 
@@ -21,23 +22,23 @@
 
         <!-- Sidebar -->
         <aside class="admin-sidebar">
-            <div class="asb-top">
-                <a href="../index.html" class="asb-logo">KALIANG<span class="logo-dot">·</span></a>
-                <div class="asb-user">
-                    <span class="asb-username" id="admin-username">—</span>
-                    <span class="asb-badge">ADMIN</span>
+                <div class="asb-top">
+                    <a href="../index.html" class="asb-logo">KALIANG<span class="logo-dot">·</span></a>
+                    <div class="asb-user">
+                        <span class="asb-username" id="admin-username">—</span>
+                        <span class="asb-badge" data-i18n="admin_badge">ADMIN</span>
+                    </div>
                 </div>
-            </div>
 
-            <nav class="asb-nav">
-                <a class="asb-nav-item active" href="#">
-                    <span class="asb-nav-icon">☰</span> Тикеты
-                </a>
-            </nav>
+                <nav class="asb-nav">
+                    <a class="asb-nav-item active" href="#">
+                        <span class="asb-nav-icon">☰</span> <span data-i18n="admin_nav_tickets">Zgłoszenia</span>
+                    </a>
+                </nav>
 
-            <div class="asb-bottom">
-                <button class="asb-logout" id="logout-btn">← Выйти</button>
-            </div>
+                <div class="asb-bottom">
+                    <button class="asb-logout" id="logout-btn" data-i18n="logout_btn">← Wyloguj się</button>
+                </div>
         </aside>
 
         <!-- Main -->
@@ -47,34 +48,34 @@
             <div class="stats-bar">
                 <div class="stat-item">
                     <span class="stat-num" id="stat-open">—</span>
-                    <span class="stat-lbl">ОТКРЫТЫЕ</span>
+                    <span class="stat-lbl" data-i18n="stat_open">OTWARTE</span>
                 </div>
                 <div class="stat-sep"></div>
                 <div class="stat-item">
                     <span class="stat-num" id="stat-progress">—</span>
-                    <span class="stat-lbl">В РАБОТЕ</span>
+                    <span class="stat-lbl" data-i18n="stat_progress">W TRAKCIE</span>
                 </div>
                 <div class="stat-sep"></div>
                 <div class="stat-item">
                     <span class="stat-num" id="stat-closed">—</span>
-                    <span class="stat-lbl">ЗАКРЫТЫЕ</span>
+                    <span class="stat-lbl" data-i18n="stat_closed">ZAMKNIĘTE</span>
                 </div>
                 <div class="stat-sep"></div>
                 <div class="stat-item">
                     <span class="stat-num" id="stat-total">—</span>
-                    <span class="stat-lbl">ВСЕГО</span>
+                    <span class="stat-lbl" data-i18n="stat_total">ŁĄCZNIE</span>
                 </div>
             </div>
 
             <!-- Controls -->
             <div class="admin-controls">
                 <div class="adm-filter-tabs">
-                    <button class="adm-filter-tab active" data-filter="all">Все</button>
-                    <button class="adm-filter-tab" data-filter="open">Открытые</button>
-                    <button class="adm-filter-tab" data-filter="in_progress">В работе</button>
-                    <button class="adm-filter-tab" data-filter="mine">Мои</button>
+                    <button class="adm-filter-tab active" data-filter="all" data-i18n="adm_filter_all">Wszystkie</button>
+                    <button class="adm-filter-tab" data-filter="open" data-i18n="adm_filter_open">Otwarte</button>
+                    <button class="adm-filter-tab" data-filter="in_progress" data-i18n="adm_filter_progress">W trakcie</button>
+                    <button class="adm-filter-tab" data-filter="mine" data-i18n="adm_filter_mine">Moje</button>
                 </div>
-                <input type="text" id="search-box" class="adm-search" placeholder="Поиск по тикетам…" autocomplete="off">
+                <input type="text" id="search-box" class="adm-search" data-i18n-ph="adm_search_ph" placeholder="Szukaj zgłoszeń…" autocomplete="off">
             </div>
 
             <!-- Loading -->
@@ -84,18 +85,18 @@
 
             <!-- Desktop table -->
             <div class="adm-table-wrap desktop-only">
-                <table class="adm-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Тема</th>
-                            <th>Пользователь</th>
-                            <th>Статус</th>
-                            <th>Приоритет</th>
-                            <th>Назначен</th>
-                            <th>Дата</th>
-                        </tr>
-                    </thead>
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="tbl_id">ID</th>
+                                <th data-i18n="tbl_subject">Temat</th>
+                                <th data-i18n="tbl_user">Użytkownik</th>
+                                <th data-i18n="tbl_status">Status</th>
+                                <th data-i18n="tbl_priority">Priorytet</th>
+                                <th data-i18n="tbl_assigned">Przypisany</th>
+                                <th data-i18n="tbl_date">Data</th>
+                            </tr>
+                        </thead>
                     <tbody id="tickets-tbody"></tbody>
                 </table>
             </div>
@@ -124,6 +125,10 @@
     <!-- Toast -->
     <div id="toast-container"></div>
 
+    <script src="../i18n/ru.js"></script>
+    <script src="../i18n/pl.js"></script>
+    <script src="../i18n/en.js"></script>
+    <script src="../i18n/i18n.js"></script>
     <script src="../script.js"></script>
     <script src="../api.js"></script>
     <script src="dashboard.js"></script>

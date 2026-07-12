@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="pl" data-title-key="page_title_auth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +7,10 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Вход | KALIANG</title>
+    <title>Logowanie | KALIANG</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="i18n/i18n.css">
 </head>
 <body class="auth-body">
     <div class="auth-layout">
@@ -18,100 +19,103 @@
         <div class="auth-identity">
             <a href="index.html" class="auth-logo">KALIANG<span class="logo-dot">·</span></a>
             <div class="auth-identity-body">
-                <blockquote class="auth-quote">
-                    "Боты, которые<br>работают, пока<br>вы спите"
+                <blockquote class="auth-quote" data-i18n-html="auth_quote">
+                    "Boty, które<br>pracują, gdy<br>ty śpisz"
                 </blockquote>
                 <ul class="auth-features">
-                    <li><span class="af-check">✓</span> Тикеты в реальном времени</li>
-                    <li><span class="af-check">✓</span> Telegram-уведомления</li>
-                    <li><span class="af-check">✓</span> История переписки</li>
-                    <li><span class="af-check">✓</span> Статус заказа онлайн</li>
+                    <li><span class="af-check">✓</span> <span data-i18n="auth_f1">Zgłoszenia w czasie rzeczywistym</span></li>
+                    <li><span class="af-check">✓</span> <span data-i18n="auth_f2">Powiadomienia Telegram</span></li>
+                    <li><span class="af-check">✓</span> <span data-i18n="auth_f3">Historia korespondencji</span></li>
+                    <li><span class="af-check">✓</span> <span data-i18n="auth_f4">Status zamówienia online</span></li>
                 </ul>
             </div>
-            <a href="index.html" class="auth-back-link">← На главную</a>
+            <a href="index.html" class="auth-back-link" data-i18n="auth_back">← Na stronę główną</a>
         </div>
 
         <!-- Right form panel -->
         <div class="auth-panel">
             <div class="auth-panel-inner">
-                <div class="auth-eyebrow">KALIANG · Личный кабинет</div>
+                <div class="auth-eyebrow" data-i18n="auth_eyebrow">KALIANG · Panel użytkownika</div>
 
                 <!-- Login form -->
                 <div id="login-view" class="auth-view active">
-                    <h1 class="auth-heading">Добро пожаловать</h1>
-                    <p class="auth-subheading">Войдите, чтобы управлять заказами</p>
+                    <h1 class="auth-heading" data-i18n="login_heading">Witaj ponownie</h1>
+                    <p class="auth-subheading" data-i18n="login_subheading">Zaloguj się, aby zarządzać zamówieniami</p>
 
                     <form id="login-form" class="auth-form" novalidate>
                         <div class="form-group">
-                            <label for="login-username">Имя пользователя</label>
+                            <label for="login-username" data-i18n="login_label_user">Nazwa użytkownika</label>
                             <input type="text" id="login-username" placeholder="username"
                                    required minlength="3" autocomplete="username">
                             <div class="error-message" id="login-username-error"></div>
                         </div>
                         <div class="form-group">
-                            <label for="login-password">Пароль</label>
+                            <label for="login-password" data-i18n="login_label_pass">Hasło</label>
                             <input type="password" id="login-password" placeholder="••••••••"
                                    required minlength="8" autocomplete="current-password">
                             <div class="error-message" id="login-password-error"></div>
                         </div>
                         <div class="error-message" id="login-error"></div>
-                        <button type="submit" class="btn btn-primary auth-submit" id="login-btn">
-                            Войти
+                        <button type="submit" class="btn btn-primary auth-submit" id="login-btn" data-i18n="login_btn">
+                            Zaloguj się
                         </button>
                     </form>
 
                     <p class="auth-switch">
-                        Нет аккаунта?
-                        <button class="auth-switch-btn" data-show="register-view">Зарегистрироваться →</button>
+                        <span data-i18n="login_no_account">Nie masz konta?</span>
+                        <button class="auth-switch-btn" data-show="register-view" data-i18n="login_register_link">Zarejestruj się →</button>
                     </p>
                 </div>
 
                 <!-- Register form -->
                 <div id="register-view" class="auth-view">
-                    <h1 class="auth-heading">Создать аккаунт</h1>
-                    <p class="auth-subheading">Заполните поля для регистрации</p>
+                    <h1 class="auth-heading" data-i18n="register_heading">Utwórz konto</h1>
+                    <p class="auth-subheading" data-i18n="register_subheading">Wypełnij pola, aby się zarejestrować</p>
 
                     <form id="register-form" class="auth-form" novalidate>
                         <div class="form-group">
-                            <label for="register-username">Имя пользователя</label>
+                            <label for="register-username" data-i18n="register_label_user">Nazwa użytkownika</label>
                             <input type="text" id="register-username" placeholder="username"
                                    required minlength="3" autocomplete="username">
                             <div class="error-message" id="register-username-error"></div>
                         </div>
                         <div class="form-group">
-                            <label for="register-password">Пароль</label>
+                            <label for="register-password" data-i18n="register_label_pass">Hasło</label>
                             <input type="password" id="register-password" placeholder="••••••••"
-                                   required minlength="8" autocomplete="new-password"
-                                   id="register-password">
+                                   required minlength="8" autocomplete="new-password">
                             <div class="password-checklist" id="pwd-checklist">
-                                <div class="pwd-check" id="pwd-len">· 8+ символов</div>
-                                <div class="pwd-check" id="pwd-let">· Буквы и цифры</div>
-                                <div class="pwd-check" id="pwd-spc">· Спецсимвол (!@#…)</div>
+                                <div class="pwd-check" id="pwd-len" data-i18n="pwd_len">· 8+ znaków</div>
+                                <div class="pwd-check" id="pwd-let" data-i18n="pwd_let">· Litery i cyfry</div>
+                                <div class="pwd-check" id="pwd-spc" data-i18n="pwd_spc">· Znak specjalny (!@#…)</div>
                             </div>
                             <div class="error-message" id="register-password-error"></div>
                         </div>
                         <div class="form-group">
-                            <label for="register-password-confirm">Подтвердите пароль</label>
+                            <label for="register-password-confirm" data-i18n="register_label_confirm">Potwierdź hasło</label>
                             <input type="password" id="register-password-confirm"
                                    placeholder="••••••••" required minlength="8"
                                    autocomplete="new-password">
                             <div class="error-message" id="register-password-confirm-error"></div>
                         </div>
                         <div class="error-message" id="register-error"></div>
-                        <button type="submit" class="btn btn-primary auth-submit" id="register-btn">
-                            Зарегистрироваться
+                        <button type="submit" class="btn btn-primary auth-submit" id="register-btn" data-i18n="register_btn">
+                            Zarejestruj się
                         </button>
                     </form>
 
                     <p class="auth-switch">
-                        Уже есть аккаунт?
-                        <button class="auth-switch-btn" data-show="login-view">Войти →</button>
+                        <span data-i18n="register_has_account">Masz już konto?</span>
+                        <button class="auth-switch-btn" data-show="login-view" data-i18n="register_login_link">Zaloguj się →</button>
                     </p>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="i18n/ru.js"></script>
+    <script src="i18n/pl.js"></script>
+    <script src="i18n/en.js"></script>
+    <script src="i18n/i18n.js"></script>
     <script src="script.js"></script>
     <script src="api.js"></script>
     <script src="auth.js"></script>

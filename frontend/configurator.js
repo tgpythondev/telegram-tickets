@@ -152,7 +152,8 @@ function showStep(n) {
 function updateProgress() {
     const pct = ((currentStep - 1) / (totalSteps - 1)) * 100;
     document.getElementById('cfg-progress-fill').style.width = pct + '%';
-    document.getElementById('cfg-progress-text').textContent = `Шаг ${currentStep} / ${totalSteps}`;
+    var stepText = typeof t === 'function' ? t('cfg_step_label', { step: currentStep, total: totalSteps }) : ('Krok ' + currentStep + ' / ' + totalSteps);
+    document.getElementById('cfg-progress-text').textContent = stepText;
     document.getElementById('nav-step-label').textContent = `${currentStep} / ${totalSteps}`;
 }
 
@@ -171,19 +172,20 @@ function updateNavButtons(n) {
 
 // ── Validate ───────────────────────────────
 function validateStep(n) {
+    var e;
     switch (n) {
         case 1:
-            if (!config.package) { showError('Выберите пакет'); return false; }
+            if (!config.package) { e = typeof t === 'function' ? t('cfg_err_package') : 'Wybierz pakiet'; showError(e); return false; }
             return true;
         case 2:
-            if (!config.shortDescription.trim()) { showError('Введите краткое описание'); return false; }
-            if (config.shortDescription.length < 5) { showError('Минимум 5 символов'); return false; }
+            if (!config.shortDescription.trim()) { e = typeof t === 'function' ? t('cfg_err_short') : 'Wpisz krótki opis'; showError(e); return false; }
+            if (config.shortDescription.length < 5) { e = typeof t === 'function' ? t('cfg_err_min5') : 'Minimum 5 znaków'; showError(e); return false; }
             return true;
         case 3:
-            if (!config.language) { showError('Выберите язык программирования'); return false; }
+            if (!config.language) { e = typeof t === 'function' ? t('cfg_err_lang') : 'Wybierz język programowania'; showError(e); return false; }
             return true;
         case 4:
-            if (!config.hosting.type) { showError('Выберите вариант хостинга'); return false; }
+            if (!config.hosting.type) { e = typeof t === 'function' ? t('cfg_err_hosting') : 'Wybierz opcję hostingu'; showError(e); return false; }
             return true;
         default:
             return true;
@@ -216,14 +218,18 @@ function updateLiveSummary() {
     setLive('live-package',  config.package   || '—',  !!config.package);
     setLive('live-language', config.language  || '—',  !!config.language);
 
+    var tr = (typeof t === 'function') ? t : function(k) { return k; };
     let hostingStr = '—';
-    if (config.hosting.type === 'free')  hostingStr = 'Бесплатный';
-    else if (config.hosting.type === 'paid')  hostingStr = 'Платный ($5/мес)';
-    else if (config.hosting.type === 'none')  hostingStr = 'Свой сервер';
+    if (config.hosting.type === 'free')  hostingStr = tr('cfg_hosting_free');
+    else if (config.hosting.type === 'paid')  hostingStr = tr('cfg_hosting_paid');
+    else if (config.hosting.type === 'none')  hostingStr = tr('cfg_hosting_none');
     setLive('live-hosting', hostingStr, !!config.hosting.type);
 
-    const prNames = { normal: 'Обычный', high: 'Высокий', urgent: 'Срочный' };
-    setLive('live-priority', prNames[config.priority] || '—', true);
+    var prLiveNames = {};
+    prLiveNames['normal'] = tr('cfg_prio_normal_live');
+    prLiveNames['high'] = tr('cfg_prio_high_live');
+    prLiveNames['urgent'] = tr('cfg_prio_urgent_live');
+    setLive('live-priority', prLiveNames[config.priority] || '—', true);
 
     const price = calculatePrice();
     const priceStr = config.package === 'Custom' ? `от $${price}` : `$${price}`;
@@ -245,6 +251,7 @@ function setLive(id, val, filled) {
 
 // ── Build final summary ────────────────────
 function buildSummaryStep() {
+    var tr = (typeof t === 'function') ? t : function(k) { return k; };
     document.getElementById('sum-package').textContent  = config.package || '—';
     document.getElementById('sum-short').textContent    = config.shortDescription
         ? config.shortDescription.slice(0, 80) + (config.shortDescription.length > 80 ? '…' : '')
@@ -252,17 +259,20 @@ function buildSummaryStep() {
     document.getElementById('sum-language').textContent = config.language || '—';
 
     let hostingStr = '—';
-    if (config.hosting.type === 'free') hostingStr = 'Бесплатный';
+    if (config.hosting.type === 'free') hostingStr = tr('cfg_hosting_free');
     else if (config.hosting.type === 'paid') {
-        hostingStr = 'Платный ($5/мес)';
-        if (config.hosting.extraStorage > 0) hostingStr += ` +${config.hosting.extraStorage} ГБ`;
-        if (config.hosting.extraBandwidth > 0) hostingStr += ` +${config.hosting.extraBandwidth} ГБ трафика`;
+        hostingStr = tr('cfg_hosting_paid');
+        if (config.hosting.extraStorage > 0) hostingStr += ' ' + tr('cfg_hosting_extra_storage', { n: config.hosting.extraStorage });
+        if (config.hosting.extraBandwidth > 0) hostingStr += ' ' + tr('cfg_hosting_extra_bw', { n: config.hosting.extraBandwidth });
     } else if (config.hosting.type === 'none') {
-        hostingStr = 'Свой сервер';
+        hostingStr = tr('cfg_hosting_none');
     }
     document.getElementById('sum-hosting').textContent = hostingStr;
 
-    const prNames = { normal: 'Обычный', high: 'Высокий (+$10)', urgent: 'Срочный (+$30)' };
+    var prNames = {};
+    prNames['normal'] = tr('cfg_prio_normal');
+    prNames['high'] = tr('cfg_prio_high');
+    prNames['urgent'] = tr('cfg_prio_urgent');
     document.getElementById('sum-priority').textContent = prNames[config.priority] || '—';
 
     const price = calculatePrice();
@@ -281,25 +291,26 @@ function buildSummaryStep() {
 
 // ── Submit order ───────────────────────────
 async function submitOrder() {
+    var tr = (typeof t === 'function') ? t : function(k) { return k; };
     try {
         const user = await checkAuth();
         if (!user) {
-            showError('Войдите в систему для оформления заказа');
+            showError(tr('cfg_err_login'));
             setTimeout(() => { window.location.href = '/auth.html'; }, 1500);
             return;
         }
 
         document.getElementById('loading-overlay').classList.add('active');
 
-        const subject = `Заказ бота: ${config.package}`;
-        const initialMessage = 'Заказ создан через конфигуратор';
+        const subject = tr('cfg_order_subject', { pkg: config.package });
+        const initialMessage = tr('cfg_order_msg');
 
         await API.createTicket(subject, initialMessage, config.priority, config);
         window.location.href = 'tickets.html';
     } catch (err) {
         console.error('Submit order error:', err);
         document.getElementById('loading-overlay').classList.remove('active');
-        showError('Ошибка создания заказа: ' + err.message);
+        showError(tr('cfg_err_create') + err.message);
     }
 }
 

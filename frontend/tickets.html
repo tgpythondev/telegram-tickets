@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="pl" data-title-key="page_title_tickets">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,20 +7,21 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Мои тикеты | KALIANG</title>
+    <title>Moje zgłoszenia | KALIANG</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="tickets.css">
+    <link rel="stylesheet" href="i18n/i18n.css">
 </head>
 <body>
     <header id="site-header">
         <nav>
             <div class="logo"><a href="index.html">KALIANG</a></div>
             <ul class="nav-links">
-                <li><a href="index.html#services">Услуги</a></li>
-                <li><a href="index.html#portfolio">Портфолио</a></li>
+                <li><a href="index.html#services" data-i18n="nav_services">Usługi</a></li>
+                <li><a href="index.html#portfolio" data-i18n="nav_portfolio">Portfolio</a></li>
             </ul>
         </nav>
     </header>
@@ -29,30 +30,30 @@
         <!-- ── Sidebar ──────────────────────── -->
         <aside class="tickets-sidebar">
             <div class="sidebar-user">
-                <div class="sidebar-username" id="sidebar-username">Загрузка...</div>
-                <div class="sidebar-role">Клиент</div>
+                <div class="sidebar-username" id="sidebar-username">Ładowanie...</div>
+                <div class="sidebar-role" data-i18n="sidebar_role">Klient</div>
             </div>
 
             <div class="sidebar-create">
-                <button class="btn btn-primary" id="create-ticket-btn">+ Новый тикет</button>
+                <button class="btn btn-primary" id="create-ticket-btn" data-i18n="sidebar_new_ticket">+ Nowe zgłoszenie</button>
             </div>
 
             <nav class="sidebar-filters">
-                <div class="filter-label">Фильтр</div>
+                <div class="filter-label" data-i18n="filter_label">Filtr</div>
                 <button class="filter-link active" data-filter="all">
-                    <span>Все</span>
+                    <span data-i18n="filter_all">Wszystkie</span>
                     <span class="filter-count" id="count-all">0</span>
                 </button>
                 <button class="filter-link" data-filter="open">
-                    <span>Открытые</span>
+                    <span data-i18n="filter_open">Otwarte</span>
                     <span class="filter-count" id="count-open">0</span>
                 </button>
                 <button class="filter-link" data-filter="in_progress">
-                    <span>В работе</span>
+                    <span data-i18n="filter_progress">W trakcie</span>
                     <span class="filter-count" id="count-progress">0</span>
                 </button>
                 <button class="filter-link" data-filter="closed">
-                    <span>Закрытые</span>
+                    <span data-i18n="filter_closed">Zamknięte</span>
                     <span class="filter-count" id="count-closed">0</span>
                 </button>
             </nav>
@@ -61,31 +62,31 @@
             <div class="sidebar-telegram">
                 <div class="tg-status-row">
                     <span class="tg-icon">📱</span>
-                    <span class="tg-status-text" id="tg-status-text">Загрузка...</span>
+                    <span class="tg-status-text" id="tg-status-text">Ładowanie...</span>
                 </div>
                 <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap;">
-                    <button class="btn tg-btn" id="bind-bot-btn">Привязать</button>
-                    <button class="btn tg-btn" id="toggle-telegram-btn">Уведомления</button>
+                    <button class="btn tg-btn" id="bind-bot-btn" data-i18n="tg_bind">Połącz</button>
+                    <button class="btn tg-btn" id="toggle-telegram-btn" data-i18n="tg_notif">Powiadomienia</button>
                 </div>
-                <button class="tg-toggle-btn" id="tg-instructions-toggle">Как подключить? ↓</button>
+                <button class="tg-toggle-btn" id="tg-instructions-toggle" data-i18n="tg_how">Jak połączyć? ↓</button>
                 <div class="tg-instructions" id="tg-instructions">
                     <ol>
-                        <li>Нажмите "Привязать" и напишите боту <code>/start</code></li>
-                        <li>Войдите командой <code>/login username password</code></li>
-                        <li>Вернитесь и включите уведомления</li>
+                        <li data-i18n-html="tg_step1">Kliknij "Połącz" i napisz do bota <code>/start</code></li>
+                        <li data-i18n-html="tg_step2">Zaloguj się komendą <code>/login username password</code></li>
+                        <li data-i18n="tg_step3">Wróć i włącz powiadomienia</li>
                     </ol>
                 </div>
             </div>
 
             <div class="sidebar-footer">
-                <button class="btn btn-logout" id="logout-btn" style="width:100%;justify-content:center;">Выйти</button>
+                <button class="btn btn-logout" id="logout-btn" style="width:100%;justify-content:center;" data-i18n="logout_btn">Wyloguj się</button>
             </div>
         </aside>
 
         <!-- ── Main ────────────────────────── -->
         <main class="tickets-main">
             <div class="tickets-main-header">
-                <h1 class="tickets-main-title">Мои тикеты</h1>
+                <h1 class="tickets-main-title" data-i18n="tickets_main_title">Moje zgłoszenia</h1>
                 <span class="tickets-count" id="tickets-count"></span>
             </div>
 
@@ -114,31 +115,33 @@
     <div class="modal create-modal" id="create-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title"><h3>Новый тикет</h3></div>
+                <div class="modal-title"><h3 data-i18n="create_modal_title">Nowe zgłoszenie</h3></div>
                 <button class="modal-close" id="create-modal-close">×</button>
             </div>
             <div class="modal-body">
                 <form id="create-ticket-form" class="create-form">
                     <div class="form-group">
-                        <label for="ticket-subject">Тема</label>
+                        <label for="ticket-subject" data-i18n="create_form_subject">Temat</label>
                         <input type="text" id="ticket-subject" required maxlength="200"
-                               placeholder="Например: Сколько стоит бот для магазина?">
+                               data-i18n-ph="create_form_subject_ph"
+                               placeholder="Np.: Ile kosztuje bot do sklepu?">
                     </div>
                     <div class="form-group">
-                        <label for="ticket-message">Сообщение</label>
+                        <label for="ticket-message" data-i18n="create_form_message">Wiadomość</label>
                         <textarea id="ticket-message" required rows="5"
-                                  placeholder="Опишите ваш вопрос или задачу..."></textarea>
+                                  data-i18n-ph="create_form_message_ph"
+                                  placeholder="Opisz swoje pytanie lub zadanie..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="ticket-priority">Приоритет</label>
+                        <label for="ticket-priority" data-i18n="create_form_priority">Priorytet</label>
                         <select id="ticket-priority">
-                            <option value="normal">Обычный</option>
-                            <option value="high">Высокий</option>
-                            <option value="urgent">Срочный</option>
+                            <option value="normal" data-i18n="priority_normal">Normalny</option>
+                            <option value="high" data-i18n="priority_high">Wysoki</option>
+                            <option value="urgent" data-i18n="priority_urgent">Pilny</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
-                        Создать тикет
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" data-i18n="create_submit">
+                        Utwórz zgłoszenie
                     </button>
                 </form>
             </div>
@@ -150,12 +153,16 @@
             <div class="footer-logo">KALIANG</div>
             <div class="footer-links">
                 <a href="https://t.me/Kaliang_dev" target="_blank" rel="noopener">Telegram</a>
-                <a href="auth.html">Поддержка</a>
+                <a href="auth.html" data-i18n="footer_support">Wsparcie</a>
             </div>
-            <p class="footer-copyright">© 2026 Kaliang. Все права защищены.</p>
+            <p class="footer-copyright" data-i18n="footer_copyright">© 2026 Kaliang. Wszelkie prawa zastrzeżone.</p>
         </div>
     </footer>
 
+    <script src="i18n/ru.js"></script>
+    <script src="i18n/pl.js"></script>
+    <script src="i18n/en.js"></script>
+    <script src="i18n/i18n.js"></script>
     <script src="script.js"></script>
     <script src="components/skeleton.js"></script>
     <script src="api.js"></script>
