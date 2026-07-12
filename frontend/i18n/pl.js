@@ -228,6 +228,14 @@ window.LANG_PL = {
   pf_modal_features: 'Możliwości',
   pf_modal_desc:     'Opis',
 
+  // Mini-review project
+  project_mini_review_title: 'Mini-review',
+  project_mini_review_desc: 'Mini review — bot stworzony przez nasz zespół do demonstracji pracy w kategorii cenowej Mini.',
+  project_mini_review_f1: 'Wielojęzyczność: przełączanie języków (RU, PL, ENG)',
+  project_mini_review_f2: 'Randomizer stron: losowe wybieranie zasobów internetowych',
+  project_mini_review_f3: 'Generator fraz: tworzenie losowych zdań z podanego zestawu słów',
+  project_mini_review_f4: 'Integracja: szybkie przejście na naszą oficjalną stronę',
+
   // ── Tickets page ──────────────────────────────
   page_title_tickets: 'Moje zgłoszenia | KALIANG',
   sidebar_role:      'Klient',

@@ -227,6 +227,14 @@ window.LANG_RU = {
   pf_modal_features: 'Возможности',
   pf_modal_desc:     'Описание',
 
+  // Mini-review project
+  project_mini_review_title: 'Mini-review',
+  project_mini_review_desc: 'Mini review — бот, созданный нашей командой для демонстрации работы в ценовой категории Mini.',
+  project_mini_review_f1: 'Мультиязычность: переключение языков (RU, PL, ENG)',
+  project_mini_review_f2: 'Рандомайзер сайтов: случайный подбор веб-ресурсов',
+  project_mini_review_f3: 'Генератор фраз: создание случайных предложений из заданного набора слов',
+  project_mini_review_f4: 'Интеграция: быстрый переход на наш официальный сайт',
+
   // ── Tickets page ──────────────────────────────
   page_title_tickets: 'Мои тикеты | KALIANG',
   sidebar_role:      'Клиент',

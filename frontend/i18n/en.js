@@ -228,6 +228,14 @@ window.LANG_EN = {
   pf_modal_features: 'Features',
   pf_modal_desc:     'Description',
 
+  // Mini-review project
+  project_mini_review_title: 'Mini-review',
+  project_mini_review_desc: 'Mini review — a bot created by our team to demonstrate work in the Mini price category.',
+  project_mini_review_f1: 'Multilingual: language switching (RU, PL, ENG)',
+  project_mini_review_f2: 'Site randomizer: random selection of web resources',
+  project_mini_review_f3: 'Phrase generator: creating random sentences from a given set of words',
+  project_mini_review_f4: 'Integration: quick transition to our official website',
+
   // ── Tickets page ──────────────────────────────
   page_title_tickets: 'My tickets | KALIANG',
   sidebar_role:      'Client',

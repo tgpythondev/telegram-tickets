@@ -27,13 +27,13 @@
         mini: [
             {
                 id: 'mini-review',
-                title: 'Mini-review',
-                desc: 'Mini review — бот, созданный нашей командой для демонстрации работы в ценовой категории Mini.',
-                features: [
-                    'Мультиязычность: переключение языков (RU, PL, ENG)',
-                    'Рандомайзер сайтов: случайный подбор веб-ресурсов',
-                    'Генератор фраз: создание случайных предложений из заданного набора слов',
-                    'Интеграция: быстрый переход на наш официальный сайт'
+                titleKey: 'project_mini_review_title',
+                descKey: 'project_mini_review_desc',
+                featuresKeys: [
+                    'project_mini_review_f1',
+                    'project_mini_review_f2',
+                    'project_mini_review_f3',
+                    'project_mini_review_f4'
                 ],
                 lang: 'RU/PL/ENG',
                 term: '20 минут',
@@ -112,7 +112,8 @@
             row.className = 'pf-case-row';
             row.setAttribute('role', 'button');
             row.setAttribute('tabindex', '0');
-            row.setAttribute('aria-label', 'Open ' + item.title + ' details');
+            var title = item.titleKey ? _t(item.titleKey) : item.title || '';
+            row.setAttribute('aria-label', 'Open ' + title + ' details');
 
             // Left
             var left = document.createElement('div');
@@ -125,13 +126,13 @@
             // Center
             var center = document.createElement('div');
             center.className = 'pcr-center';
-            var title = document.createElement('span');
-            title.className = 'pcr-title';
-            title.textContent = item.title;
+            var titleEl = document.createElement('span');
+            titleEl.className = 'pcr-title';
+            titleEl.textContent = title;
             var desc = document.createElement('span');
             desc.className = 'pcr-desc';
-            desc.textContent = item.desc;
-            center.appendChild(title);
+            desc.textContent = item.descKey ? _t(item.descKey) : item.desc || '';
+            center.appendChild(titleEl);
             center.appendChild(desc);
 
             // Right
@@ -187,7 +188,8 @@
         // Header
         var header = document.createElement('div');
         header.className = 'pf-modal-header';
-        header.innerHTML = '<h2 class="pf-modal-title">' + escapeHtml(item.title) + '</h2>';
+        var itemTitle = item.titleKey ? _t(item.titleKey) : item.title || '';
+        header.innerHTML = '<h2 class="pf-modal-title">' + escapeHtml(itemTitle) + '</h2>';
 
         var meta = document.createElement('div');
         meta.className = 'pf-modal-meta';
@@ -221,7 +223,7 @@
         var dTitle = document.createElement('h4');
         dTitle.textContent = _t('pf_modal_desc');
         var dP = document.createElement('p');
-        dP.textContent = item.desc;
+        dP.textContent = item.descKey ? _t(item.descKey) : item.desc || '';
         descDiv.appendChild(dTitle);
         descDiv.appendChild(dP);
 
@@ -231,7 +233,13 @@
         var fTitle = document.createElement('h4');
         fTitle.textContent = _t('pf_modal_features');
         var ul = document.createElement('ul');
-        (item.features || []).forEach(function (f) {
+        
+        // Handle both featuresKeys (translation keys) and features (direct text)
+        var featuresList = item.featuresKeys 
+            ? item.featuresKeys.map(function(key) { return _t(key); })
+            : (item.features || []);
+            
+        featuresList.forEach(function (f) {
             var li = document.createElement('li');
             li.textContent = f;
             ul.appendChild(li);
