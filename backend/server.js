@@ -4,7 +4,6 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const { initTelegramBot } = require('./utils/telegram');
 const { startTokenCleanupSchedule } = require('./utils/cleanup');
 
 const authRoutes = require('./routes/auth.routes');
@@ -25,9 +24,7 @@ function validateEnvironment() {
     const required = [
         'JWT_ACCESS_SECRET',
         'JWT_REFRESH_SECRET',
-        'DATABASE_URL',
-        'TELEGRAM_BOT_TOKEN',
-        'TELEGRAM_ADMIN_CHAT_IDS'
+        'DATABASE_URL'
     ];
     const missing = required.filter(key => !process.env[key]);
 
@@ -57,19 +54,10 @@ function validateEnvironment() {
         }
     }
 
-    // Валидация TELEGRAM_BOT_TOKEN формата
-    if (!/^\d+:[A-Za-z0-9_-]{35}$/.test(process.env.TELEGRAM_BOT_TOKEN)) {
-        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: TELEGRAM_BOT_TOKEN имеет некорректный формат');
-        process.exit(1);
-    }
-
     console.log('✅ Все переменные окружения проверены');
 }
 
 validateEnvironment();
-
-// Инициализация Telegram бота
-initTelegramBot();
 
 // Запуск периодической очистки истёкших refresh токенов (каждые 24 часа)
 startTokenCleanupSchedule(24);

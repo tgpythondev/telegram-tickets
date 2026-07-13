@@ -1,5 +1,4 @@
 const db = require('../models/db');
-const { sendAdminReplyNotification, sendTicketStatusChangeNotification, sendTicketAssignedNotification } = require('../utils/telegram');
 const sse = require('../utils/sse');
 const { finalizePromoOnClose } = require('./tickets.controller');
 
@@ -103,13 +102,7 @@ async function updateTicket(req, res) {
             console.warn(`SSE: User ${updatedTicket.user_id} not connected, will see update on page reload`);
         }
 
-        // Отправить уведомления пользователю
-        if (updates.status && updates.status !== ticket.status) {
-            await sendTicketStatusChangeNotification(updatedTicket, ticket.status, updates.status, req.user.username);
-        }
-
         if (updates.assignedAdminId && updates.assignedAdminId !== ticket.assigned_admin_id) {
-            await sendTicketAssignedNotification(updatedTicket, req.user.username);
 
             // Создать системное сообщение в тикете о назначении админа
             await db.createMessage(
@@ -201,11 +194,6 @@ async function replyToTicket(req, res) {
             console.warn(`[REPLY] User ${ticket.user_id} not connected, message will be visible on next page load`);
             console.warn(`[REPLY] Active users:`, sse.getConnectionStats());
         }
-
-        // Отправить уведомление пользователю
-        console.log('[REPLY] Sending Telegram notification...');
-        await sendAdminReplyNotification(ticket, req.user.username, content);
-        console.log('[REPLY] Telegram notification sent');
 
         res.status(201).json({ message });
         console.log('[REPLY] Response sent successfully');

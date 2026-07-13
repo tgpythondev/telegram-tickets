@@ -425,27 +425,34 @@ function validateStep(n) {
 
 // ── Price ──────────────────────────────────
 function calculatePrice() {
-    let base = config.packagePriceMin || 0;
+    // Базовая цена пакета — всегда от minimum
+    const basePackage = config.packagePriceMin || 0;
+    let hostingCost = 0;
+    let extrasCost = 0;
 
     if (config.hosting.type === 'paid') {
-        base = config.packagePriceMax || 0;
-        base += 5;
-        base += config.hosting.extraStorage * 3;
-        base += config.hosting.extraBandwidth * 1;
+        hostingCost = 5; // $5/mo paid hosting
+        extrasCost = config.hosting.extraStorage * 3 + config.hosting.extraBandwidth * 1;
     }
 
-    base += config.priorityCost || 0;
+    const priorityCost = config.priorityCost || 0;
 
-    // Apply promo discount (display only — server recalculates authoritatively)
+    // Скидка применяется ТОЛЬКО к базе пакета + хостинг (без extras и priority)
+    const discountable = basePackage + hostingCost;
+
     if (config.chosenBenefit === 'free_mini' && config.package === 'Mini') {
-        return 0;
+        // Mini бесплатно — только extras + priority
+        return extrasCost + priorityCost;
     }
+
+    let total = discountable;
     if (config.chosenBenefit === 'percent_10') {
         const pct = config.promoDiscountPct || 10;
-        return Math.round(base * (1 - pct / 100) * 100) / 100;
+        total = Math.round(discountable * (1 - pct / 100) * 100) / 100;
     }
 
-    return base;
+    total += extrasCost + priorityCost;
+    return total;
 }
 
 function updatePrice() {

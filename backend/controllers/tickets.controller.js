@@ -1,6 +1,5 @@
 const db = require('../models/db');
 const promoDb = require('../models/promoDb');
-const { sendNewTicketNotification, sendNewMessageNotification } = require('../utils/telegram');
 const sse = require('../utils/sse');
 
 // ── Price calculation (server-side, mirrors frontend logic) ───────────────────
@@ -33,35 +32,43 @@ function recalculatePrice(orderConfig, promoInfo) {
         return { basePrice: 0, discountedPrice: 0, discountApplied: false };
     }
 
-    let base = prices.min;
+    // Базовая цена пакета — всегда от minimum
+    const basePackage = prices.min;
+    let hostingCost = 0;
+    let extrasCost = 0;
 
     if (orderConfig.hosting?.type === 'paid') {
-        base = prices.max;
-        base += 5; // $5/mo paid hosting
-        base += (orderConfig.hosting.extraStorage || 0) * 3;
-        base += (orderConfig.hosting.extraBandwidth || 0) * 1;
+        hostingCost = 5; // $5/mo paid hosting
+        extrasCost = (orderConfig.hosting.extraStorage || 0) * 3 +
+                     (orderConfig.hosting.extraBandwidth || 0) * 1;
     }
 
     const priorityCost = PRIORITY_COSTS[orderConfig.priority] || 0;
-    base += priorityCost;
 
-    if (!promoInfo) {
-        return { basePrice: base, discountedPrice: base, discountApplied: false };
-    }
+    // Скидка применяется ТОЛЬКО к базе пакета + хостинг (без extras и priority)
+    const discountable = basePackage + hostingCost;
 
-    // free_mini: price becomes $0
-    if (promoInfo.chosenBenefit === 'free_mini' && pkg === 'Mini') {
-        return { basePrice: base, discountedPrice: 0, discountApplied: true };
-    }
+    let discountedPrice;
+    let discountApplied = false;
 
-    // percent_10: apply percentage discount
-    if (promoInfo.chosenBenefit === 'percent_10') {
+    if (promoInfo && promoInfo.chosenBenefit === 'free_mini' && pkg === 'Mini') {
+        // free_mini: платим только за extras + priority
+        discountedPrice = extrasCost + priorityCost;
+        discountApplied = true;
+    } else if (promoInfo && promoInfo.chosenBenefit === 'percent_10') {
         const discountPct = parseFloat(promoInfo.discountPercent) || 10;
-        const discounted = Math.round(base * (1 - discountPct / 100) * 100) / 100;
-        return { basePrice: base, discountedPrice: discounted, discountApplied: true };
+        discountedPrice = Math.round(discountable * (1 - discountPct / 100) * 100) / 100;
+        discountedPrice += extrasCost + priorityCost;
+        discountApplied = true;
+    } else {
+        discountedPrice = basePackage + hostingCost + extrasCost + priorityCost;
     }
 
-    return { basePrice: base, discountedPrice: base, discountApplied: false };
+    return {
+        basePrice: basePackage + hostingCost + extrasCost + priorityCost,
+        discountedPrice,
+        discountApplied
+    };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -306,14 +313,12 @@ ${orderConfig.detailedDescription || 'Не указано'}
             await promoDb.createPromoUse(promoInfo.promoId, req.user.id, promoInfo.chosenBenefit);
         }
 
-        // SSE + Telegram notification
+        // SSE notification
         sse.send('admins', 'admin:ticket:new', {
             ...ticket,
             user_username: req.user.username,
             assigned_admin_username: null
         });
-
-        await sendNewTicketNotification(ticket, req.user.username, finalMessage);
 
         res.status(201).json({ ticket });
     } catch (error) {
@@ -362,10 +367,6 @@ async function addMessage(req, res) {
                 ticketId: ticket.id,
                 message: { ...message, username: req.user.username }
             });
-        }
-
-        if (!req.user.isAdmin) {
-            await sendNewMessageNotification(ticket.id, req.user.username, content);
         }
 
         res.status(201).json({ message });
