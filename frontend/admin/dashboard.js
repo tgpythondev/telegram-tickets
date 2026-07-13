@@ -8,14 +8,15 @@ const Dashboard = (() => {
     // ── SSE ────────────────────────────────
     function initSSE() {
         if (!inMemoryAccessToken) return;
-        sse = new EventSource(`${API_URL}/events?token=${inMemoryAccessToken}`);
+        if (sse) { sse.close(); sse = null; }
+        sse = new EventSource(`${API_URL}/events`, { withCredentials: true });
 
         sse.addEventListener('admin:ticket:new', e => {
             const ticket = JSON.parse(e.data);
             tickets.unshift(ticket);
             renderTickets();
             loadStats();
-            showToastMsg(`Новый тикет #${ticket.id}`, 'success');
+            showToastMsg(t('admin_sse_new').replace('{id}', ticket.id), 'success');
             pulseStat('stat-open');
         });
 
@@ -33,7 +34,7 @@ const Dashboard = (() => {
         sse.addEventListener('admin:message:new', e => {
             const { ticketId, message } = JSON.parse(e.data);
             if (currentTicket && currentTicket.id === ticketId) appendMessageToPanel(message);
-            showToastMsg(`Новое сообщение в #${ticketId}`, 'success');
+            showToastMsg(t('admin_sse_msg').replace('{id}', ticketId), 'success');
         });
 
         sse.onerror = () => {};
@@ -73,11 +74,11 @@ const Dashboard = (() => {
 
         try {
             const data = await API.getAllTickets(filters);
-            if (!data || !Array.isArray(data.tickets)) throw new Error('Неверный формат');
+            if (!data || !Array.isArray(data.tickets)) throw new Error(t('tickets_load_error'));
             tickets = data.tickets;
             renderTickets();
         } catch (err) {
-            const msg = `Ошибка загрузки: ${escapeHtml(err.message)}`;
+            const msg = `${t('tickets_load_error')}: ${escapeHtml(err.message)}`;
             if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${msg}</td></tr>`;
             if (cards) cards.innerHTML = `<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${msg}</div>`;
         } finally {
@@ -88,13 +89,17 @@ const Dashboard = (() => {
     function renderTickets() {
         const tbody  = document.getElementById('tickets-tbody');
         const cards  = document.getElementById('tickets-cards');
-        const statusLabels = { open: 'Открыт', in_progress: 'В работе', closed: 'Закрыт' };
+        const statusLabels = {
+            open: t('status_open'),
+            in_progress: t('status_progress'),
+            closed: t('status_closed')
+        };
         const priorityDot  = { normal: 'rgba(255,255,255,0.5)', high: '#FFD700', urgent: '#FF3333' };
 
         if (tbody) {
             tbody.innerHTML = '';
             if (tickets.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">Нет тикетов</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${t('admin_no_tickets')}</td></tr>`;
             } else {
                 tickets.forEach(t => {
                     const tr = document.createElement('tr');
@@ -123,7 +128,7 @@ const Dashboard = (() => {
         if (cards) {
             cards.innerHTML = '';
             if (tickets.length === 0) {
-                cards.innerHTML = `<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">Нет тикетов</div>`;
+                cards.innerHTML = `<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${t('admin_no_tickets')}</div>`;
             } else {
                 tickets.forEach(t => {
                     const card = document.createElement('div');
@@ -158,7 +163,7 @@ const Dashboard = (() => {
 
         panel.classList.add('open');
         overlay.classList.add('active');
-        body.innerHTML = '<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">Загрузка…</div>';
+        body.innerHTML = `<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${t('panel_loading')}</div>`;
 
         // Mark active row
         document.querySelectorAll('#tickets-tbody tr').forEach(r => {
@@ -167,17 +172,21 @@ const Dashboard = (() => {
 
         try {
             const data = await API.getTicket(ticketId);
-            if (!data || !data.ticket) throw new Error('Неверный формат');
+            if (!data || !data.ticket) throw new Error(t('tickets_load_error'));
             currentTicket = data.ticket;
             renderPanelHeader(currentTicket);
             renderPanelBody(currentTicket, data.messages || []);
         } catch (err) {
-            body.innerHTML = `<div style="padding:3rem;text-align:center;color:var(--accent-urgent);">Ошибка: ${escapeHtml(err.message)}</div>`;
+            body.innerHTML = `<div style="padding:3rem;text-align:center;color:var(--accent-urgent);">${t('tickets_load_error')}: ${escapeHtml(err.message)}</div>`;
         }
     }
 
     function renderPanelHeader(ticket) {
-        const statusLabels = { open: 'Открыт', in_progress: 'В работе', closed: 'Закрыт' };
+        const statusLabels = {
+            open: t('status_open'),
+            in_progress: t('status_progress'),
+            closed: t('status_closed')
+        };
         document.getElementById('adm-panel-subject').textContent = ticket.subject;
 
         const meta = document.getElementById('adm-panel-meta');
@@ -212,9 +221,9 @@ const Dashboard = (() => {
         grid.className = 'adm-details-grid';
 
         const fields = [
-            ['Пользователь', ticket.user_username || '—'],
-            ['Создан',       new Date(ticket.created_at).toLocaleString('ru-RU')],
-            ['Назначен',     ticket.assigned_admin_username || '—']
+            [t('admin_field_user'),     ticket.user_username || '—'],
+            [t('admin_field_created'),  new Date(ticket.created_at).toLocaleString('ru-RU')],
+            [t('admin_field_assigned'), ticket.assigned_admin_username || '—']
         ];
 
         fields.forEach(([label, value]) => {
@@ -229,24 +238,24 @@ const Dashboard = (() => {
         actions.className = 'adm-actions';
 
         // Status
-        const statusGroup = makeActionGroup('Статус', [
-            { label: 'Открыт',   key: 'status', val: 'open',        active: ticket.status === 'open' },
-            { label: 'В работе', key: 'status', val: 'in_progress', active: ticket.status === 'in_progress' },
-            { label: 'Закрыт',   key: 'status', val: 'closed',      active: ticket.status === 'closed' }
+        const statusGroup = makeActionGroup(t('admin_action_status'), [
+            { label: t('status_open'),     key: 'status', val: 'open',        active: ticket.status === 'open' },
+            { label: t('status_progress'), key: 'status', val: 'in_progress', active: ticket.status === 'in_progress' },
+            { label: t('status_closed'),   key: 'status', val: 'closed',      active: ticket.status === 'closed' }
         ]);
 
         // Priority
-        const priorityGroup = makeActionGroup('Приоритет', [
-            { label: '● Обычный', key: 'priority', val: 'normal',  active: ticket.priority === 'normal',  attr: 'data-priority=normal' },
-            { label: '● Высокий', key: 'priority', val: 'high',    active: ticket.priority === 'high',    attr: 'data-priority=high' },
-            { label: '● Срочный', key: 'priority', val: 'urgent',  active: ticket.priority === 'urgent',  attr: 'data-priority=urgent' }
+        const priorityGroup = makeActionGroup(t('admin_action_priority'), [
+            { label: '● ' + t('cfg_prio_normal'), key: 'priority', val: 'normal',  active: ticket.priority === 'normal',  attr: 'data-priority=normal' },
+            { label: '● ' + t('cfg_prio_high'),   key: 'priority', val: 'high',    active: ticket.priority === 'high',    attr: 'data-priority=high' },
+            { label: '● ' + t('cfg_prio_urgent'), key: 'priority', val: 'urgent',  active: ticket.priority === 'urgent',  attr: 'data-priority=urgent' }
         ]);
 
         // Assign
         const assignBtn = document.createElement('button');
         assignBtn.className = 'adm-assign-btn';
         assignBtn.id = 'adm-assign-btn';
-        assignBtn.textContent = ticket.assigned_admin_id === user.id ? 'Снять с себя' : 'Назначить себе';
+        assignBtn.textContent = ticket.assigned_admin_id === user.id ? t('admin_btn_unassign') : t('admin_btn_assign');
         assignBtn.addEventListener('click', toggleAssign);
 
         actions.appendChild(statusGroup);
@@ -263,7 +272,7 @@ const Dashboard = (() => {
 
         const msgsLabel = document.createElement('div');
         msgsLabel.className = 'adm-messages-label';
-        msgsLabel.textContent = 'Переписка';
+        msgsLabel.textContent = t('admin_messages');
 
         const msgsList = document.createElement('div');
         msgsList.className = 'adm-messages-list';
@@ -283,20 +292,20 @@ const Dashboard = (() => {
             const ta = document.createElement('textarea');
             ta.className = 'adm-reply-textarea';
             ta.id = 'adm-reply-content';
-            ta.placeholder = 'Написать ответ пользователю…';
+            ta.placeholder = t('admin_reply_ph');
             ta.maxLength = 5000;
 
             const sendBtn = document.createElement('button');
             sendBtn.className = 'btn btn-primary';
             sendBtn.style.cssText = 'width:100%;justify-content:center;';
-            sendBtn.textContent = 'Отправить ответ';
+            sendBtn.textContent = t('admin_reply_btn');
 
             sendBtn.addEventListener('click', async () => {
                 const content = ta.value.trim();
                 if (!content) return;
-                if (content.length > 5000) { showToastMsg('Максимум 5000 символов', 'error'); return; }
+                if (content.length > 5000) { showToastMsg(t('ticket_max_chars'), 'error'); return; }
                 sendBtn.disabled = true;
-                sendBtn.textContent = 'Отправка…';
+                sendBtn.textContent = t('btn_sending');
                 try {
                     await API.replyToTicket(currentTicket.id, content);
                     ta.value = '';
@@ -310,10 +319,10 @@ const Dashboard = (() => {
                         }
                     }
                 } catch (err) {
-                    showToastMsg('Ошибка: ' + err.message, 'error');
+                    showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
                 } finally {
                     sendBtn.disabled = false;
-                    sendBtn.textContent = 'Отправить ответ';
+                    sendBtn.textContent = t('admin_reply_btn');
                 }
             });
 
@@ -402,7 +411,7 @@ const Dashboard = (() => {
             btn.classList.toggle('btn-active', btn.dataset.priority === currentTicket.priority);
         });
         const ab = document.getElementById('adm-assign-btn');
-        if (ab) ab.textContent = currentTicket.assigned_admin_id === user.id ? 'Снять с себя' : 'Назначить себе';
+        if (ab) ab.textContent = currentTicket.assigned_admin_id === user.id ? t('admin_btn_unassign') : t('admin_btn_assign');
     }
 
     async function updateTicketField(field, value, clickedBtn) {
@@ -425,7 +434,7 @@ const Dashboard = (() => {
             // Rollback
             currentTicket[field] = prevValue;
             refreshPanelMeta();
-            showToastMsg('Ошибка: ' + err.message, 'error');
+            showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
         }
     }
 
@@ -435,7 +444,7 @@ const Dashboard = (() => {
         try {
             await API.updateTicket(currentTicket.id, { assignedAdminId: isAssigned ? null : user.id });
         } catch (err) {
-            showToastMsg('Ошибка: ' + err.message, 'error');
+            showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
         }
     }
 

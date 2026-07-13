@@ -37,15 +37,15 @@ document.getElementById('login-form').addEventListener('submit', async e => {
     errorEl.textContent = '';
 
     if (username.length < 3) {
-        document.getElementById('login-username-error').textContent = 'Минимум 3 символа';
+        document.getElementById('login-username-error').textContent = t('val_min3');
         return;
     }
     if (password.length < 8) {
-        document.getElementById('login-password-error').textContent = 'Минимум 8 символов';
+        document.getElementById('login-password-error').textContent = t('val_min8');
         return;
     }
 
-    setLoading(btn, true, 'Вход...');
+    setLoading(btn, true, t('loading_login'));
 
     try {
         const data = await API.login(username, password);
@@ -60,8 +60,8 @@ document.getElementById('login-form').addEventListener('submit', async e => {
         window.location.href = data.user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
     } catch (err) {
         console.error('Login error:', err);
-        errorEl.textContent = err.message || 'Неверный логин или пароль';
-        setLoading(btn, false, 'Войти');
+        errorEl.textContent = err.message || t('err_login');
+        setLoading(btn, false, t('login_btn'));
     }
 });
 
@@ -79,27 +79,27 @@ document.getElementById('register-form').addEventListener('submit', async e => {
     clearFieldErrors();
 
     if (username.length < 3) {
-        document.getElementById('register-username-error').textContent = 'Минимум 3 символа';
+        document.getElementById('register-username-error').textContent = t('val_min3');
         return;
     }
     if (password.length < 8) {
-        document.getElementById('register-password-error').textContent = 'Минимум 8 символов';
+        document.getElementById('register-password-error').textContent = t('val_min8');
         return;
     }
     if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-        document.getElementById('register-password-error').textContent = 'Нужны буквы и цифры';
+        document.getElementById('register-password-error').textContent = t('val_letters_digits');
         return;
     }
     if (!/[!@#$%^&*()\-_=+\[\]{}|;:,.<>?]/.test(password)) {
-        document.getElementById('register-password-error').textContent = 'Нужен спецсимвол';
+        document.getElementById('register-password-error').textContent = t('val_special');
         return;
     }
     if (password !== confirm) {
-        document.getElementById('register-password-confirm-error').textContent = 'Пароли не совпадают';
+        document.getElementById('register-password-confirm-error').textContent = t('val_passwords_match');
         return;
     }
 
-    setLoading(btn, true, 'Регистрация...');
+    setLoading(btn, true, t('loading_register'));
 
     try {
         const data = await API.register(username, password);
@@ -114,8 +114,8 @@ document.getElementById('register-form').addEventListener('submit', async e => {
         window.location.href = 'tickets.html';
     } catch (err) {
         console.error('Register error:', err);
-        errorEl.textContent = err.message || 'Ошибка регистрации';
-        setLoading(btn, false, 'Зарегистрироваться');
+        errorEl.textContent = err.message || t('err_register');
+        setLoading(btn, false, t('register_btn'));
     }
 });
 

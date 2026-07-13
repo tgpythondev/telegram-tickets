@@ -10,7 +10,8 @@ const Tickets = (() => {
     // ── SSE ────────────────────────────────
     function initSSE() {
         if (!inMemoryAccessToken) return;
-        sse = new EventSource(`${API_URL}/events?token=${inMemoryAccessToken}`);
+        if (sse) { sse.close(); sse = null; }
+        sse = new EventSource(`${API_URL}/events`, { withCredentials: true });
 
         sse.addEventListener('user:message:new', e => {
             const { ticketId, message } = JSON.parse(e.data);
@@ -20,7 +21,7 @@ const Tickets = (() => {
             }
             loadTickets();
             if (!currentTicket || currentTicket.id !== ticketId) {
-                showSuccess(`Новое сообщение в тикете #${ticketId}`);
+                showSuccess(t('sse_new_message').replace('{id}', ticketId));
             }
         });
 
@@ -33,7 +34,7 @@ const Tickets = (() => {
                 refreshPanelMeta();
             }
             loadTickets();
-            showSuccess(`Тикет #${ticketId} обновлён`);
+            showSuccess(t('sse_ticket_updated').replace('{id}', ticketId));
         });
 
         sse.onerror = () => { /* browser reconnects automatically */ };
@@ -47,14 +48,14 @@ const Tickets = (() => {
 
         if (user.telegram_chat_id) {
             textEl.textContent = user.telegram_notifications_enabled
-                ? '✅ Уведомления включены'
-                : '⏸ Уведомления отключены';
+                ? t('tg_enabled')
+                : t('tg_disabled');
             toggleBtn.textContent = user.telegram_notifications_enabled
-                ? 'Выключить' : 'Включить';
+                ? t('tg_btn_disable') : t('tg_btn_enable');
             toggleBtn.onclick = toggleTelegramNotifications;
         } else {
-            textEl.textContent = 'Telegram не подключён';
-            toggleBtn.textContent = 'Подключить';
+            textEl.textContent = t('tg_not_connected');
+            toggleBtn.textContent = t('tg_btn_connect');
             toggleBtn.onclick = () => window.open('https://t.me/KaliangSupportBot', '_blank');
         }
     }
@@ -68,7 +69,7 @@ const Tickets = (() => {
             user.telegram_notifications_enabled = data.enabled;
             await loadTelegramStatus();
         } catch (err) {
-            showError('Ошибка: ' + err.message);
+            showError(t('tickets_load_error') + ': ' + err.message);
         } finally {
             btn.disabled = false;
         }
@@ -84,13 +85,13 @@ const Tickets = (() => {
         try {
             const status = currentFilter === 'all' ? null : currentFilter;
             const data = await API.getTickets(status);
-            if (!data || !Array.isArray(data.tickets)) throw new Error('Неверный формат');
+            if (!data || !Array.isArray(data.tickets)) throw new Error(t('tickets_load_error'));
             tickets = data.tickets;
             renderTicketList(body);
             updateCounts();
         } catch (err) {
             body.innerHTML = '';
-            const empty = makeEmptyState('Ошибка загрузки', err.message);
+            const empty = makeEmptyState(t('tickets_load_error'), err.message);
             body.appendChild(empty);
         }
     }
@@ -112,14 +113,14 @@ const Tickets = (() => {
         container.innerHTML = '';
         if (tickets.length === 0) {
             container.appendChild(makeEmptyState(
-                'Тикетов пока нет',
-                'Создайте первый тикет, чтобы начать диалог'
+                t('tickets_empty_title'),
+                t('tickets_empty_sub')
             ));
             document.getElementById('tickets-count').textContent = '';
             return;
         }
 
-        document.getElementById('tickets-count').textContent = `${tickets.length} тикет${ending(tickets.length)}`;
+        document.getElementById('tickets-count').textContent = I18n.ticketCount(tickets.length);
 
         tickets.forEach(ticket => {
             container.appendChild(makeTicketRow(ticket));
@@ -127,7 +128,11 @@ const Tickets = (() => {
     }
 
     function makeTicketRow(ticket) {
-        const statusLabels = { open: 'Открыт', in_progress: 'В работе', closed: 'Закрыт' };
+        const statusLabels = {
+            open: t('status_open'),
+            in_progress: t('status_progress'),
+            closed: t('status_closed')
+        };
 
         const row = document.createElement('div');
         row.className = 'ticket-row';
@@ -209,18 +214,19 @@ const Tickets = (() => {
         const msgs    = document.getElementById('tp-messages');
 
         document.querySelectorAll('.ticket-row').forEach(r => r.classList.remove('active'));
-        document.querySelector(`.ticket-row[tabindex="0"]`);
+        const firstRow = document.querySelector(`.ticket-row[tabindex="0"]`);
+        if (firstRow) firstRow.classList.add('active');
 
         panel.classList.add('open');
         overlay.classList.add('active');
-        msgs.innerHTML = '<div style="padding:2rem;text-align:center;color:rgba(255,255,255,.3)">Загрузка...</div>';
+        msgs.innerHTML = `<div style="padding:2rem;text-align:center;color:rgba(255,255,255,.3)">${escapeHtml(t('panel_loading'))}</div>`;
 
         document.getElementById('tp-subject').textContent = '—';
         document.getElementById('tp-meta-row').innerHTML  = '';
 
         try {
             const data = await API.getTicket(ticketId);
-            if (!data || !data.ticket) throw new Error('Неверный формат');
+            if (!data || !data.ticket) throw new Error(t('tickets_load_error'));
             currentTicket = data.ticket;
             const messages = data.messages || [];
 
@@ -238,12 +244,16 @@ const Tickets = (() => {
                 if (idEl && idEl.textContent === `#${ticketId}`) r.classList.add('active');
             });
         } catch (err) {
-            msgs.innerHTML = `<div class="tickets-empty"><div class="tickets-empty-title">Ошибка загрузки</div><div class="tickets-empty-sub">${escapeHtml(err.message)}</div></div>`;
+            msgs.innerHTML = `<div class="tickets-empty"><div class="tickets-empty-title">${escapeHtml(t('tickets_load_error'))}</div><div class="tickets-empty-sub">${escapeHtml(err.message)}</div></div>`;
         }
     }
 
     function renderPanelHeader(ticket) {
-        const statusLabels = { open: 'Открыт', in_progress: 'В работе', closed: 'Закрыт' };
+        const statusLabels = {
+            open: t('status_open'),
+            in_progress: t('status_progress'),
+            closed: t('status_closed')
+        };
 
         document.getElementById('tp-subject').textContent = ticket.subject;
 
@@ -273,7 +283,7 @@ const Tickets = (() => {
         const assigned = document.getElementById('tp-assigned');
         if (ticket.assigned_admin_username) {
             assigned.style.display = '';
-            assigned.textContent = `👨‍💼 Администратор ${ticket.assigned_admin_username} работает над тикетом`;
+            assigned.textContent = t('admin_assigned').replace('{name}', ticket.assigned_admin_username);
         } else {
             assigned.style.display = 'none';
         }
@@ -336,7 +346,7 @@ const Tickets = (() => {
         if (ticket.status === 'closed') {
             const notice = document.createElement('div');
             notice.className = 'tp-closed-notice';
-            notice.textContent = 'Тикет закрыт';
+            notice.textContent = t('panel_closed');
             area.appendChild(notice);
             return;
         }
@@ -346,7 +356,7 @@ const Tickets = (() => {
 
         const textarea = document.createElement('textarea');
         textarea.className = 'tp-textarea';
-        textarea.placeholder = 'Написать сообщение…';
+        textarea.placeholder = t('msg_placeholder');
         textarea.maxLength = 5000;
 
         const actions = document.createElement('div');
@@ -354,21 +364,21 @@ const Tickets = (() => {
 
         const closeTicketBtn = document.createElement('button');
         closeTicketBtn.className = 'tp-close-ticket';
-        closeTicketBtn.textContent = 'Закрыть тикет';
+        closeTicketBtn.textContent = t('btn_close_ticket');
         closeTicketBtn.addEventListener('click', closeTicketAction);
 
         const sendBtn = document.createElement('button');
         sendBtn.className = 'btn btn-primary';
-        sendBtn.textContent = 'Отправить';
+        sendBtn.textContent = t('btn_send');
         sendBtn.style.padding = '0.55rem 1.2rem';
         sendBtn.style.fontSize = 'var(--text-sm)';
 
         sendBtn.addEventListener('click', async () => {
             const content = textarea.value.trim();
             if (!content) return;
-            if (content.length > 5000) { showError('Максимум 5000 символов'); return; }
+            if (content.length > 5000) { showError(t('ticket_max_chars')); return; }
             sendBtn.disabled = true;
-            sendBtn.textContent = 'Отправка…';
+            sendBtn.textContent = t('btn_sending');
             try {
                 await API.addMessage(currentTicket.id, content);
                 textarea.value = '';
@@ -376,10 +386,10 @@ const Tickets = (() => {
                 if (data && data.messages) renderMessages(data.messages);
                 scrollToBottom();
             } catch (err) {
-                showError('Ошибка: ' + err.message);
+                showError(t('tickets_load_error') + ': ' + err.message);
             } finally {
                 sendBtn.disabled = false;
-                sendBtn.textContent = 'Отправить';
+                sendBtn.textContent = t('btn_send');
             }
         });
 
@@ -392,15 +402,56 @@ const Tickets = (() => {
 
     async function closeTicketAction() {
         if (!currentTicket) return;
-        if (!confirm('Закрыть этот тикет?')) return;
+        const confirmed = await showConfirmDialog(t('btn_close_confirm'));
+        if (!confirmed) return;
         try {
             await API.closeTicket(currentTicket.id);
             closePanel();
             await loadTickets();
-            showSuccess('Тикет закрыт');
+            showSuccess(t('ticket_closed_ok'));
         } catch (err) {
-            showError('Ошибка: ' + err.message);
+            showError(t('tickets_load_error') + ': ' + err.message);
         }
+    }
+
+    function showConfirmDialog(message) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
+
+            const dialog = document.createElement('div');
+            dialog.className = 'confirm-dialog';
+            dialog.setAttribute('role', 'dialog');
+            dialog.setAttribute('aria-modal', 'true');
+            dialog.style.cssText = 'background:var(--bg-card,#1a1a2e);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:2rem;max-width:360px;width:90%;text-align:center;';
+
+            const msg = document.createElement('p');
+            msg.style.cssText = 'margin:0 0 1.5rem;color:rgba(255,255,255,.85);font-size:var(--text-sm,14px);';
+            msg.textContent = message;
+
+            const btnRow = document.createElement('div');
+            btnRow.style.cssText = 'display:flex;gap:.75rem;justify-content:center;';
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn btn-ghost';
+            cancelBtn.textContent = t('cfg_btn_back') || '← Назад';
+            cancelBtn.addEventListener('click', () => { document.body.removeChild(overlay); resolve(false); });
+
+            const confirmBtn = document.createElement('button');
+            confirmBtn.className = 'btn btn-primary';
+            confirmBtn.textContent = t('btn_close_ticket');
+            confirmBtn.style.cssText = 'background:var(--accent-urgent,#ff3333);border-color:var(--accent-urgent,#ff3333);';
+            confirmBtn.addEventListener('click', () => { document.body.removeChild(overlay); resolve(true); });
+
+            btnRow.appendChild(cancelBtn);
+            btnRow.appendChild(confirmBtn);
+            dialog.appendChild(msg);
+            dialog.appendChild(btnRow);
+            overlay.appendChild(dialog);
+            document.body.appendChild(overlay);
+            confirmBtn.focus();
+        });
     }
 
     function closePanel() {
@@ -453,21 +504,21 @@ const Tickets = (() => {
             const subject  = document.getElementById('ticket-subject').value.trim();
             const message  = document.getElementById('ticket-message').value.trim();
             const priority = document.getElementById('ticket-priority').value;
-            if (!subject || !message) { showError('Заполните все поля'); return; }
+            if (!subject || !message) { showError(t('fill_all_fields')); return; }
             const btn = form.querySelector('button[type="submit"]');
             btn.disabled = true;
-            btn.textContent = 'Создание…';
+            btn.textContent = t('creating_ticket');
             try {
                 await API.createTicket(subject, message, priority);
                 modal.classList.remove('active');
                 form.reset();
                 await loadTickets();
-                showSuccess('Тикет создан');
+                showSuccess(t('ticket_created'));
             } catch (err) {
-                showError('Ошибка: ' + err.message);
+                showError(t('tickets_load_error') + ': ' + err.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Создать тикет';
+                btn.textContent = t('create_submit');
             }
         });
     }
@@ -501,7 +552,7 @@ const Tickets = (() => {
             const el = document.getElementById('tg-instructions');
             const btn = document.getElementById('tg-instructions-toggle');
             const visible = el.classList.toggle('visible');
-            btn.textContent = visible ? 'Скрыть ↑' : 'Как подключить? ↓';
+            btn.textContent = visible ? t('tg_how_hide') : t('tg_how');
         });
     }
 
@@ -549,7 +600,7 @@ const Tickets = (() => {
             initSSE();
         } catch (err) {
             console.error('Init error:', err);
-            showError('Ошибка инициализации: ' + err.message);
+            showError(t('tickets_load_error') + ': ' + err.message);
         }
     }
 

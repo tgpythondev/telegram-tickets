@@ -23,9 +23,7 @@ window.LANG_RU = {
   hero_proof_langs:  'Python · JS · Go',
   hero_proof_reply:  'Ответ в течение дня',
   hero_card_label:   'Боты на серверах',
-  hero_bot1_desc:    'Поддержка клиентов · Node.js',
-  hero_bot2_desc:    'Приём заказов · Python',
-  hero_bot3_desc:    'Рассылка · Python',
+
   hero_stat_bots:    'активных бота',
   hero_stat_uptime:  'uptime',
   hero_stat_monitor: 'мониторинг',
@@ -226,6 +224,10 @@ window.LANG_RU = {
   pf_modal_package:  'Пакет',
   pf_modal_features: 'Возможности',
   pf_modal_desc:     'Описание',
+
+  // Portfolio modal action buttons
+  pf_btn_go_bot:     '→ Перейти к боту',
+  pf_btn_download:   'Скачать исходный код',
 
   // Mini-review project
   project_mini_review_title: 'Mini-review',

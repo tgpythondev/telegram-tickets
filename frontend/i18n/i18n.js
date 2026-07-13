@@ -125,6 +125,8 @@
         });
 
         root.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+            // WARNING: innerHTML injection — only use for trusted keys with safe HTML (<br>, <code>).
+            // Do NOT allow user-editable translations to reach this path without sanitisation.
             el.innerHTML = t(el.getAttribute('data-i18n-html'));
         });
 

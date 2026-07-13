@@ -1,0 +1,18 @@
+# Backup files - should never be committed
+*.bak
+*.orig
+*.tmp
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor artifacts
+.vscode/settings.json
+*.swp
+*~
+
+# Local dev artifacts (do not deploy)
+auth-local.html
+api-local.js
+api-same-origin.js

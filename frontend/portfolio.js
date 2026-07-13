@@ -4,7 +4,15 @@
     function escapeHtml(t) {
         if (!t) return '';
         return String(t).replace(/[&<>"']/g, m =>
-            ({'&':'&','<':'<','>':'>','"':'"',"'":'&#039;'}[m]));
+            ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    function isSafeUrl(url) {
+        if (!url) return false;
+        try {
+            var u = new URL(url);
+            return u.protocol === 'https:' || u.protocol === 'http:';
+        } catch (_) { return false; }
     }
 
     function _t(key, params) {
@@ -38,7 +46,7 @@
                 lang: 'RU/PL/ENG',
                 term: '20 минут',
                 price: '$1–2',
-                botUrl: 'https://t.me/@Mini_review_bot',
+                botUrl: 'https://t.me/Mini_review_bot',
                 sourcesUrl: 'https://example.com/mini-review-sources.zip', // TODO: replace with real link
                 screenshots: [
                     { src: 'images/Mini-review/1.png', alt: 'Mini-review bot screenshot 1' },
@@ -68,7 +76,6 @@
     })();
 
     var currentPlan = 'all';
-    var currentModalItem = null;
 
     function getItems(plan) {
         if (plan === 'all') return allItems;
@@ -177,8 +184,6 @@
         var modal   = document.getElementById('pf-modal');
         var content = document.getElementById('pf-modal-content');
         if (!modal || !content) return;
-
-        currentModalItem = item;
 
         // Clear old content (keep close button)
         var closeBtn = document.getElementById('pf-modal-close');
@@ -314,18 +319,21 @@
 
         var btnBot = document.createElement('a');
         btnBot.className = 'btn btn-primary';
-        btnBot.href = item.botUrl;
+        btnBot.href = isSafeUrl(item.botUrl) ? item.botUrl : '#';
         btnBot.target = '_blank';
-        btnBot.textContent = '→ Go to bot';
+        btnBot.rel = 'noopener noreferrer';
+        btnBot.textContent = _t('pf_btn_go_bot');
 
         var btnDownload = document.createElement('a');
         btnDownload.className = 'btn btn-ghost';
-        btnDownload.href = item.sourcesUrl || '#';
+        btnDownload.href = isSafeUrl(item.sourcesUrl) ? item.sourcesUrl : '#';
         btnDownload.target = '_blank';
-        btnDownload.textContent = 'Download source code';
+        btnDownload.rel = 'noopener noreferrer';
+        btnDownload.textContent = _t('pf_btn_download');
 
         if (item.sourcesUrl === 'https://example.com/mini-review-sources.zip') {
             btnDownload.title = 'Placeholder - sources link will be added later';
+            btnDownload.href = '#';
         }
 
         actionsDiv.appendChild(btnBot);
@@ -348,7 +356,6 @@
         var modal = document.getElementById('pf-modal');
         if (modal) {
             modal.classList.remove('active');
-            currentModalItem = null;
         }
     }
 

@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 navLinks.classList.remove('active');
                 menuToggle.classList.remove('active');
                 menuToggle.setAttribute('aria-expanded', 'false');
+                menuToggle.setAttribute('aria-label', t ? t('nav_open_menu') : 'Открыть меню');
                 document.body.style.overflow = '';
             }
         });

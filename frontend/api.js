@@ -193,19 +193,12 @@ async function apiRequest(endpoint, options = {}) {
             const error = await response.json();
             errorMessage = error.error || getErrorMessage(response.status, errorMessage);
         } catch (parseError) {
-            // Если не удалось распарсить JSON, используем понятное сообщение по статусу
             errorMessage = getErrorMessage(response.status, errorMessage);
             console.error('Failed to parse error response:', parseError);
         }
 
-        // Показываем ошибку пользователю
         showError(errorMessage);
         throw new Error(errorMessage);
-    }
-
-    // Проверяем что response существует перед вызовом json()
-    if (!response) {
-        throw new Error('No response received');
     }
 
     try {

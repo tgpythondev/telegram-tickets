@@ -196,7 +196,9 @@ function validateStep(n) {
 function calculatePrice() {
     let base = config.packagePriceMin;
     if (config.hosting.type === 'paid') {
-        if (config.package === 'Standard') base = 30;
+        // Use max package price as base for paid hosting (customer pays for full tier)
+        base = config.packagePriceMax;
+        base += 5; // $5/mo hosting fee
         base += config.hosting.extraStorage * 3;
         base += config.hosting.extraBandwidth * 1;
     }
@@ -234,8 +236,7 @@ function updateLiveSummary() {
     const price = calculatePrice();
     const priceStr = config.package === 'Custom' ? `от $${price}` : `$${price}`;
 
-    const livePriceEl = document.getElementById('cfs-price') || document.getElementById('live-price');
-    // The summary panel's price element
+    // Update the summary panel price (uses class .cfs-price, id live-price)
     const cfsPriceEl = document.querySelector('.cfs-price');
     if (cfsPriceEl) cfsPriceEl.textContent = priceStr;
 }
@@ -296,7 +297,8 @@ async function submitOrder() {
         const user = await checkAuth();
         if (!user) {
             showError(tr('cfg_err_login'));
-            setTimeout(() => { window.location.href = '/auth.html'; }, 1500);
+            sessionStorage.setItem('pendingOrder', JSON.stringify(config));
+            setTimeout(() => { window.location.href = '/auth.html?returnTo=configurator.html'; }, 1500);
             return;
         }
 
@@ -331,7 +333,7 @@ window.addEventListener('load', () => {
 function restoreConfigState() {
     if (config.package) {
         const row = document.querySelector(`#package-list .cfg-option-row[data-package="${config.package}"]`);
-        if (row) { selectRow('#package-list', row); updatePrice(); }
+        if (row) selectRow('#package-list', row);
     }
     if (config.shortDescription) {
         const el = document.getElementById('short-description');

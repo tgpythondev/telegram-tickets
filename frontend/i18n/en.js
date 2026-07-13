@@ -23,9 +23,7 @@ window.LANG_EN = {
   hero_proof_langs:  'Python · JS · Go',
   hero_proof_reply:  'Reply within a day',
   hero_card_label:   'Bots on servers',
-  hero_bot1_desc:    'Customer support · Node.js',
-  hero_bot2_desc:    'Order intake · Python',
-  hero_bot3_desc:    'Broadcast · Python',
+
   hero_stat_bots:    'active bots',
   hero_stat_uptime:  'uptime',
   hero_stat_monitor: 'monitoring',
@@ -227,6 +225,10 @@ window.LANG_EN = {
   pf_modal_package:  'Package',
   pf_modal_features: 'Features',
   pf_modal_desc:     'Description',
+
+  // Portfolio modal action buttons
+  pf_btn_go_bot:     '→ Go to bot',
+  pf_btn_download:   'Download source code',
 
   // Mini-review project
   project_mini_review_title: 'Mini-review',
