@@ -1,65 +1,80 @@
-// CSRF защита для cross-origin setup
-// Используем double-submit cookie pattern с header вместо cookie-only
+// CSRF protection — double-submit token pattern.
+//
+// Flow:
+//   GET /auth/csrf  → generate token, store with TTL, return { csrfToken }
+//   Every non-GET  → read X-CSRF-Token header, validate against store
+//
+// The previous implementation had two critical bugs:
+//   1. generateToken() never stored the token → tokenStore.has() always false
+//   2. A valid JWT Bearer token caused the CSRF check to be skipped entirely,
+//      meaning CSRF protection was completely bypassed for authenticated requests.
 
 const crypto = require('crypto');
-const { verifyAccessToken } = require('../utils/jwt');
 
-// Хранилище токенов в памяти (для production используйте Redis)
+// token → expiry timestamp
 const tokenStore = new Map();
 
-// Генерация CSRF токена
+const TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour — must survive the full browser session
+
+// Generate AND store a new CSRF token
 function generateToken() {
-    return crypto.randomBytes(32).toString('hex');
+  const token = crypto.randomBytes(32).toString('hex');
+  tokenStore.set(token, Date.now() + TOKEN_TTL_MS);
+  return token;
 }
 
-// Middleware для проверки CSRF
+// Middleware: validate X-CSRF-Token header on every state-changing request
 function csrfProtection(req, res, next) {
-    // Пропускаем GET, HEAD, OPTIONS
-    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
-        return next();
-    }
+  // Safe methods — skip
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return next();
+  }
 
-    // Проверяем Authorization header (JWT token) - это основная аутентификация
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+  const csrfToken = req.headers['x-csrf-token'];
 
-    // Проверяем CSRF токен в header
-    const csrfToken = req.headers['x-csrf-token'];
+  if (!csrfToken) {
+    return res.status(403).json({ error: 'CSRF token missing' });
+  }
 
-    // Если есть JWT токен - проверяем, что он валиден
-    if (token) {
-        try {
-            verifyAccessToken(token);
-            // JWT токен действителен - CSRF проверка не обязательна для API с JWT
-            return next();
-        } catch (err) {
-            return res.status(401).json({ error: 'Invalid token' });
-        }
-    }
+  const expiry = tokenStore.get(csrfToken);
 
-    // Если нет JWT токена - проверяем только CSRF
-    if (!csrfToken) {
-        return res.status(403).json({ error: 'CSRF token missing' });
-    }
-
-    if (tokenStore.has(csrfToken)) {
-        tokenStore.delete(csrfToken);
-        return next();
-    }
-
+  if (!expiry) {
     return res.status(403).json({ error: 'Invalid CSRF token' });
+  }
+
+  if (Date.now() > expiry) {
+    tokenStore.delete(csrfToken);
+    return res.status(403).json({ error: 'CSRF token expired' });
+  }
+
+  // Token is valid — keep it alive (frontend caches one token per session)
+  // Do NOT delete it here: frontend reuses the same token until logout/reload
+  next();
 }
 
-// Генерация токена для клиента
 csrfProtection.generateToken = generateToken;
 
-// Очистка старых токенов (предотвращение утечки памяти)
+// Invalidate a specific token (call on logout)
+csrfProtection.invalidateToken = function(token) {
+  if (token && tokenStore.has(token)) {
+    tokenStore.delete(token);
+    console.log('[CSRF] Token invalidated on logout');
+  }
+};
+
+// Cleanup expired tokens every 10 minutes
 setInterval(() => {
-    const now = Date.now();
-    const maxAge = 3600000; // 1 час
-    for (const [token] of tokenStore.entries()) {
-        tokenStore.delete(token);
+  const now = Date.now();
+  let removed = 0;
+  for (const [token, expiry] of tokenStore.entries()) {
+    if (now > expiry) {
+      tokenStore.delete(token);
+      removed++;
     }
-}, 600000); // Очистка каждые 10 минут
+  }
+  if (removed > 0) {
+    console.log(`[CSRF] Cleaned up ${removed} expired tokens`);
+  }
+}, 10 * 60 * 1000);
 
 module.exports = csrfProtection;

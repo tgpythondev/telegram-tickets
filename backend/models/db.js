@@ -161,7 +161,7 @@ async function findAllTickets(filters = {}) {
         SELECT t.*,
                u.username as user_username,
                a.username as assigned_admin_username,
-               (SELECT COUNT(*) FROM messages WHERE ticket_id = t.id) as message_count
+               CAST((SELECT COUNT(*) FROM messages WHERE ticket_id = t.id) AS INTEGER) as message_count
         FROM tickets t
         JOIN users u ON t.user_id = u.id
         LEFT JOIN users a ON t.assigned_admin_id = a.id
@@ -202,7 +202,6 @@ async function updateTicketStatus(ticketId, status) {
 }
 
 async function updateTicket(ticketId, updates) {
-    const allowedFields = ['status', 'priority', 'assigned_admin_id'];
     const fields = [];
     const params = [];
     let paramIndex = 1;
@@ -215,9 +214,10 @@ async function updateTicket(ticketId, updates) {
         params.push(updates.status);
         paramIndex++;
 
-        if (updates.status === 'closed') {
-            fields.push('closed_at = CURRENT_TIMESTAMP');
-        }
+        // Use parameterized CASE — never raw string concatenation
+        fields.push(`closed_at = CASE WHEN $${paramIndex} = 'closed' THEN CURRENT_TIMESTAMP ELSE NULL END`);
+        params.push(updates.status);
+        paramIndex++;
     }
 
     if (updates.priority !== undefined) {
@@ -240,10 +240,21 @@ async function updateTicket(ticketId, updates) {
     }
 
     params.push(ticketId);
-    const query = `UPDATE tickets SET ${fields.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
+    await db.query(
+        `UPDATE tickets SET ${fields.join(', ')} WHERE id = $${paramIndex}`,
+        params
+    );
 
-    const result = await db.query(query, params);
-    return result.rows[0];
+    // Re-fetch with JOINs so the returned shape matches findTicketById
+    const result = await db.query(
+        `SELECT t.*, u.username as user_username, a.username as assigned_admin_username
+         FROM tickets t
+         JOIN users u ON t.user_id = u.id
+         LEFT JOIN users a ON t.assigned_admin_id = a.id
+         WHERE t.id = $1`,
+        [ticketId]
+    );
+    return result.rows[0] || null;
 }
 
 // ============ MESSAGES ============
@@ -275,7 +286,14 @@ async function getAdminStats() {
             COUNT(*) as total_tickets
         FROM tickets
     `);
-    return result.rows[0];
+    const row = result.rows[0];
+    // pg returns COUNT() as strings — cast to numbers for frontend
+    return {
+        open_tickets: parseInt(row.open_tickets, 10),
+        in_progress_tickets: parseInt(row.in_progress_tickets, 10),
+        closed_tickets: parseInt(row.closed_tickets, 10),
+        total_tickets: parseInt(row.total_tickets, 10)
+    };
 }
 
 module.exports = {

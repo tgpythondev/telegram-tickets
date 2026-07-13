@@ -30,6 +30,7 @@ class SSE {
     });
 
     console.log(`Admin SSE connected: ${connId}`);
+    return connId;
   }
 
   addUser(userId, res) {
@@ -55,6 +56,7 @@ class SSE {
     });
 
     console.log(`User SSE connected: ${connId}`);
+    return connId;
   }
 
   send(target, event, data) {

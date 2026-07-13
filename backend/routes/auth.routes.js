@@ -13,7 +13,7 @@ router.get('/csrf', (req, res) => {
 // Применяем CSRF защиту только к user-initiated запросов с активной сессией
 router.post('/register', authController.register); // БЕЗ CSRF - первичная регистрация
 router.post('/login', authController.login); // БЕЗ CSRF - первичный вход
-router.post('/logout', csrfProtection, authController.logout);
+router.post('/logout', authenticateToken, csrfProtection, authController.logout);
 router.post('/refresh', authController.refresh); // БЕЗ CSRF - автоматический запрос
 router.get('/me', authenticateToken, authController.me);
 

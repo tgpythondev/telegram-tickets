@@ -139,7 +139,8 @@ ${orderConfig.detailedDescription || 'Не указано'}
         // Отправить SSE событие админам
         sse.send('admins', 'admin:ticket:new', {
             ...ticket,
-            user_username: req.user.username
+            user_username: req.user.username,
+            assigned_admin_username: null  // новый тикет никому не назначен
         });
 
         await sendNewTicketNotification(ticket, req.user.username, finalMessage);

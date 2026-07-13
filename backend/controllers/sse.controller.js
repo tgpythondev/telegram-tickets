@@ -10,15 +10,15 @@ async function stream(req, res) {
   res.flushHeaders();
 
   try {
+    // addAdmin/addUser return the connId so we can reference it in keepAlive
+    let connId;
     if (user.isAdmin) {
-      sse.addAdmin(user.id, res);
+      connId = sse.addAdmin(user.id, res);
     } else {
-      sse.addUser(user.id, res);
+      connId = sse.addUser(user.id, res);
     }
 
     res.write(': connected\n\n');
-
-    const connId = user.isAdmin ? `${user.id}-${Date.now()}` : `${user.id}-${Date.now()}`;
 
     const keepAlive = setInterval(() => {
       try {
@@ -36,10 +36,13 @@ async function stream(req, res) {
 
     req.on('close', () => {
       clearInterval(keepAlive);
+      // sse.addUser/addAdmin already register a 'close' listener that removes the connId,
+      // but clearing the interval here prevents the next ping from firing on a dead socket.
     });
   } catch (err) {
     console.error('SSE stream error:', err);
-    res.status(429).json({ error: err.message });
+    // Can't send JSON after headers are flushed — just end the response
+    res.end();
   }
 }
 

@@ -91,6 +91,16 @@ const authLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+// SSE endpoint не должен попадать под короткий generalLimiter —
+// соединение долгоживущее, повторные подключения при reconnect не должны блокироваться
+const sseLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 минута
+    max: 20, // до 20 reconnect-попыток в минуту с одного IP
+    message: { error: 'Слишком много SSE подключений' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 // Middleware
 
 // Security headers с helmet
@@ -131,8 +141,14 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Разрешаем запросы без origin (например, mobile apps, Postman)
-        if (!origin) return callback(null, true);
+        // In production, reject requests with no Origin header (e.g. server-to-server curl)
+        // In development, allow no-origin for easier local testing
+        if (!origin) {
+            if (process.env.NODE_ENV === 'production') {
+                return callback(new Error('Origin header required'));
+            }
+            return callback(null, true);
+        }
 
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
@@ -149,13 +165,17 @@ app.use(express.json({
 }));
 
 app.use(cookieParser());
-app.use(generalLimiter);
+app.use((req, res, next) => {
+    // SSE endpoint gets its own limiter — skip general limiter for it
+    if (req.path === '/api/events') return next();
+    return generalLimiter(req, res, next);
+});
 
 // Routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/admin', adminRoutes);
-app.get('/api/events', sseAuth, sseController.stream);
+app.get('/api/events', sseLimiter, sseAuth, sseController.stream);
 
 // Health check с проверкой БД
 app.get('/health', async (req, res) => {

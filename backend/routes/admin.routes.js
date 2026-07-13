@@ -5,14 +5,14 @@ const authenticateToken = require('../middleware/auth');
 const requireAdmin = require('../middleware/adminAuth');
 const csrfProtection = require('../middleware/csrf');
 
-// Логирование всех запросов к admin routes
+router.use(authenticateToken);
+router.use(requireAdmin);
+
+// Логирование всех запросов к admin routes (после auth, чтобы req.user был доступен)
 router.use((req, res, next) => {
     console.log(`[ADMIN ROUTE] ${req.method} ${req.path} | User: ${req.user?.username || 'no user'} | Admin: ${req.user?.isAdmin || false}`);
     next();
 });
-
-router.use(authenticateToken);
-router.use(requireAdmin);
 
 router.get('/tickets', adminController.listAllTickets);
 router.get('/tickets/:id', require('../controllers/tickets.controller').getTicket);

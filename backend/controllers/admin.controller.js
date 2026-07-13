@@ -11,6 +11,10 @@ async function listAllTickets(req, res) {
 
         const filters = {};
         if (status) {
+            const validStatuses = ['open', 'in_progress', 'closed'];
+            if (!validStatuses.includes(status)) {
+                return res.status(400).json({ error: 'Invalid status. Must be: open, in_progress, or closed' });
+            }
             filters.status = status;
         }
         if (assigned_to_me === 'true') {
@@ -142,11 +146,15 @@ async function replyToTicket(req, res) {
         const { content } = req.body;
 
         console.log('[REPLY] Ticket ID from params:', id);
-        console.log('[REPLY] Content:', content);
 
         if (!content || content.trim().length === 0) {
             console.log('[REPLY] Empty content rejected');
             return res.status(400).json({ error: 'Reply content is required' });
+        }
+
+        // Validate max length (same as frontend enforces)
+        if (content.length > 5000) {
+            return res.status(400).json({ error: 'Reply is too long (max 5000 characters)' });
         }
 
         console.log('[REPLY] Finding ticket...');

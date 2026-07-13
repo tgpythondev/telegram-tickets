@@ -184,6 +184,13 @@ async function logout(req, res) {
             await db.deleteRefreshToken(refreshToken);
         }
 
+        // Инвалидируем CSRF-токен сессии
+        const csrfProtection = require('../middleware/csrf');
+        const csrfToken = req.headers['x-csrf-token'];
+        if (csrfToken) {
+            csrfProtection.invalidateToken(csrfToken);
+        }
+
         // Audit log: выход из системы
         if (req.user) {
             await logAuditEvent(req.user.id, AUDIT_ACTIONS.LOGOUT, req);
@@ -358,10 +365,7 @@ async function toggleTelegramNotifications(req, res) {
         // Audit log: изменение настроек уведомлений
         await logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_NOTIFICATIONS_TOGGLE, req, { enabled });
 
-        res.json({
-            message: `Telegram notifications ${enabled ? 'enabled' : 'disabled'}`,
-            notificationsEnabled: enabled
-        });
+        res.json({ notificationsEnabled: enabled });
     } catch (error) {
         console.error('Toggle Telegram notifications error:', error);
         res.status(500).json({ error: 'Internal server error' });
