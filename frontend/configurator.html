@@ -40,6 +40,48 @@
                     <div class="cfg-progress-text" id="cfg-progress-text" data-i18n="cfg_step_label" data-i18n-step="1" data-i18n-total="6">Krok 1 / 6</div>
                 </div>
 
+                <!-- Step 0: Promo code -->
+                <div class="cfg-step active" id="step-0">
+                    <h2 class="cfg-step-title" data-i18n="cfg_step0_title">Masz kod promocyjny?</h2>
+                    <p class="cfg-step-desc" data-i18n="cfg_step0_desc">Wpisz kod, aby odblokować zniżkę lub darmowego bota</p>
+
+                    <div class="cfg-promo-wrap" id="promo-input-area">
+                        <div class="cfg-promo-field">
+                            <input
+                                type="text"
+                                id="promo-code-input"
+                                class="cfg-promo-input"
+                                data-i18n-ph="cfg_promo_placeholder"
+                                placeholder="Wprowadź kod promocyjny"
+                                maxlength="50"
+                                autocomplete="off"
+                                spellcheck="false"
+                            >
+                            <button class="btn btn-primary cfg-promo-apply-btn" id="promo-apply-btn" data-i18n="cfg_promo_apply">Zastosuj</button>
+                        </div>
+                        <div class="cfg-promo-status" id="promo-status" style="display:none;"></div>
+                    </div>
+
+                    <!-- Benefit choice — shown only after valid code -->
+                    <div class="cfg-promo-benefits" id="promo-benefits" style="display:none;">
+                        <p class="cfg-promo-benefits-title" data-i18n="cfg_promo_choose">Wybierz swój bonus:</p>
+                        <div class="cfg-option-list" id="benefit-list">
+                            <div class="cfg-option-row cfg-promo-benefit-row" id="benefit-free-mini" data-benefit="free_mini">
+                                <span class="cor-name" data-i18n="cfg_promo_free_mini_name">Darmowy bot Mini</span>
+                                <span class="cor-desc" data-i18n="cfg_promo_free_mini_desc">Otrzymasz bota kategorii Mini całkowicie za darmo. Hosting tylko na własnym serwerze.</span>
+                                <span class="cor-price" style="color:var(--accent-ok,#22c55e);">$0</span>
+                            </div>
+                            <div class="cfg-option-row cfg-promo-benefit-row" id="benefit-percent-10" data-benefit="percent_10">
+                                <span class="cor-name" data-i18n="cfg_promo_pct_name">Zniżka 10%</span>
+                                <span class="cor-desc" data-i18n="cfg_promo_pct_desc">10% zniżki na dowolny pakiet.</span>
+                                <span class="cor-price" style="color:var(--accent-ok,#22c55e);">−10%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="cfg-promo-skip" id="promo-skip-btn" data-i18n="cfg_promo_skip">Nie mam kodu — pomiń →</button>
+                </div>
+
                 <!-- Step 1: Package -->
                 <div class="cfg-step active" id="step-1">
                     <h2 class="cfg-step-title" data-i18n="cfg_step1_title">Wybierz pakiet</h2>
@@ -206,6 +248,10 @@
                             <span class="csb-label" data-i18n="cfg_sum_total">Łączny koszt</span>
                             <span class="csb-value csb-total" id="sum-total">$0</span>
                         </div>
+                        <div class="csb-row" id="sum-promo-row" style="display:none;">
+                            <span class="csb-label" data-i18n="cfg_sum_promo">Promocja</span>
+                            <span class="csb-value" id="sum-promo" style="color:var(--accent-ok,#22c55e);">—</span>
+                        </div>
                     </div>
 
                     <details class="cfg-desc-details" id="desc-details" style="display:none;">
@@ -244,6 +290,10 @@
                 <div class="cfs-row">
                     <span class="cfs-key" data-i18n="cfg_live_priority">Priorytet</span>
                     <span class="cfs-val" id="live-priority">—</span>
+                </div>
+                <div class="cfs-row" id="live-promo-row" style="display:none;">
+                    <span class="cfs-key" data-i18n="cfg_live_promo">Promo</span>
+                    <span class="cfs-val" id="live-promo" style="color:var(--accent-ok,#22c55e);">—</span>
                 </div>
             </div>
 

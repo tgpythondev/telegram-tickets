@@ -1,6 +1,7 @@
 const db = require('../models/db');
 const { sendAdminReplyNotification, sendTicketStatusChangeNotification, sendTicketAssignedNotification } = require('../utils/telegram');
 const sse = require('../utils/sse');
+const { finalizePromoOnClose } = require('./tickets.controller');
 
 // Получить все тикеты (для админов)
 async function listAllTickets(req, res) {
@@ -83,6 +84,11 @@ async function updateTicket(req, res) {
         }
 
         const updatedTicket = await db.updateTicket(id, updates);
+
+        // ── Finalize promo use when admin closes a ticket ────────────────────
+        if (updates.status === 'closed' && ticket.status !== 'closed') {
+            await finalizePromoOnClose(id, ticket.user_id);
+        }
 
         // Отправить SSE события
         sse.send('admins', 'admin:ticket:updated', updatedTicket);

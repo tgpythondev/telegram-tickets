@@ -9,14 +9,20 @@ let config = {
     hosting: { type: null, extraStorage: 0, extraBandwidth: 0 },
     priority: 'normal',
     priorityCost: 0,
-    totalPrice: 0
+    totalPrice: 0,
+    // Promo
+    promoCode: null,
+    chosenBenefit: null,   // 'free_mini' | 'percent_10' | null
+    promoOptions: null,    // array returned by server after validation
+    promoDiscountPct: 10   // default, overridden by server response
 };
 
-let currentStep = 1;
-const totalSteps = 6;
+let currentStep = 0;     // starts at promo step
+const totalSteps = 7;    // 0…6 (step 0 = promo, steps 1-6 = original)
 
 // ── Init ───────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    setupPromoStep();
     setupOptionRows();
     setupTextareas();
     setupExtraResources();
@@ -28,6 +34,149 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cfs-order-btn').addEventListener('click', submitOrder);
 });
 
+// ── Promo step (step 0) ────────────────────
+function setupPromoStep() {
+    const applyBtn  = document.getElementById('promo-apply-btn');
+    const skipBtn   = document.getElementById('promo-skip-btn');
+    const codeInput = document.getElementById('promo-code-input');
+
+    applyBtn.addEventListener('click', applyPromoCode);
+    skipBtn.addEventListener('click', () => {
+        clearPromo();
+        advanceFromPromoStep();
+    });
+
+    codeInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') applyPromoCode();
+    });
+}
+
+async function applyPromoCode() {
+    const input   = document.getElementById('promo-code-input');
+    const applyBtn = document.getElementById('promo-apply-btn');
+    const code    = input.value.trim();
+
+    if (!code) {
+        showPromoStatus('error', typeof t === 'function' ? t('cfg_promo_err_empty') : 'Wprowadź kod');
+        return;
+    }
+
+    applyBtn.disabled = true;
+    applyBtn.textContent = typeof t === 'function' ? t('cfg_promo_checking') : '…';
+
+    try {
+        const result = await API.validatePromo(code);
+
+        if (!result || !result.valid) {
+            const reasonKey = {
+                promo_not_found:    'cfg_promo_err_not_found',
+                promo_inactive:     'cfg_promo_err_inactive',
+                promo_limit_reached:'cfg_promo_err_limit',
+                promo_already_used: 'cfg_promo_err_used',
+                too_many_requests:  'cfg_promo_err_rate'
+            }[result?.reason] || 'cfg_promo_err_invalid';
+
+            showPromoStatus('error', typeof t === 'function' ? t(reasonKey) : result?.reason || 'Nieprawidłowy kod');
+            hideBenefits();
+            return;
+        }
+
+        // Valid code — store and show benefit options
+        config.promoCode    = result.code;
+        config.promoOptions = result.options;
+
+        // Get discount percent from server response
+        const pctOption = result.options.find(o => o.type === 'percent_10');
+        if (pctOption) config.promoDiscountPct = pctOption.discountPercent || 10;
+
+        showPromoStatus('ok', (typeof t === 'function' ? t('cfg_promo_valid') : '✅ Kod aktywny:') + ' ' + result.code);
+        showBenefits(result.options);
+
+    } catch (err) {
+        showPromoStatus('error', typeof t === 'function' ? t('cfg_promo_err_server') : 'Błąd serwera');
+        hideBenefits();
+    } finally {
+        applyBtn.disabled = false;
+        applyBtn.textContent = typeof t === 'function' ? t('cfg_promo_apply') : 'Zastosuj';
+    }
+}
+
+function showBenefits(options) {
+    const benefitsEl   = document.getElementById('promo-benefits');
+    const freeMiniRow  = document.getElementById('benefit-free-mini');
+    const pct10Row     = document.getElementById('benefit-percent-10');
+
+    // Show or hide free_mini option depending on server response
+    const hasFreeMini = options.some(o => o.type === 'free_mini');
+    freeMiniRow.style.display = hasFreeMini ? '' : 'none';
+
+    // Reset selection
+    [freeMiniRow, pct10Row].forEach(r => r.classList.remove('selected'));
+    config.chosenBenefit = null;
+
+    // Attach click handlers (once — remove old ones by cloning)
+    const newFreeMini = freeMiniRow.cloneNode(true);
+    const newPct10    = pct10Row.cloneNode(true);
+    freeMiniRow.parentNode.replaceChild(newFreeMini, freeMiniRow);
+    pct10Row.parentNode.replaceChild(newPct10, pct10Row);
+
+    newFreeMini.addEventListener('click', () => selectBenefit('free_mini'));
+    newPct10.addEventListener('click',    () => selectBenefit('percent_10'));
+
+    benefitsEl.style.display = '';
+}
+
+function hideBenefits() {
+    document.getElementById('promo-benefits').style.display = 'none';
+    config.chosenBenefit = null;
+}
+
+function selectBenefit(benefit) {
+    config.chosenBenefit = benefit;
+
+    const freeMiniRow = document.getElementById('benefit-free-mini');
+    const pct10Row    = document.getElementById('benefit-percent-10');
+    [freeMiniRow, pct10Row].forEach(r => r && r.classList.remove('selected'));
+
+    const selected = document.querySelector(`#benefit-list [data-benefit="${benefit}"]`);
+    if (selected) selected.classList.add('selected');
+
+    // If free_mini selected, auto-lock hosting to 'none' when user reaches that step
+    if (benefit === 'free_mini') {
+        config.package = 'Mini';
+        config.packagePriceMin = 3;
+        config.packagePriceMax = 5;
+        // Pre-select Mini in package list (it may not be visible yet)
+        const miniRow = document.querySelector('#package-list .cfg-option-row[data-package="Mini"]');
+        if (miniRow) selectRow('#package-list', miniRow);
+    }
+
+    updatePrice();
+    advanceFromPromoStep();
+}
+
+function showPromoStatus(type, message) {
+    const el = document.getElementById('promo-status');
+    el.style.display = '';
+    el.className = `cfg-promo-status cfg-promo-status--${type}`;
+    el.textContent = message;
+}
+
+function clearPromo() {
+    config.promoCode     = null;
+    config.chosenBenefit = null;
+    config.promoOptions  = null;
+    document.getElementById('promo-code-input').value = '';
+    document.getElementById('promo-status').style.display = 'none';
+    hideBenefits();
+    updatePrice();
+}
+
+function advanceFromPromoStep() {
+    currentStep = 1;
+    showStep(1);
+}
+
 // ── Option rows (packages, languages, hosting, priority) ──
 function setupOptionRows() {
     // Package
@@ -37,6 +186,25 @@ function setupOptionRows() {
             config.package = row.dataset.package;
             config.packagePriceMin = parseInt(row.dataset.priceMin);
             config.packagePriceMax = parseInt(row.dataset.priceMax);
+
+            // If promo was free_mini but user changed package away from Mini —
+            // drop the free_mini benefit, keep percent_10 if available
+            if (config.chosenBenefit === 'free_mini' && config.package !== 'Mini') {
+                config.chosenBenefit = 'percent_10';
+                // Re-highlight percent_10 in benefit list
+                const freeMiniRow = document.getElementById('benefit-free-mini');
+                const pct10Row    = document.getElementById('benefit-percent-10');
+                if (freeMiniRow) freeMiniRow.classList.remove('selected');
+                if (pct10Row)    pct10Row.classList.add('selected');
+            }
+
+            // free_mini only valid for Mini — lock hosting to 'none'
+            if (config.chosenBenefit === 'free_mini') {
+                lockHostingToNone();
+            } else {
+                unlockHosting();
+            }
+
             updatePrice();
         });
     });
@@ -53,6 +221,7 @@ function setupOptionRows() {
     // Hosting
     document.querySelectorAll('#hosting-list .cfg-option-row').forEach(row => {
         row.addEventListener('click', () => {
+            if (row.classList.contains('cfg-option-disabled')) return;
             selectRow('#hosting-list', row);
             config.hosting.type = row.dataset.hosting;
             const extras = document.getElementById('extra-resources');
@@ -85,6 +254,41 @@ function setupOptionRows() {
     });
 }
 
+function lockHostingToNone() {
+    document.querySelectorAll('#hosting-list .cfg-option-row').forEach(row => {
+        if (row.dataset.hosting !== 'none') {
+            row.classList.add('cfg-option-disabled');
+        }
+    });
+    // Auto-select 'none'
+    const noneRow = document.querySelector('#hosting-list .cfg-option-row[data-hosting="none"]');
+    if (noneRow && !noneRow.classList.contains('selected')) {
+        selectRow('#hosting-list', noneRow);
+        config.hosting.type = 'none';
+        document.getElementById('extra-resources').style.display = 'none';
+    }
+    // Show info banner
+    let banner = document.getElementById('hosting-locked-banner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'hosting-locked-banner';
+        banner.className = 'cfg-promo-hosting-notice';
+        banner.setAttribute('data-i18n', 'cfg_promo_hosting_locked');
+        banner.textContent = typeof t === 'function' ? t('cfg_promo_hosting_locked') : '🎁 Darmowy Mini-bot wymaga własnego serwera. Hosting płatny/bezpłatny niedostępny.';
+        const hostingList = document.getElementById('hosting-list');
+        hostingList.parentNode.insertBefore(banner, hostingList);
+    }
+    banner.style.display = '';
+}
+
+function unlockHosting() {
+    document.querySelectorAll('#hosting-list .cfg-option-row').forEach(row => {
+        row.classList.remove('cfg-option-disabled');
+    });
+    const banner = document.getElementById('hosting-locked-banner');
+    if (banner) banner.style.display = 'none';
+}
+
 function selectRow(listSelector, selectedRow) {
     document.querySelectorAll(`${listSelector} .cfg-option-row`).forEach(r => r.classList.remove('selected'));
     selectedRow.classList.add('selected');
@@ -92,7 +296,7 @@ function selectRow(listSelector, selectedRow) {
 
 // ── Textareas ──────────────────────────────
 function setupTextareas() {
-    const shortInput = document.getElementById('short-description');
+    const shortInput  = document.getElementById('short-description');
     const detailInput = document.getElementById('detailed-description');
 
     shortInput.addEventListener('input', e => {
@@ -122,14 +326,14 @@ function setupExtraResources() {
 function setupNavigation() {
     document.getElementById('btn-next').addEventListener('click', () => {
         if (!validateStep(currentStep)) return;
-        if (currentStep < totalSteps) {
+        if (currentStep < totalSteps - 1) {
             currentStep++;
             showStep(currentStep);
         }
     });
 
     document.getElementById('btn-back').addEventListener('click', () => {
-        if (currentStep > 1) {
+        if (currentStep > 0) {
             currentStep--;
             showStep(currentStep);
         }
@@ -144,17 +348,29 @@ function showStep(n) {
 
     updateProgress();
     updateNavButtons(n);
-    if (n === totalSteps) buildSummaryStep();
+    if (n === totalSteps - 1) buildSummaryStep();
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function updateProgress() {
-    const pct = ((currentStep - 1) / (totalSteps - 1)) * 100;
+    const displayStep  = currentStep; // 0-based internally, show 0 as "Promo"
+    const displayTotal = totalSteps - 1; // steps 1..6 visible to user
+    const pct = currentStep === 0 ? 0 : ((currentStep - 1) / (totalSteps - 2)) * 100;
     document.getElementById('cfg-progress-fill').style.width = pct + '%';
-    var stepText = typeof t === 'function' ? t('cfg_step_label', { step: currentStep, total: totalSteps }) : ('Krok ' + currentStep + ' / ' + totalSteps);
+
+    let stepText;
+    if (currentStep === 0) {
+        stepText = typeof t === 'function' ? t('cfg_step0_label') : 'Kod promocyjny';
+    } else {
+        stepText = typeof t === 'function'
+            ? t('cfg_step_label', { step: currentStep, total: totalSteps - 1 })
+            : (`Krok ${currentStep} / ${totalSteps - 1}`);
+    }
     document.getElementById('cfg-progress-text').textContent = stepText;
-    document.getElementById('nav-step-label').textContent = `${currentStep} / ${totalSteps}`;
+    document.getElementById('nav-step-label').textContent = currentStep === 0
+        ? (typeof t === 'function' ? t('cfg_step0_nav') : 'Promo')
+        : `${currentStep} / ${totalSteps - 1}`;
 }
 
 function updateNavButtons(n) {
@@ -162,18 +378,27 @@ function updateNavButtons(n) {
     const nextBtn   = document.getElementById('btn-next');
     const submitBtn = document.getElementById('btn-submit');
     const cfsSend   = document.getElementById('cfs-order-btn');
+    const lastStep  = totalSteps - 1;
 
-    backBtn.style.display   = n === 1 ? 'none' : 'inline-flex';
-    nextBtn.style.display   = n === totalSteps ? 'none' : 'inline-flex';
-    submitBtn.style.display = n === totalSteps ? 'inline-flex' : 'none';
+    backBtn.style.display   = n === 0 ? 'none' : 'inline-flex';
+    nextBtn.style.display   = n === lastStep ? 'none' : (n === 0 ? 'none' : 'inline-flex');
+    submitBtn.style.display = n === lastStep ? 'inline-flex' : 'none';
 
-    cfsSend.disabled = n !== totalSteps;
+    cfsSend.disabled = n !== lastStep;
 }
 
 // ── Validate ───────────────────────────────
 function validateStep(n) {
     var e;
     switch (n) {
+        case 0:
+            // Promo step — must have chosen a benefit if a promo code was validated
+            if (config.promoCode && !config.chosenBenefit) {
+                e = typeof t === 'function' ? t('cfg_promo_err_choose') : 'Wybierz swój bonus promocyjny';
+                showError(e);
+                return false;
+            }
+            return true;
         case 1:
             if (!config.package) { e = typeof t === 'function' ? t('cfg_err_package') : 'Wybierz pakiet'; showError(e); return false; }
             return true;
@@ -186,6 +411,12 @@ function validateStep(n) {
             return true;
         case 4:
             if (!config.hosting.type) { e = typeof t === 'function' ? t('cfg_err_hosting') : 'Wybierz opcję hostingu'; showError(e); return false; }
+            // Double-check: free_mini cannot have paid/free hosting
+            if (config.chosenBenefit === 'free_mini' && config.hosting.type !== 'none') {
+                e = typeof t === 'function' ? t('cfg_promo_err_hosting') : 'Przy darmowym bocie Mini wymagany własny serwer';
+                showError(e);
+                return false;
+            }
             return true;
         default:
             return true;
@@ -194,15 +425,26 @@ function validateStep(n) {
 
 // ── Price ──────────────────────────────────
 function calculatePrice() {
-    let base = config.packagePriceMin;
+    let base = config.packagePriceMin || 0;
+
     if (config.hosting.type === 'paid') {
-        // Use max package price as base for paid hosting (customer pays for full tier)
-        base = config.packagePriceMax;
-        base += 5; // $5/mo hosting fee
+        base = config.packagePriceMax || 0;
+        base += 5;
         base += config.hosting.extraStorage * 3;
         base += config.hosting.extraBandwidth * 1;
     }
-    base += config.priorityCost;
+
+    base += config.priorityCost || 0;
+
+    // Apply promo discount (display only — server recalculates authoritatively)
+    if (config.chosenBenefit === 'free_mini' && config.package === 'Mini') {
+        return 0;
+    }
+    if (config.chosenBenefit === 'percent_10') {
+        const pct = config.promoDiscountPct || 10;
+        return Math.round(base * (1 - pct / 100) * 100) / 100;
+    }
+
     return base;
 }
 
@@ -210,15 +452,14 @@ function updatePrice() {
     const price = calculatePrice();
     config.totalPrice = price;
     const str = config.package === 'Custom' ? `от $${price}` : `$${price}`;
-    setLive('live-price', str);
     const el = document.getElementById('live-price');
     if (el) el.textContent = str;
     updateLiveSummary();
 }
 
 function updateLiveSummary() {
-    setLive('live-package',  config.package   || '—',  !!config.package);
-    setLive('live-language', config.language  || '—',  !!config.language);
+    setLive('live-package',  config.package   || '—', !!config.package);
+    setLive('live-language', config.language  || '—', !!config.language);
 
     var tr = (typeof t === 'function') ? t : function(k) { return k; };
     let hostingStr = '—';
@@ -227,16 +468,28 @@ function updateLiveSummary() {
     else if (config.hosting.type === 'none')  hostingStr = tr('cfg_hosting_none');
     setLive('live-hosting', hostingStr, !!config.hosting.type);
 
-    var prLiveNames = {};
-    prLiveNames['normal'] = tr('cfg_prio_normal_live');
-    prLiveNames['high'] = tr('cfg_prio_high_live');
-    prLiveNames['urgent'] = tr('cfg_prio_urgent_live');
+    const prLiveNames = {
+        normal: tr('cfg_prio_normal_live'),
+        high:   tr('cfg_prio_high_live'),
+        urgent: tr('cfg_prio_urgent_live')
+    };
     setLive('live-priority', prLiveNames[config.priority] || '—', true);
+
+    // Promo row in live panel
+    const livePromoRow = document.getElementById('live-promo-row');
+    const livePromo    = document.getElementById('live-promo');
+    if (config.promoCode && config.chosenBenefit) {
+        const benefitLabel = config.chosenBenefit === 'free_mini'
+            ? tr('cfg_promo_free_mini_name')
+            : tr('cfg_promo_pct_name');
+        if (livePromo)    livePromo.textContent    = `${config.promoCode} (${benefitLabel})`;
+        if (livePromoRow) livePromoRow.style.display = '';
+    } else {
+        if (livePromoRow) livePromoRow.style.display = 'none';
+    }
 
     const price = calculatePrice();
     const priceStr = config.package === 'Custom' ? `от $${price}` : `$${price}`;
-
-    // Update the summary panel price (uses class .cfs-price, id live-price)
     const cfsPriceEl = document.querySelector('.cfs-price');
     if (cfsPriceEl) cfsPriceEl.textContent = priceStr;
 }
@@ -245,9 +498,7 @@ function setLive(id, val, filled) {
     const el = document.getElementById(id);
     if (!el) return;
     el.textContent = val;
-    if (filled !== undefined) {
-        el.classList.toggle('filled', filled);
-    }
+    if (filled !== undefined) el.classList.toggle('filled', filled);
 }
 
 // ── Build final summary ────────────────────
@@ -270,14 +521,28 @@ function buildSummaryStep() {
     }
     document.getElementById('sum-hosting').textContent = hostingStr;
 
-    var prNames = {};
-    prNames['normal'] = tr('cfg_prio_normal');
-    prNames['high'] = tr('cfg_prio_high');
-    prNames['urgent'] = tr('cfg_prio_urgent');
+    const prNames = {
+        normal: tr('cfg_prio_normal'),
+        high:   tr('cfg_prio_high'),
+        urgent: tr('cfg_prio_urgent')
+    };
     document.getElementById('sum-priority').textContent = prNames[config.priority] || '—';
 
     const price = calculatePrice();
     document.getElementById('sum-total').textContent = config.package === 'Custom' ? `от $${price}` : `$${price}`;
+
+    // Promo row in summary
+    const sumPromoRow = document.getElementById('sum-promo-row');
+    const sumPromo    = document.getElementById('sum-promo');
+    if (config.promoCode && config.chosenBenefit) {
+        const benefitLabel = config.chosenBenefit === 'free_mini'
+            ? tr('cfg_promo_free_mini_name')
+            : tr('cfg_promo_pct_name');
+        if (sumPromo)    sumPromo.textContent    = `${config.promoCode} (${benefitLabel})`;
+        if (sumPromoRow) sumPromoRow.style.display = '';
+    } else {
+        if (sumPromoRow) sumPromoRow.style.display = 'none';
+    }
 
     // Detailed description spoiler
     const details = document.getElementById('desc-details');
@@ -307,7 +572,23 @@ async function submitOrder() {
         const subject = tr('cfg_order_subject', { pkg: config.package });
         const initialMessage = tr('cfg_order_msg');
 
-        await API.createTicket(subject, initialMessage, config.priority, config);
+        // Pass promo fields both inside orderConfig and at top level
+        // so the backend picks them up regardless of path
+        const orderConfigToSend = {
+            ...config,
+            promoCode:     config.promoCode     || null,
+            chosenBenefit: config.chosenBenefit || null
+        };
+
+        await API.createTicket(
+            subject,
+            initialMessage,
+            config.priority,
+            orderConfigToSend,
+            config.promoCode     || null,
+            config.chosenBenefit || null
+        );
+
         window.location.href = 'tickets.html';
     } catch (err) {
         console.error('Submit order error:', err);
@@ -316,7 +597,7 @@ async function submitOrder() {
     }
 }
 
-// Restore from pending order in sessionStorage
+// ── Restore from pending order in sessionStorage ───────────────────────────
 window.addEventListener('load', () => {
     const pending = sessionStorage.getItem('pendingOrder');
     if (pending) {
@@ -324,7 +605,7 @@ window.addEventListener('load', () => {
             config = JSON.parse(pending);
             sessionStorage.removeItem('pendingOrder');
             restoreConfigState();
-            currentStep = totalSteps;
+            currentStep = totalSteps - 1;
             showStep(currentStep);
         } catch (_) {}
     }
@@ -362,5 +643,14 @@ function restoreConfigState() {
         const row = document.querySelector(`#priority-list .cfg-option-row[data-priority="${config.priority}"]`);
         if (row) selectRow('#priority-list', row);
     }
+
+    // Restore promo if present
+    if (config.promoCode) {
+        document.getElementById('promo-code-input').value = config.promoCode;
+    }
+    if (config.chosenBenefit === 'free_mini') {
+        lockHostingToNone();
+    }
+
     updatePrice();
 }

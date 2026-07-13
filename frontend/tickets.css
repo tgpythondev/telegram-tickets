@@ -649,6 +649,107 @@
     }
 }
 
+/* ── Promo in create-ticket modal ──────────────────── */
+
+.ticket-promo-group {
+    margin-top: var(--sp-4);
+    padding-top: var(--sp-4);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ticket-promo-field {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: stretch;
+}
+
+.ticket-promo-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    padding: var(--sp-3) var(--sp-4);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: var(--text-sm, 14px);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.ticket-promo-input:focus {
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.ticket-promo-input::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.ticket-promo-status {
+    margin-top: var(--sp-2);
+    font-size: var(--text-xs, 12px);
+    padding: var(--sp-1) 0;
+}
+
+.ticket-promo-status--ok {
+    color: var(--accent-ok, #22c55e);
+}
+
+.ticket-promo-status--error {
+    color: var(--accent-urgent, #ff4444);
+}
+
+.ticket-promo-benefits {
+    margin-top: var(--sp-3);
+}
+
+.ticket-promo-benefits-title {
+    font-size: var(--text-xs, 12px);
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: var(--sp-2);
+}
+
+.ticket-promo-benefit-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+}
+
+.ticket-promo-benefit {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.ticket-promo-benefit:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.ticket-promo-benefit input[type="radio"] {
+    accent-color: var(--accent-ok, #22c55e);
+}
+
+.tpb-name {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: var(--text-sm, 14px);
+}
+
+.tpb-hint {
+    font-size: var(--text-xs, 12px);
+    color: rgba(255, 255, 255, 0.35);
+    margin-left: auto;
+}
+
+.ticket-promo-apply-btn {
+    white-space: nowrap;
+}
+
 @media (max-width: 480px) {
     .tickets-main-header {
         padding: var(--sp-4) var(--sp-5);

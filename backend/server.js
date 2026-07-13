@@ -10,6 +10,7 @@ const { startTokenCleanupSchedule } = require('./utils/cleanup');
 const authRoutes = require('./routes/auth.routes');
 const ticketsRoutes = require('./routes/tickets.routes');
 const adminRoutes = require('./routes/admin.routes');
+const promoRoutes = require('./routes/promo.routes');
 const sseAuth = require('./middleware/sseAuth');
 const sseController = require('./controllers/sse.controller');
 
@@ -175,6 +176,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/promo', promoRoutes);
 app.get('/api/events', sseLimiter, sseAuth, sseController.stream);
 
 // Health check с проверкой БД

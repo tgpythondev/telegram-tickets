@@ -495,21 +495,150 @@ const Tickets = (() => {
         const closeBtn = document.getElementById('create-modal-close');
         const form     = document.getElementById('create-ticket-form');
 
-        openBtn.addEventListener('click', () => modal.classList.add('active'));
-        closeBtn.addEventListener('click', () => modal.classList.remove('active'));
-        modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+        // Promo state for this modal (reset on each open)
+        let modalPromoCode     = null;
+        let modalChosenBenefit = null;
+
+        function resetModalPromo() {
+            modalPromoCode     = null;
+            modalChosenBenefit = null;
+            const input = document.getElementById('ticket-promo-input');
+            if (input) input.value = '';
+            const statusEl = document.getElementById('ticket-promo-status');
+            if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
+            const benefitsEl = document.getElementById('ticket-promo-benefits');
+            if (benefitsEl) benefitsEl.style.display = 'none';
+            document.querySelectorAll('input[name="ticket-promo-benefit"]').forEach(r => r.checked = false);
+        }
+
+        function setModalPromoStatus(type, message) {
+            const el = document.getElementById('ticket-promo-status');
+            if (!el) return;
+            el.style.display = '';
+            el.className = `ticket-promo-status ticket-promo-status--${type}`;
+            el.textContent = message;
+        }
+
+        async function applyModalPromo() {
+            const input    = document.getElementById('ticket-promo-input');
+            const applyBtn = document.getElementById('ticket-promo-apply-btn');
+            const code     = input ? input.value.trim() : '';
+
+            if (!code) {
+                setModalPromoStatus('error', t('cfg_promo_err_empty'));
+                return;
+            }
+
+            applyBtn.disabled    = true;
+            applyBtn.textContent = t('cfg_promo_checking');
+
+            try {
+                const result = await API.validatePromo(code);
+
+                if (!result || !result.valid) {
+                    const reasonKey = {
+                        promo_not_found:     'cfg_promo_err_not_found',
+                        promo_inactive:      'cfg_promo_err_inactive',
+                        promo_limit_reached: 'cfg_promo_err_limit',
+                        promo_already_used:  'cfg_promo_err_used',
+                        too_many_requests:   'cfg_promo_err_rate'
+                    }[result?.reason] || 'cfg_promo_err_invalid';
+
+                    setModalPromoStatus('error', t(reasonKey));
+                    document.getElementById('ticket-promo-benefits').style.display = 'none';
+                    modalPromoCode     = null;
+                    modalChosenBenefit = null;
+                    return;
+                }
+
+                // Valid — show benefit options
+                modalPromoCode = result.code;
+                setModalPromoStatus('ok', t('cfg_promo_valid') + ' ' + result.code);
+
+                const benefitsEl     = document.getElementById('ticket-promo-benefits');
+                const freeMiniLabel  = document.getElementById('ticket-benefit-free-mini');
+                const hasFreeMini    = result.options.some(o => o.type === 'free_mini');
+                freeMiniLabel.style.display = hasFreeMini ? '' : 'none';
+                benefitsEl.style.display = '';
+
+                // Reset radio selection
+                document.querySelectorAll('input[name="ticket-promo-benefit"]').forEach(r => r.checked = false);
+                modalChosenBenefit = null;
+
+            } catch (err) {
+                setModalPromoStatus('error', t('cfg_promo_err_server'));
+            } finally {
+                applyBtn.disabled    = false;
+                applyBtn.textContent = t('cfg_promo_apply');
+            }
+        }
+
+        openBtn.addEventListener('click', () => {
+            resetModalPromo();
+            modal.classList.add('active');
+        });
+
+        closeBtn.addEventListener('click', () => {
+            resetModalPromo();
+            modal.classList.remove('active');
+        });
+
+        modal.addEventListener('click', e => {
+            if (e.target === modal) {
+                resetModalPromo();
+                modal.classList.remove('active');
+            }
+        });
+
+        // Apply button
+        const applyBtn = document.getElementById('ticket-promo-apply-btn');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', applyModalPromo);
+        }
+
+        // Enter on promo input
+        const promoInput = document.getElementById('ticket-promo-input');
+        if (promoInput) {
+            promoInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); applyModalPromo(); }
+            });
+        }
+
+        // Track radio selection
+        document.querySelectorAll('input[name="ticket-promo-benefit"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                modalChosenBenefit = radio.value;
+            });
+        });
 
         form.addEventListener('submit', async e => {
             e.preventDefault();
             const subject  = document.getElementById('ticket-subject').value.trim();
             const message  = document.getElementById('ticket-message').value.trim();
             const priority = document.getElementById('ticket-priority').value;
+
             if (!subject || !message) { showError(t('fill_all_fields')); return; }
+
+            // If promo code was validated but no benefit chosen, prompt
+            if (modalPromoCode && !modalChosenBenefit) {
+                showError(t('cfg_promo_err_choose'));
+                return;
+            }
+
             const btn = form.querySelector('button[type="submit"]');
-            btn.disabled = true;
+            btn.disabled    = true;
             btn.textContent = t('creating_ticket');
+
             try {
-                await API.createTicket(subject, message, priority);
+                await API.createTicket(
+                    subject,
+                    message,
+                    priority,
+                    null,                          // no orderConfig
+                    modalPromoCode     || null,
+                    modalChosenBenefit || null
+                );
+                resetModalPromo();
                 modal.classList.remove('active');
                 form.reset();
                 await loadTickets();
@@ -517,7 +646,7 @@ const Tickets = (() => {
             } catch (err) {
                 showError(t('tickets_load_error') + ': ' + err.message);
             } finally {
-                btn.disabled = false;
+                btn.disabled    = false;
                 btn.textContent = t('create_submit');
             }
         });

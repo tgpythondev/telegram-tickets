@@ -309,10 +309,10 @@ const API = {
     getTicket: (id) =>
         apiRequest(`/tickets/${id}`),
 
-    createTicket: (subject, initialMessage, priority = 'normal', orderConfig = null) =>
+    createTicket: (subject, initialMessage, priority = 'normal', orderConfig = null, promoCode = null, chosenBenefit = null) =>
         apiRequest('/tickets', {
             method: 'POST',
-            body: JSON.stringify({ subject, initialMessage, priority, orderConfig })
+            body: JSON.stringify({ subject, initialMessage, priority, orderConfig, promoCode, chosenBenefit })
         }),
 
     addMessage: (ticketId, content) =>
@@ -350,6 +350,37 @@ const API = {
 
     getStats: () =>
         apiRequest('/admin/stats'),
+
+    // Promo codes
+    validatePromo: (code) =>
+        apiRequest('/promo/validate', {
+            method: 'POST',
+            body: JSON.stringify({ code })
+        }),
+
+    // Admin — promo codes
+    adminListPromoCodes: () =>
+        apiRequest('/promo/admin'),
+
+    adminCreatePromoCode: (data) =>
+        apiRequest('/promo/admin', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }),
+
+    adminUpdatePromoCode: (id, data) =>
+        apiRequest(`/promo/admin/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        }),
+
+    adminDeletePromoCode: (id) =>
+        apiRequest(`/promo/admin/${id}`, {
+            method: 'DELETE'
+        }),
+
+    adminGetPromoCode: (id) =>
+        apiRequest(`/promo/admin/${id}`),
 
     // Telegram
     getTelegramStatus: () =>

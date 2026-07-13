@@ -519,6 +519,206 @@ const Dashboard = (() => {
         if (el) el.textContent = val;
     }
 
+    // ── Section switching ──────────────────
+    let currentSection = 'tickets';
+
+    function setupSectionSwitching() {
+        document.querySelectorAll('[data-section]').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const section = link.dataset.section;
+                switchSection(section);
+            });
+        });
+    }
+
+    function switchSection(section) {
+        currentSection = section;
+        document.querySelectorAll('[data-section]').forEach(l => l.classList.toggle('active', l.dataset.section === section));
+
+        // Tickets section
+        const isTickets = section === 'tickets';
+        document.querySelector('.stats-bar').style.display = isTickets ? '' : 'none';
+        document.querySelector('.admin-controls').style.display = isTickets ? '' : 'none';
+        document.querySelector('.adm-table-wrap').style.display = isTickets ? '' : 'none';
+        document.querySelector('.tickets-cards').style.display = isTickets ? '' : 'none';
+        document.getElementById('loading').style.display = isTickets ? 'none' : 'none';
+
+        // Promo section
+        document.getElementById('promo-section').style.display = section === 'promo' ? '' : 'none';
+
+        if (section === 'promo') {
+            loadPromoCodes();
+        }
+    }
+
+    // ── Promo codes ────────────────────────
+    let currentPromoTbody = null;
+    let promoEditId = null;
+
+    async function loadPromoCodes() {
+        const tbody = document.getElementById('promo-tbody');
+        const empty = document.getElementById('promo-empty');
+        if (!tbody) return;
+        if (empty) empty.style.display = 'none';
+        tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:rgba(255,255,255,.3)">Ładowanie…</td></tr>';
+
+        try {
+            const data = await API.adminListPromoCodes();
+            if (!data || !Array.isArray(data.promoCodes)) throw new Error('Invalid response');
+
+            tbody.innerHTML = '';
+            if (data.promoCodes.length === 0) {
+                if (empty) empty.style.display = '';
+                return;
+            }
+
+            data.promoCodes.forEach(pc => {
+                const tr = document.createElement('tr');
+                const isActive = pc.is_active;
+                const uses = pc.use_count || 0;
+                const limit = pc.max_uses !== null ? pc.max_uses : '∞';
+
+                tr.innerHTML = `
+                    <td class="td-id" style="font-family:var(--font-mono);font-weight:600;">${escapeHtml(pc.code)}</td>
+                    <td>${escapeHtml(pc.description || '—')}</td>
+                    <td>${uses}</td>
+                    <td>${limit}</td>
+                    <td><span class="badge ${isActive ? 'status-open' : 'status-closed'}">${isActive ? t('promo_yes') : t('promo_no')}</span></td>
+                    <td>
+                        <div style="display:flex;gap:var(--sp-2);">
+                            <button class="btn btn-ghost promo-edit-btn" data-id="${pc.id}" style="padding:var(--sp-1) var(--sp-3);font-size:var(--text-xs);">${t('promo_btn_save')}</button>
+                            <button class="btn btn-ghost promo-delete-btn" data-id="${pc.id}" style="padding:var(--sp-1) var(--sp-3);font-size:var(--text-xs);color:var(--accent-urgent);">${pc.use_count > 0 ? t('promo_btn_deactivate') : t('promo_btn_delete')}</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Attach event listeners
+            tbody.querySelectorAll('.promo-edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => openPromoEdit(parseInt(btn.dataset.id)));
+            });
+            tbody.querySelectorAll('.promo-delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => deletePromoCode(parseInt(btn.dataset.id)));
+            });
+
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem;text-align:center;color:var(--accent-urgent);">${t('tickets_load_error')}: ${escapeHtml(err.message)}</td></tr>`;
+        }
+    }
+
+    function resetPromoForm() {
+        promoEditId = null;
+        document.getElementById('promo-edit-id').value = '';
+        document.getElementById('promo-form-code').value = '';
+        document.getElementById('promo-form-code').disabled = false;
+        document.getElementById('promo-form-desc').value = '';
+        document.getElementById('promo-form-discount').value = '10';
+        document.getElementById('promo-form-free-mini').checked = false;
+        document.getElementById('promo-form-max-uses').value = '';
+        document.getElementById('promo-form-active').checked = true;
+        document.getElementById('promo-modal-title').textContent = t('promo_create_title');
+        document.getElementById('promo-form-submit').textContent = t('promo_btn_create');
+    }
+
+    function openPromoEdit(id) {
+        promoEditId = id;
+        // Fetch promo data
+        API.adminGetPromoCode(id).then(data => {
+            if (!data || !data.promoCode) throw new Error('Not found');
+            const pc = data.promoCode;
+            document.getElementById('promo-edit-id').value = pc.id;
+            document.getElementById('promo-form-code').value = pc.code;
+            document.getElementById('promo-form-code').disabled = true;
+            document.getElementById('promo-form-desc').value = pc.description || '';
+            document.getElementById('promo-form-discount').value = pc.discount_percent;
+            document.getElementById('promo-form-free-mini').checked = pc.is_free_mini;
+            document.getElementById('promo-form-max-uses').value = pc.max_uses !== null ? pc.max_uses : '';
+            document.getElementById('promo-form-active').checked = pc.is_active;
+            document.getElementById('promo-modal-title').textContent = t('promo_edit_title');
+            document.getElementById('promo-form-submit').textContent = t('promo_btn_save');
+            document.getElementById('promo-modal').classList.add('active');
+        }).catch(err => {
+            showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
+        });
+    }
+
+    async function deletePromoCode(id) {
+        if (!confirm(t('promo_confirm_delete'))) return;
+        try {
+            const data = await API.adminDeletePromoCode(id);
+            if (data && data.deactivated) {
+                showToastMsg(t('promo_deleted'), 'success');
+            } else {
+                showToastMsg(t('promo_deleted'), 'success');
+            }
+            await loadPromoCodes();
+        } catch (err) {
+            showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
+        }
+    }
+
+    function setupPromoForm() {
+        document.getElementById('promo-form').addEventListener('submit', async e => {
+            e.preventDefault();
+
+            const code = document.getElementById('promo-form-code').value.trim();
+            if (!code) { showToastMsg(t('promo_form_code') + ' ' + t('val_min3'), 'error'); return; }
+
+            const editId = document.getElementById('promo-edit-id').value;
+
+            try {
+                if (editId) {
+                    // Update
+                    await API.adminUpdatePromoCode(parseInt(editId), {
+                        description: document.getElementById('promo-form-desc').value.trim() || undefined,
+                        isActive: document.getElementById('promo-form-active').checked,
+                        maxUses: document.getElementById('promo-form-max-uses').value ? parseInt(document.getElementById('promo-form-max-uses').value) : null
+                    });
+                    showToastMsg(t('promo_updated'), 'success');
+                } else {
+                    // Create
+                    await API.adminCreatePromoCode({
+                        code: code,
+                        description: document.getElementById('promo-form-desc').value.trim() || undefined,
+                        discountPercent: parseFloat(document.getElementById('promo-form-discount').value) || 10,
+                        isFreeMini: document.getElementById('promo-form-free-mini').checked,
+                        maxUses: document.getElementById('promo-form-max-uses').value ? parseInt(document.getElementById('promo-form-max-uses').value) : null
+                    });
+                    showToastMsg(t('promo_created'), 'success');
+                }
+
+                document.getElementById('promo-modal').classList.remove('active');
+                resetPromoForm();
+                await loadPromoCodes();
+            } catch (err) {
+                showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
+            }
+        });
+    }
+
+    function setupPromoModal() {
+        // New promo button
+        document.getElementById('promo-new-btn').addEventListener('click', () => {
+            resetPromoForm();
+            document.getElementById('promo-modal').classList.add('active');
+        });
+
+        // Close modal
+        document.getElementById('promo-modal-close').addEventListener('click', () => {
+            document.getElementById('promo-modal').classList.remove('active');
+            resetPromoForm();
+        });
+
+        document.getElementById('promo-modal').addEventListener('click', e => {
+            if (e.target === document.getElementById('promo-modal')) {
+                document.getElementById('promo-modal').classList.remove('active');
+                resetPromoForm();
+            }
+        });
+    }
+
     // ── Init ───────────────────────────────
     async function init() {
         try {
@@ -533,6 +733,9 @@ const Dashboard = (() => {
             initSSE();
             setupFilters();
             setupSearch();
+            setupSectionSwitching();
+            setupPromoForm();
+            setupPromoModal();
 
             // Logout
             document.getElementById('logout-btn').addEventListener('click', async () => {

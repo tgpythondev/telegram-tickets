@@ -140,6 +140,45 @@
                             <option value="urgent" data-i18n="priority_urgent">Pilny</option>
                         </select>
                     </div>
+
+                    <!-- Promo code section -->
+                    <div class="form-group ticket-promo-group">
+                        <label data-i18n="cfg_promo_label">Kod promocyjny (opcjonalnie)</label>
+                        <div class="ticket-promo-field">
+                            <input
+                                type="text"
+                                id="ticket-promo-input"
+                                class="ticket-promo-input"
+                                data-i18n-ph="cfg_promo_placeholder"
+                                placeholder="Wprowadź kod promocyjny"
+                                maxlength="50"
+                                autocomplete="off"
+                                spellcheck="false"
+                            >
+                            <button type="button" class="btn btn-ghost ticket-promo-apply-btn" id="ticket-promo-apply-btn" data-i18n="cfg_promo_apply">
+                                Zastosuj
+                            </button>
+                        </div>
+                        <div class="ticket-promo-status" id="ticket-promo-status" style="display:none;"></div>
+
+                        <!-- Benefit choice — shown after valid code -->
+                        <div class="ticket-promo-benefits" id="ticket-promo-benefits" style="display:none;">
+                            <p class="ticket-promo-benefits-title" data-i18n="cfg_promo_choose">Wybierz swój bonus:</p>
+                            <div class="ticket-promo-benefit-list">
+                                <label class="ticket-promo-benefit" id="ticket-benefit-free-mini" style="display:none;">
+                                    <input type="radio" name="ticket-promo-benefit" value="free_mini">
+                                    <span class="tpb-name" data-i18n="cfg_promo_free_mini_name">Darmowy bot Mini</span>
+                                    <span class="tpb-hint" data-i18n="cfg_promo_free_mini_desc_short">Mini bot za $0 (własny serwer)</span>
+                                </label>
+                                <label class="ticket-promo-benefit" id="ticket-benefit-percent-10">
+                                    <input type="radio" name="ticket-promo-benefit" value="percent_10">
+                                    <span class="tpb-name" data-i18n="cfg_promo_pct_name">Zniżka 10%</span>
+                                    <span class="tpb-hint" data-i18n="cfg_promo_pct_desc_short">10% taniej na dowolny pakiet</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" data-i18n="create_submit">
                         Utwórz zgłoszenie
                     </button>

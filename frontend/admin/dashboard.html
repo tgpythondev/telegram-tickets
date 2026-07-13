@@ -31,8 +31,11 @@
                 </div>
 
                 <nav class="asb-nav">
-                    <a class="asb-nav-item active" href="#">
+                    <a class="asb-nav-item active" data-section="tickets" href="#">
                         <span class="asb-nav-icon">☰</span> <span data-i18n="admin_nav_tickets">Zgłoszenia</span>
+                    </a>
+                    <a class="asb-nav-item" data-section="promo" href="#">
+                        <span class="asb-nav-icon">🏷️</span> <span data-i18n="admin_nav_promo">Kody promocyjne</span>
                     </a>
                 </nav>
 
@@ -103,6 +106,83 @@
 
             <!-- Mobile cards -->
             <div class="tickets-cards mobile-only" id="tickets-cards"></div>
+
+            <!-- ── Promo codes section ─────────────────── -->
+            <div class="promo-section" id="promo-section" style="display:none;">
+                <div class="promo-header">
+                    <h2 class="promo-title" data-i18n="promo_title">Kody promocyjne</h2>
+                    <button class="btn btn-primary" id="promo-new-btn" data-i18n="promo_btn_new">+ Nowy kod</button>
+                </div>
+
+                <div class="promo-table-wrap">
+                    <table class="adm-table promo-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="promo_table_code">Kod</th>
+                                <th data-i18n="promo_table_desc">Opis</th>
+                                <th data-i18n="promo_table_uses">Użycia</th>
+                                <th data-i18n="promo_table_limit">Limit</th>
+                                <th data-i18n="promo_table_status">Status</th>
+                                <th data-i18n="promo_table_actions">Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody id="promo-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="promo-empty" id="promo-empty" style="display:none;" data-i18n="promo_no_codes">Brak kodów promocyjnych</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Promo code modal ─────────── -->
+    <div class="modal promo-modal" id="promo-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><h3 id="promo-modal-title" data-i18n="promo_create_title">Nowy kod promocyjny</h3></div>
+                <button class="modal-close" id="promo-modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="promo-form" class="promo-form">
+                    <input type="hidden" id="promo-edit-id" value="">
+
+                    <div class="form-group">
+                        <label for="promo-form-code" data-i18n="promo_form_code">Kod</label>
+                        <input type="text" id="promo-form-code" required maxlength="50" autocomplete="off" spellcheck="false">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="promo-form-desc" data-i18n="promo_form_desc">Opis (opcjonalnie)</label>
+                        <input type="text" id="promo-form-desc" maxlength="200" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="promo-form-discount" data-i18n="promo_form_discount">Zniżka % (domyślnie 10)</label>
+                        <input type="number" id="promo-form-discount" min="0" max="100" step="0.01" value="10">
+                    </div>
+
+                    <div class="form-group form-checkbox">
+                        <label>
+                            <input type="checkbox" id="promo-form-free-mini">
+                            <span data-i18n="promo_form_free_mini">Pozwala na darmowego Mini-bota</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="promo-form-max-uses" data-i18n="promo_form_max_uses">Limit użyć (puste = bez limitu)</label>
+                        <input type="number" id="promo-form-max-uses" min="1" placeholder="">
+                    </div>
+
+                    <div class="form-group form-checkbox">
+                        <label>
+                            <input type="checkbox" id="promo-form-active" checked>
+                            <span data-i18n="promo_form_active">Aktywny</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="promo-form-submit" data-i18n="promo_btn_create">Utwórz</button>
+                </form>
+            </div>
         </div>
     </div>
 

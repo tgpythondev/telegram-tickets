@@ -868,3 +868,71 @@
         flex: 1 0 calc(33% - var(--sp-2));
     }
 }
+
+/* ── Promo codes section ──────────────────── */
+
+.promo-section {
+    padding: var(--sp-6) var(--sp-8);
+}
+
+.promo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-8);
+    gap: var(--sp-4);
+}
+
+.promo-title {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--white);
+}
+
+.promo-table-wrap {
+    overflow-x: auto;
+}
+
+.promo-table th:last-child,
+.promo-table td:last-child {
+    text-align: center;
+}
+
+.promo-empty {
+    padding: var(--sp-16);
+    text-align: center;
+    color: rgba(255, 255, 255, 0.25);
+    font-size: var(--text-sm);
+}
+
+/* Promo modal */
+.promo-modal .modal-content {
+    max-width: 460px;
+}
+
+.promo-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-5);
+}
+
+.form-checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.form-checkbox label {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.form-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-ok, #22c55e);
+    cursor: pointer;
+}
