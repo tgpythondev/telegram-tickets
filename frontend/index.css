@@ -622,6 +622,48 @@
 
 .cta-final-actions .btn { padding: 0.85rem 2rem; }
 
+/* ── Auth state in nav ────────────────────── */
+
+.nav-username-item {
+    display: flex;
+    align-items: center;
+}
+
+.nav-username-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 0.35rem 1rem;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    cursor: default;
+    transition: background var(--t-fast);
+}
+
+.nav-username-label:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.nav-auth-logged-in {
+    background: var(--white) !important;
+    color: var(--black) !important;
+    padding: 0.45rem 1.1rem !important;
+    border-radius: var(--radius-sm);
+    font-weight: 600 !important;
+    font-size: var(--text-sm) !important;
+    transition: opacity var(--t-fast), transform var(--t-fast) !important;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+}
+
+.nav-auth-logged-in:hover {
+    opacity: 0.88 !important;
+    transform: translateY(-1px);
+}
+
 /* ── Responsive ───────────────────────────── */
 
 @media (max-width: 1100px) {

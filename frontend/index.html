@@ -29,7 +29,8 @@
                 <li><a href="#process" data-i18n="nav_process">Процесс</a></li>
                 <li><a href="#portfolio" data-i18n="nav_portfolio">Портфолио</a></li>
                 <li><a href="#pricing" data-i18n="nav_pricing">Цены</a></li>
-                <li><a href="auth.html" class="nav-cta" data-i18n="nav_login">Войти</a></li>
+                <li><a href="auth.html" class="nav-cta" id="nav-auth-btn" data-i18n="nav_login">Войти</a></li>
+                <li><span id="nav-username" class="nav-username" style="display:none;"></span></li>
             </ul>
         </nav>
     </header>
@@ -340,6 +341,7 @@
         </div>
     </footer>
 
+    <script src="api.js"></script>
     <script src="animations/scroll-reveal.js"></script>
     <script src="animations/magnetic-hover.js"></script>
     <script src="animations/liquid-border.js"></script>

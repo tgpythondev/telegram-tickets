@@ -222,6 +222,32 @@ nav {
     transform: translateY(-1px);
 }
 
+/* Username display in nav (shown when logged in) */
+.nav-username {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--accent-success);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+/* Ticket button — replaces nav-cta when logged in */
+.nav-ticket-btn {
+    background: var(--accent-success) !important;
+    color: var(--black) !important;
+    padding: 0.45rem 1.1rem !important;
+    border-radius: var(--radius-sm);
+    font-weight: 600 !important;
+    font-size: var(--text-sm) !important;
+    transition: opacity var(--t-fast), transform var(--t-fast) !important;
+    text-decoration: none;
+}
+
+.nav-ticket-btn:hover {
+    opacity: 0.88 !important;
+    transform: translateY(-1px);
+}
+
 /* Mobile toggle */
 .mobile-menu-toggle {
     display: none;

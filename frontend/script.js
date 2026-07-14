@@ -1,4 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // ── Auth check: refresh cookie, update UI ──
+    (async function checkAuthOnIndex() {
+        try {
+            const user = await checkAuth();
+            if (user && user.username) {
+                // User is logged in — replace "Войти" with "Создать тикет" and show username
+                const authBtn = document.getElementById('nav-auth-btn');
+                const usernameEl = document.getElementById('nav-username');
+                if (authBtn) {
+                    authBtn.textContent = 'Создать тикет';
+                    authBtn.href = 'tickets.html';
+                    authBtn.classList.remove('nav-cta');
+                    authBtn.classList.add('nav-ticket-btn');
+                }
+                if (usernameEl) {
+                    usernameEl.textContent = user.username;
+                    usernameEl.style.display = 'inline';
+                }
+            }
+        } catch (_) {
+            // Not logged in — leave default state (nav-cta shows "Войти")
+        }
+    })();
+
     // ── Header scroll state ─────────────────
     const header = document.getElementById('site-header');
     if (header) {
