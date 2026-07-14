@@ -7,6 +7,7 @@ window.LANG_RU = {
   nav_pricing:       'Цены',
   nav_login:         'Войти',
   nav_order:         'Заказать',
+  nav_create_ticket: 'Создать тикет',
   nav_open_menu:     'Открыть меню',
   nav_close_menu:    'Закрыть меню',
 

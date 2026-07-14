@@ -7,6 +7,7 @@ window.LANG_PL = {
   nav_pricing:       'Cennik',
   nav_login:         'Zaloguj się',
   nav_order:         'Zamów',
+  nav_create_ticket: 'Utwórz zgłoszenie',
   nav_open_menu:     'Otwórz menu',
   nav_close_menu:    'Zamknij menu',
 

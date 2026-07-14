@@ -7,6 +7,7 @@ window.LANG_EN = {
   nav_pricing:       'Pricing',
   nav_login:         'Log in',
   nav_order:         'Order',
+  nav_create_ticket: 'Create ticket',
   nav_open_menu:     'Open menu',
   nav_close_menu:    'Close menu',
 
