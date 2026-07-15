@@ -167,6 +167,11 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/promo', promoRoutes);
 app.get('/api/events', sseLimiter, sseAuth, sseController.stream);
 
+// Ping endpoint
+app.get('/ping', (req, res) => {
+    res.status(200).json({ ok: true });
+});
+
 // Health check с проверкой БД
 app.get('/health', async (req, res) => {
     try {
