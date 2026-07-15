@@ -114,6 +114,11 @@ app.use(helmet({
     }
 }));
 
+// Ping endpoint — до CORS и любых middleware, не требует авторизации
+app.get('/ping', (req, res) => {
+    res.status(200).json({ ok: true });
+});
+
 // Безопасное логирование запросов (ПЕРЕД парсингом, чтобы ловить ошибки парсинга)
 app.use((req, res, next) => {
     const safeUrl = req.path;
@@ -166,11 +171,6 @@ app.use('/api/tickets', ticketsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/promo', promoRoutes);
 app.get('/api/events', sseLimiter, sseAuth, sseController.stream);
-
-// Ping endpoint
-app.get('/ping', (req, res) => {
-    res.status(200).json({ ok: true });
-});
 
 // Health check с проверкой БД
 app.get('/health', async (req, res) => {
