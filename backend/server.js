@@ -19,6 +19,14 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
+// /ping — самый первый роут, до helmet/CORS/rate-limit/всего
+// Доступен без Origin заголовка (server-to-server, Telegram-бот, healthcheck)
+app.get('/ping', (req, res) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.status(200).json({ ok: true });
+});
+
 // Валидация критических переменных окружения при старте
 function validateEnvironment() {
     const required = [
@@ -88,12 +96,6 @@ const sseLimiter = rateLimit({
     message: { error: 'Слишком много SSE подключений' },
     standardHeaders: true,
     legacyHeaders: false,
-});
-
-// Ping endpoint — до helmet и CORS, без ограничений
-app.get('/ping', (req, res) => {
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.status(200).json({ ok: true });
 });
 
 // Middleware
