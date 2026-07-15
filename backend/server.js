@@ -90,6 +90,12 @@ const sseLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+// Ping endpoint — до helmet и CORS, без ограничений
+app.get('/ping', (req, res) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.status(200).json({ ok: true });
+});
+
 // Middleware
 
 // Security headers с helmet
@@ -114,10 +120,6 @@ app.use(helmet({
     }
 }));
 
-// Ping endpoint — до CORS и любых middleware, не требует авторизации
-app.get('/ping', (req, res) => {
-    res.status(200).json({ ok: true });
-});
 
 // Безопасное логирование запросов (ПЕРЕД парсингом, чтобы ловить ошибки парсинга)
 app.use((req, res, next) => {
