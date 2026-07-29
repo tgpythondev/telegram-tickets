@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTextareas();
     setupExtraResources();
     setupNavigation();
-    updateProgress();
+    showStep(currentStep);
     updateLiveSummary();
 
     // Sync both submit buttons
