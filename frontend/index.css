@@ -2,6 +2,62 @@
    Main page — index.css
    ============================================ */
 
+/* ── Smooth scroll snap for landing sections ─ */
+
+html {
+    scroll-snap-type: y proximity;
+}
+
+.snap-section {
+    scroll-snap-align: start;
+}
+
+/* Keep content accessible when a section is taller than viewport */
+.snap-section {
+    scroll-snap-stop: normal;
+}
+
+/* Staggered reveal children */
+.stagger-container > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+        opacity 0.55s ease-out,
+        transform 0.55s ease-out;
+}
+
+/* Delay each child using CSS variables set via inline style or fallback nth-child */
+.stagger-container > *:nth-child(1) { transition-delay: 0ms;   --stagger: 0; }
+.stagger-container > *:nth-child(2) { transition-delay: 80ms;  --stagger: 1; }
+.stagger-container > *:nth-child(3) { transition-delay: 160ms; --stagger: 2; }
+.stagger-container > *:nth-child(4) { transition-delay: 240ms; --stagger: 3; }
+.stagger-container > *:nth-child(5) { transition-delay: 320ms; --stagger: 4; }
+.stagger-container > *:nth-child(6) { transition-delay: 400ms; --stagger: 5; }
+.stagger-container > *:nth-child(7) { transition-delay: 480ms; --stagger: 6; }
+.stagger-container > *:nth-child(8) { transition-delay: 560ms; --stagger: 7; }
+
+.stagger-container.visible > * {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Disable landing scroll effects on touch devices and reduced-motion */
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+    html {
+        scroll-snap-type: none;
+    }
+
+    .snap-section {
+        scroll-snap-align: none;
+    }
+
+    .stagger-container > * {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
 /* ── Hero ─────────────────────────────────── */
 
 .hero {
