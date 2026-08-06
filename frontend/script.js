@@ -115,4 +115,103 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    const gameQuestions = [];
+    let currentQuestionIndex = 0;
+
+    const gameModal = document.getElementById('gameModal');
+    const howItWorksBtn = document.getElementById('howItWorksBtn');
+    const closeGameModal = document.getElementById('closeGameModal');
+    const gameQuestion = document.getElementById('gameQuestion');
+    const gameAnswers = document.getElementById('gameAnswers');
+    const gameProgressText = document.getElementById('gameProgressText');
+    const pinkVignette = document.getElementById('pinkVignette');
+
+    function openGameModal() {
+        if (gameQuestions.length === 0) {
+            alert('Game content is not available yet.');
+            return;
+        }
+        currentQuestionIndex = 0;
+        gameModal.classList.add('active');
+        renderQuestion();
+    }
+
+    function closeGameModalHandler() {
+        gameModal.classList.remove('active');
+    }
+
+    function renderQuestion() {
+        if (currentQuestionIndex >= gameQuestions.length) {
+            gameQuestion.textContent = t ? t('game_complete') : 'Вы завершили все вопросы!';
+            gameAnswers.innerHTML = '';
+            gameProgressText.textContent = '';
+            return;
+        }
+
+        const question = gameQuestions[currentQuestionIndex];
+        gameQuestion.textContent = t ? t(question.question_key) : question.question_key;
+
+        gameAnswers.innerHTML = '';
+        question.answers.forEach((answer, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'game-answer-btn';
+            btn.textContent = t ? t(answer.text_key) : answer.text_key;
+            btn.addEventListener('click', () => handleAnswer(answer.correct, btn));
+            gameAnswers.appendChild(btn);
+        });
+
+        const progressText = (t ? t('game_progress') : 'Вопрос {current} из {total}')
+            .replace('{current}', currentQuestionIndex + 1)
+            .replace('{total}', gameQuestions.length);
+        gameProgressText.textContent = progressText;
+    }
+
+    function handleAnswer(isCorrect, btn) {
+        const allBtns = gameAnswers.querySelectorAll('.game-answer-btn');
+        allBtns.forEach(b => b.disabled = true);
+
+        if (isCorrect) {
+            showVignette();
+            setTimeout(() => {
+                currentQuestionIndex++;
+                renderQuestion();
+                allBtns.forEach(b => b.disabled = false);
+            }, 3000);
+        } else {
+            btn.style.background = 'rgba(255, 0, 0, 0.15)';
+            btn.style.borderColor = 'rgba(255, 0, 0, 0.3)';
+            setTimeout(() => {
+                allBtns.forEach(b => b.disabled = false);
+                btn.style.background = '';
+                btn.style.borderColor = '';
+            }, 1000);
+        }
+    }
+
+    function showVignette() {
+        pinkVignette.classList.add('show');
+        setTimeout(() => {
+            pinkVignette.classList.remove('show');
+        }, 3000);
+    }
+
+    if (howItWorksBtn) {
+        howItWorksBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openGameModal();
+        });
+    }
+
+    if (closeGameModal) {
+        closeGameModal.addEventListener('click', closeGameModalHandler);
+    }
+
+    if (gameModal) {
+        gameModal.addEventListener('click', (e) => {
+            if (e.target === gameModal) {
+                closeGameModalHandler();
+            }
+        });
+    }
 });

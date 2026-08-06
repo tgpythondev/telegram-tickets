@@ -20,6 +20,7 @@ window.LANG_EN = {
   hero_sub:          'Business automation through smart bots.<br>From idea to launch — turnkey.',
   hero_btn_configure:'Configure order',
   hero_btn_ticket:   'Create ticket',
+  hero_btn_how_it_works: 'How does it work?',
   hero_proof_bots:   '3+ bots launched',
   hero_proof_langs:  'Python · JS · Go',
   hero_proof_reply:  'Reply same day',
@@ -451,4 +452,11 @@ window.LANG_EN = {
 
   // Language switcher
   lang_switcher_label: 'Language',
+
+  // Mini-game
+  game_title: 'How does the deal work?',
+  game_progress: 'Question {current} of {total}',
+  game_correct: 'Correct!',
+  game_wrong: 'Incorrect',
+  game_complete: 'You completed all questions!',
 };

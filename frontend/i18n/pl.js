@@ -20,6 +20,7 @@ window.LANG_PL = {
   hero_sub:          'Zautomatyzuj swój biznes dzięki inteligentnym botom.<br>Od pomysłu po wdrożenie — kompleksowo.',
   hero_btn_configure:'Złóż zamówienie',
   hero_btn_ticket:   'Załóż zgłoszenie',
+  hero_btn_how_it_works: 'Jak to działa?',
   hero_proof_bots:   '5+ botów działa na żywo',
   hero_proof_langs:  'Python · JS · Go',
   hero_proof_reply:  'Odpowiadam tego samego dnia',
@@ -451,4 +452,11 @@ window.LANG_PL = {
 
   // Language switcher
   lang_switcher_label: 'Język',
+
+  // Mini-game
+  game_title: 'Jak przebiega transakcja?',
+  game_progress: 'Pytanie {current} z {total}',
+  game_correct: 'Prawidłowo!',
+  game_wrong: 'Nieprawidłowo',
+  game_complete: 'Ukończyłeś wszystkie pytania!',
 };

@@ -20,6 +20,7 @@ window.LANG_RU = {
   hero_sub:          'Автоматизация бизнеса через умных ботов.<br>От идеи до запуска — под ключ.',
   hero_btn_configure:'Настроить заказ',
   hero_btn_ticket:   'Создать тикет',
+  hero_btn_how_it_works: 'Как это работает?',
   hero_proof_bots:   '3+ ботов запущено',
   hero_proof_langs:  'Python · JS · Go',
   hero_proof_reply:  'Ответ в течение дня',
@@ -450,4 +451,11 @@ window.LANG_RU = {
 
   // Language switcher
   lang_switcher_label: 'Язык',
+
+  // Mini-game
+  game_title: 'Как проходит сделка?',
+  game_progress: 'Вопрос {current} из {total}',
+  game_correct: 'Правильно!',
+  game_wrong: 'Неправильно',
+  game_complete: 'Вы завершили все вопросы!',
 };

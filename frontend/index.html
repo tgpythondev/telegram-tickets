@@ -48,6 +48,7 @@
                 <div class="hero-actions">
                     <a href="configurator.html" class="btn btn-primary magnetic-btn" data-i18n="hero_btn_configure">Настроить заказ</a>
                     <a href="auth.html" class="btn btn-ghost magnetic-btn" data-i18n="hero_btn_ticket">Создать тикет</a>
+                    <a href="#" class="btn btn-ghost magnetic-btn" data-i18n="hero_btn_how_it_works" id="howItWorksBtn">Как это работает?</a>
                 </div>
                 <div class="hero-social-proof">
                     <span data-i18n="hero_proof_bots">5+ ботов запущено</span>
@@ -357,6 +358,21 @@
             <p class="footer-copyright" data-i18n="footer_copyright">© 2026 Kaliang. Все права защищены.</p>
         </div>
     </footer>
+
+    <div class="modal-overlay" id="gameModal">
+        <div class="modal-content game-modal">
+            <button class="modal-close" id="closeGameModal">×</button>
+            <h2 class="game-title" data-i18n="game_title">Как проходит сделка?</h2>
+            <div class="game-question-wrapper">
+                <p class="game-question" id="gameQuestion"></p>
+                <div class="game-answers" id="gameAnswers"></div>
+            </div>
+            <div class="game-progress">
+                <span id="gameProgressText"></span>
+            </div>
+        </div>
+        <div class="pink-vignette" id="pinkVignette"></div>
+    </div>
 
     <script src="api.js"></script>
     <script src="animations/scroll-reveal.js"></script>
