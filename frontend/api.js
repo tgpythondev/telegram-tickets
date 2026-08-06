@@ -1,4 +1,3 @@
-// Определение API URL в зависимости от домена
 function getApiUrl() {
     const hostname = window.location.hostname;
 
@@ -6,46 +5,42 @@ function getApiUrl() {
         return 'http://localhost:3000/api';
     }
 
-    // Для нового домена telegram-bots.pl используем тот же backend
     if (hostname === 'telegram-bots.pl' || hostname === 'www.telegram-bots.pl') {
         return 'https://telegram-bots-backend.onrender.com/api';
     }
 
-    // Fallback на старый backend
     return 'https://telegram-bots-backend.onrender.com/api';
 }
 
 const API_URL = getApiUrl();
 
-// In-memory token storage (более безопасно чем localStorage для XSS)
 let inMemoryAccessToken = null;
 
-// CSRF token management
 let csrfToken = null;
 
 /**
- * Централизованная функция показа ошибок пользователю
- * @param {string} message - Сообщение об ошибке
- * @param {number} duration - Длительность показа в мс (по умолчанию 5000)
+ * Show error message to user
+ * @param {string} message - Error message
+ * @param {number} duration - Display duration in ms (default 5000)
  */
 function showError(message, duration = 5000) {
     showToast(message, 'error', duration);
 }
 
 /**
- * Централизованная функция показа успешных уведомлений
- * @param {string} message - Сообщение об успехе
- * @param {number} duration - Длительность показа в мс (по умолчанию 3000)
+ * Show success notification to user
+ * @param {string} message - Success message
+ * @param {number} duration - Display duration in ms (default 3000)
  */
 function showSuccess(message, duration = 3000) {
     showToast(message, 'success', duration);
 }
 
 /**
- * Универсальная функция показа toast уведомлений
- * @param {string} message - Текст сообщения
- * @param {string} type - Тип: 'error' или 'success'
- * @param {number} duration - Длительность показа в мс
+ * Universal toast notification function
+ * @param {string} message - Message text
+ * @param {string} type - Type: 'error' or 'success'
+ * @param {number} duration - Display duration in ms
  */
 function showToast(message, type = 'error', duration = 5000) {
     const toastId = type === 'error' ? 'error-toast' : 'success-toast';
@@ -101,9 +96,9 @@ function showToast(message, type = 'error', duration = 5000) {
 }
 
 /**
- * Получить понятное сообщение об ошибке на основе HTTP кода
- * @param {number} status - HTTP статус код
- * @param {string} defaultMessage - Дефолтное сообщение
+ * Get user-friendly error message based on HTTP status code
+ * @param {number} status - HTTP status code
+ * @param {string} defaultMessage - Default fallback message
  */
 function getErrorMessage(status, defaultMessage) {
     const errorMessages = {
@@ -144,7 +139,6 @@ async function getCsrfToken() {
     return csrfToken;
 }
 
-// Wrapper для fetch с автоматическим обновлением токенов
 async function apiRequest(endpoint, options = {}) {
     const defaultOptions = {
         headers: {
@@ -153,12 +147,10 @@ async function apiRequest(endpoint, options = {}) {
         credentials: 'include',
     };
 
-    // Используем in-memory токен вместо localStorage
     if (inMemoryAccessToken) {
         defaultOptions.headers['Authorization'] = `Bearer ${inMemoryAccessToken}`;
     }
 
-    // Добавляем CSRF токен для мутирующих запросов
     if (options.method && options.method !== 'GET') {
         const token = await getCsrfToken();
         if (token) {
@@ -173,15 +165,12 @@ async function apiRequest(endpoint, options = {}) {
 
     let response = await fetch(`${API_URL}${endpoint}`, config);
 
-    // Если токен истек, попробовать обновить (НО НЕ для самого /auth/refresh)
     if ((response.status === 403 || response.status === 401) && endpoint !== '/auth/refresh') {
         const refreshed = await refreshAccessToken();
         if (refreshed) {
-            // Повторить запрос с новым токеном
             config.headers['Authorization'] = `Bearer ${inMemoryAccessToken}`;
             response = await fetch(`${API_URL}${endpoint}`, config);
         } else {
-            // Не удалось обновить токен, перенаправить на вход
             logout();
             return null;
         }
@@ -209,13 +198,10 @@ async function apiRequest(endpoint, options = {}) {
     }
 }
 
-// Флаг для предотвращения race condition при refresh
 let isRefreshing = false;
 let refreshPromise = null;
 
-// Обновить access token через refresh token
 async function refreshAccessToken() {
-    // Предотвращаем множественные одновременные refresh запросы
     if (isRefreshing) {
         return refreshPromise;
     }
@@ -258,11 +244,8 @@ function logout() {
     window.location.href = '/auth.html';
 }
 
-// Проверка авторизации
 async function checkAuth() {
-    // Сначала проверяем in-memory токен
     if (!inMemoryAccessToken) {
-        // Попробовать получить новый токен через refresh cookie
         const refreshed = await refreshAccessToken();
         if (!refreshed) {
             return null;

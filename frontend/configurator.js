@@ -294,7 +294,6 @@ function selectRow(listSelector, selectedRow) {
     selectedRow.classList.add('selected');
 }
 
-// ── Textareas ──────────────────────────────
 function setupTextareas() {
     const shortInput  = document.getElementById('short-description');
     const detailInput = document.getElementById('detailed-description');
@@ -310,7 +309,6 @@ function setupTextareas() {
     });
 }
 
-// ── Extra resources ────────────────────────
 function setupExtraResources() {
     document.getElementById('extra-storage').addEventListener('input', e => {
         config.hosting.extraStorage = parseInt(e.target.value) || 0;
@@ -322,7 +320,6 @@ function setupExtraResources() {
     });
 }
 
-// ── Navigation ─────────────────────────────
 function setupNavigation() {
     document.getElementById('btn-next').addEventListener('click', () => {
         if (!validateStep(currentStep)) return;
@@ -387,7 +384,6 @@ function updateNavButtons(n) {
     cfsSend.disabled = n !== lastStep;
 }
 
-// ── Validate ───────────────────────────────
 function validateStep(n) {
     var e;
     switch (n) {
@@ -423,7 +419,6 @@ function validateStep(n) {
     }
 }
 
-// ── Price ──────────────────────────────────
 function calculatePrice() {
     // Базовая цена пакета — всегда от minimum
     const basePackage = config.packagePriceMin || 0;
@@ -508,7 +503,6 @@ function setLive(id, val, filled) {
     if (filled !== undefined) el.classList.toggle('filled', filled);
 }
 
-// ── Build final summary ────────────────────
 function buildSummaryStep() {
     var tr = (typeof t === 'function') ? t : function(k) { return k; };
     document.getElementById('sum-package').textContent  = config.package || '—';

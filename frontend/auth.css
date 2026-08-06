@@ -1,4 +1,3 @@
-/* ============================================
    Auth page — split-screen layout
    ============================================ */
 
@@ -14,7 +13,6 @@
     width: 100%;
 }
 
-/* ── Identity panel (left) ────────────────── */
 
 .auth-identity {
     background: rgba(255, 255, 255, 0.025);
@@ -95,7 +93,6 @@
 
 .auth-back-link:hover { color: rgba(255, 255, 255, 0.60); }
 
-/* ── Form panel (right) ───────────────────── */
 
 .auth-panel {
     display: flex;
@@ -121,12 +118,10 @@
     color: rgba(255, 255, 255, 0.22);
 }
 
-/* ── Views toggle ─────────────────────────── */
 
 .auth-view { display: none; }
 .auth-view.active { display: flex; flex-direction: column; gap: var(--sp-6); }
 
-/* ── Headings ─────────────────────────────── */
 
 .auth-heading {
     font-size: var(--text-3xl);
@@ -142,7 +137,6 @@
     margin-top: calc(-1 * var(--sp-4));
 }
 
-/* ── Form ─────────────────────────────────── */
 
 .auth-form {
     display: flex;
@@ -150,7 +144,6 @@
     gap: var(--sp-5);
 }
 
-/* Override global form-group for auth */
 .auth-form .form-group {
     gap: var(--sp-2);
 }
@@ -188,7 +181,6 @@
     border-color: rgba(255, 51, 51, 0.55);
 }
 
-/* ── Password checklist ───────────────────── */
 
 .password-checklist {
     display: flex;
@@ -210,7 +202,6 @@
 
 .pwd-check.ok { color: rgba(0, 230, 118, 0.80); }
 
-/* ── Submit button ────────────────────────── */
 
 .auth-submit {
     width: 100%;
@@ -231,7 +222,6 @@
 
 .auth-submit:active { transform: translateY(0); }
 
-/* ── Switch link ──────────────────────────── */
 
 .auth-switch {
     font-size: var(--text-sm);
@@ -253,7 +243,6 @@
 
 .auth-switch-btn:hover { color: var(--white); }
 
-/* ── Loading spinner inside button ───────── */
 
 .btn-spinner {
     display: inline-block;
@@ -267,7 +256,6 @@
     margin-right: var(--sp-2);
 }
 
-/* ── Responsive ───────────────────────────── */
 
 @media (max-width: 860px) {
     .auth-layout {

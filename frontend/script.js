@@ -64,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkAuthOnIndex();
 
-    // ── Header scroll state ─────────────────
     const header = document.getElementById('site-header');
     if (header) {
         const onScroll = () => {
@@ -74,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
         onScroll();
     }
 
-    // ── Mobile menu toggle ──────────────────
     const menuToggle = document.getElementById('menu-toggle');
     const navLinks   = document.getElementById('nav-links');
 
@@ -108,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── Smooth scroll for anchor links ──────
     document.querySelectorAll('a[href^="#"]').forEach(a => {
         a.addEventListener('click', e => {
             const target = document.querySelector(a.getAttribute('href'));

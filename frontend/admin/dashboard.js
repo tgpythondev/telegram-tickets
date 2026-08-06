@@ -47,7 +47,6 @@ const Dashboard = (() => {
         setTimeout(() => el.classList.remove('pulse-anim'), 450);
     }
 
-    // ── Stats ──────────────────────────────
     async function loadStats() {
         try {
             const data = await API.getStats();
@@ -448,7 +447,6 @@ const Dashboard = (() => {
         }
     }
 
-    // ── Close panel ────────────────────────
     function closePanel() {
         document.getElementById('adm-panel').classList.remove('open');
         document.getElementById('adm-panel-overlay').classList.remove('active');
@@ -456,7 +454,6 @@ const Dashboard = (() => {
         currentTicket = null;
     }
 
-    // ── Filters ────────────────────────────
     function setupFilters() {
         document.querySelectorAll('.adm-filter-tab').forEach(tab => {
             tab.addEventListener('click', async () => {
@@ -469,7 +466,6 @@ const Dashboard = (() => {
         });
     }
 
-    // ── Search ─────────────────────────────
     function setupSearch() {
         let timer;
         const box = document.getElementById('search-box');
@@ -488,7 +484,6 @@ const Dashboard = (() => {
         });
     }
 
-    // ── Toast ──────────────────────────────
     function showToastMsg(msg, type) {
         const container = document.getElementById('toast-container');
         if (!container) return;
@@ -508,7 +503,6 @@ const Dashboard = (() => {
     window.showSuccess = msg => showToastMsg(msg, 'success');
     window.showError   = msg => showToastMsg(msg, 'error');
 
-    // ── Helpers ────────────────────────────
     function escapeHtml(text) {
         if (!text) return '';
         return String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
@@ -519,7 +513,6 @@ const Dashboard = (() => {
         if (el) el.textContent = val;
     }
 
-    // ── Section switching ──────────────────
     let currentSection = 'tickets';
 
     function setupSectionSwitching() {

@@ -462,7 +462,6 @@ const Tickets = (() => {
         lastMsgTimestamp = null;
     }
 
-    // ── Scroll helpers ─────────────────────
     function setupScrollTracking() {
         const msgs = document.getElementById('tp-messages');
         if (!msgs) return;
@@ -476,7 +475,6 @@ const Tickets = (() => {
         if (msgs) msgs.scrollTop = msgs.scrollHeight;
     }
 
-    // ── Filters ────────────────────────────
     function setupFilters() {
         document.querySelectorAll('.filter-link').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -652,7 +650,6 @@ const Tickets = (() => {
         });
     }
 
-    // ── Logout ─────────────────────────────
     function setupLogout() {
         document.getElementById('logout-btn').addEventListener('click', async () => {
             try { await API.logout(); } catch (_) {}
@@ -660,7 +657,6 @@ const Tickets = (() => {
         });
     }
 
-    // ── Panel close handlers ───────────────
     function setupPanelClose() {
         document.getElementById('tp-close').addEventListener('click', closePanel);
         document.getElementById('panel-overlay').addEventListener('click', closePanel);
@@ -671,7 +667,6 @@ const Tickets = (() => {
         });
     }
 
-    // ── Telegram sidebar ───────────────────
     function setupTelegramSidebar() {
         document.getElementById('bind-bot-btn').addEventListener('click', () => {
             window.open('https://t.me/KaliangSupportBot', '_blank');
@@ -685,7 +680,6 @@ const Tickets = (() => {
         });
     }
 
-    // ── Helpers ────────────────────────────
     function escapeHtml(text) {
         if (!text) return '';
         return String(text).replace(/[&<>"']/g, m => ({

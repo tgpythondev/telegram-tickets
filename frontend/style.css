@@ -1,7 +1,3 @@
-/* ============================================
-   KALIANG — Design System "Precision Dark"
-   ============================================ */
-
 *, *::before, *::after {
     margin: 0;
     padding: 0;
@@ -9,11 +5,9 @@
 }
 
 :root {
-    /* Core */
     --black: #000000;
     --white: #FFFFFF;
 
-    /* Grayscale */
     --gray-900: #0a0a0a;
     --gray-800: #111111;
     --gray-700: #1a1a1a;
@@ -24,7 +18,6 @@
     --gray-200: #aaaaaa;
     --gray-100: #cccccc;
 
-    /* Glass layers — белый с прозрачностью */
     --glass-04: rgba(255, 255, 255, 0.04);
     --glass-06: rgba(255, 255, 255, 0.06);
     --glass-08: rgba(255, 255, 255, 0.08);
@@ -32,24 +25,20 @@
     --glass-15: rgba(255, 255, 255, 0.15);
     --glass-20: rgba(255, 255, 255, 0.20);
 
-    /* Borders */
     --border-dim:    1px solid rgba(255, 255, 255, 0.06);
     --border-soft:   1px solid rgba(255, 255, 255, 0.10);
     --border-mid:    1px solid rgba(255, 255, 255, 0.15);
     --border-bright: 1px solid rgba(255, 255, 255, 0.40);
     --border-full:   1px solid #FFFFFF;
 
-    /* Status accents */
     --accent-urgent:  #FF3333;
     --accent-warning: #FFD700;
     --accent-success: #00E676;
 
-    /* Typography */
     --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono:    'JetBrains Mono', 'Courier New', monospace;
 
-    /* Type scale */
     --text-xs:   0.70rem;
     --text-sm:   0.85rem;
     --text-base: 1rem;
@@ -61,7 +50,6 @@
     --text-5xl:  3.75rem;
     --text-6xl:  clamp(3rem, 7vw, 5.5rem);
 
-    /* Spacing */
     --sp-1:  0.25rem;
     --sp-2:  0.5rem;
     --sp-3:  0.75rem;
@@ -75,23 +63,19 @@
     --sp-20: 5rem;
     --sp-24: 6rem;
 
-    /* Radius */
     --radius-sm: 2px;
     --radius-md: 4px;
     --radius-lg: 8px;
     --radius-full: 999px;
 
-    /* Transitions */
     --t-fast:   150ms ease-out;
     --t-base:   250ms ease-out;
     --t-slow:   400ms ease-out;
 
-    /* Layout */
     --max-w:      1200px;
     --max-w-wide: 1400px;
     --header-h:   64px;
 
-    /* Backward compat aliases */
     --gray: var(--gray-300);
     --light-gray: var(--gray-200);
     --dark-gray: var(--gray-600);
@@ -105,8 +89,6 @@
     --transition-fast: var(--t-fast);
     --transition-slow: var(--t-slow);
 }
-
-/* ── Base ─────────────────────────────────── */
 
 html {
     scroll-behavior: smooth;
@@ -129,8 +111,6 @@ img, svg { display: block; max-width: 100%; }
 button { font-family: inherit; cursor: pointer; }
 input, textarea, select { font-family: inherit; }
 
-/* ── Scrollbar ────────────────────────────── */
-
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--black); }
 ::-webkit-scrollbar-thumb {
@@ -139,8 +119,6 @@ input, textarea, select { font-family: inherit; }
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
 * { scrollbar-width: thin; scrollbar-color: var(--gray-600) var(--black); }
-
-/* ── Header / Nav ─────────────────────────── */
 
 header {
     position: fixed;
@@ -222,7 +200,6 @@ nav {
     transform: translateY(-1px);
 }
 
-/* Username display in nav (shown when logged in) */
 .nav-username {
     font-size: var(--text-sm);
     font-weight: 600;
@@ -231,7 +208,6 @@ nav {
     white-space: nowrap;
 }
 
-/* Ticket button — replaces nav-cta when logged in */
 .nav-ticket-btn {
     background: var(--accent-success) !important;
     color: var(--black) !important;
@@ -248,7 +224,6 @@ nav {
     transform: translateY(-1px);
 }
 
-/* Mobile toggle */
 .mobile-menu-toggle {
     display: none;
     flex-direction: column;
@@ -275,8 +250,6 @@ nav {
 .mobile-menu-toggle.active span:nth-child(3) {
     transform: rotate(-45deg) translate(6px, -6px);
 }
-
-/* ── Buttons ──────────────────────────────── */
 
 .btn {
     display: inline-flex;
@@ -351,8 +324,6 @@ nav {
     pointer-events: none;
 }
 
-/* ── Badge / Status pills ─────────────────── */
-
 .badge {
     display: inline-flex;
     align-items: center;
@@ -401,7 +372,6 @@ nav {
     border: 1px solid rgba(255, 51, 51, 0.20);
 }
 
-/* dot indicators */
 .status-dot {
     width: 7px;
     height: 7px;
@@ -412,8 +382,6 @@ nav {
 .status-dot.open     { background: rgba(255,255,255,0.7); }
 .status-dot.in_progress { background: var(--accent-warning); }
 .status-dot.closed   { background: rgba(255,255,255,0.2); }
-
-/* ── Form elements ────────────────────────── */
 
 .form-group {
     display: flex;
@@ -478,8 +446,6 @@ nav {
 }
 
 .error-message:not(:empty) { display: block; }
-
-/* ── Modal base ───────────────────────────── */
 
 .modal {
     display: none;
@@ -553,8 +519,6 @@ nav {
     flex: 1;
 }
 
-/* ── Loading / Skeleton ───────────────────── */
-
 .skeleton {
     background: linear-gradient(
         90deg,
@@ -584,8 +548,6 @@ nav {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Toast notifications ──────────────────── */
-
 .toast-container {
     position: fixed;
     top: calc(var(--header-h) + var(--sp-4));
@@ -596,8 +558,6 @@ nav {
     gap: var(--sp-2);
     pointer-events: none;
 }
-
-/* ── Animations ───────────────────────────── */
 
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(24px); }
@@ -635,8 +595,6 @@ nav {
 .stagger-container > *:nth-child(7) { animation-delay: 360ms; }
 .stagger-container > *:nth-child(8) { animation-delay: 420ms; }
 
-/* ── Liquid border (signature effect) ─────── */
-
 .liquid-border {
     position: relative;
     border: var(--border-dim);
@@ -665,8 +623,6 @@ nav {
 .liquid-border:hover::before { opacity: 1; }
 
 .magnetic-btn { transition: transform var(--t-fast); }
-
-/* ── Footer ───────────────────────────────── */
 
 footer {
     background: var(--black);
@@ -712,22 +668,18 @@ footer {
     letter-spacing: 0.04em;
 }
 
-/* ── Section utility ──────────────────────── */
-
 .section-container {
     max-width: var(--max-w);
     margin: 0 auto;
     padding: 0 var(--sp-8);
 }
 
-/* ── Divider line ─────────────────────────── */
 .divider {
     width: 100%;
     height: 1px;
     background: rgba(255, 255, 255, 0.06);
 }
 
-/* ── Eyebrow label ────────────────────────── */
 .eyebrow {
     display: inline-flex;
     align-items: center;
@@ -745,15 +697,12 @@ footer {
     border-radius: var(--radius-sm);
 }
 
-/* ── Reduced motion ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
     }
 }
-
-/* ── Responsive ───────────────────────────── */
 
 @media (max-width: 768px) {
     :root { --header-h: 56px; }
@@ -811,7 +760,6 @@ footer {
     nav { padding: 0 var(--sp-5); }
 }
 
-/* ── Touch devices ────────────────────────── */
 @media (hover: none) {
     .liquid-border::before { display: none; }
     .magnetic-btn { transform: none !important; }

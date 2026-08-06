@@ -47,7 +47,7 @@
                 term: '20 минут',
                 price: '$1–2',
                 botUrl: 'https://t.me/Mini_review_bot',
-                sourcesUrl: 'https://example.com/mini-review-sources.zip', // TODO: replace with real link
+                sourcesUrl: 'https://example.com/mini-review-sources.zip',
                 screenshots: [
                     { src: 'images/Mini-review/1.png', alt: 'Mini-review bot screenshot 1' },
                     { src: 'images/Mini-review/2.png', alt: 'Mini-review bot screenshot 2' },

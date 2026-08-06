@@ -1,4 +1,3 @@
-// ── View switching ─────────────────────────
 document.querySelectorAll('.auth-switch-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const targetId = btn.dataset.show;
@@ -8,7 +7,6 @@ document.querySelectorAll('.auth-switch-btn').forEach(btn => {
     });
 });
 
-// ── Password strength checklist ────────────
 const pwdInput = document.getElementById('register-password');
 if (pwdInput) {
     pwdInput.addEventListener('input', () => {
@@ -25,7 +23,6 @@ function toggle(id, ok) {
     if (ok) el.classList.add('ok'); else el.classList.remove('ok');
 }
 
-// ── Login ──────────────────────────────────
 document.getElementById('login-form').addEventListener('submit', async e => {
     e.preventDefault();
 
@@ -65,7 +62,6 @@ document.getElementById('login-form').addEventListener('submit', async e => {
     }
 });
 
-// ── Register ───────────────────────────────
 document.getElementById('register-form').addEventListener('submit', async e => {
     e.preventDefault();
 
@@ -119,7 +115,6 @@ document.getElementById('register-form').addEventListener('submit', async e => {
     }
 });
 
-// ── Helpers ────────────────────────────────
 function setLoading(btn, loading, label) {
     btn.disabled = loading;
     if (loading) {
@@ -133,7 +128,6 @@ function clearFieldErrors() {
     document.querySelectorAll('.error-message').forEach(el => { el.textContent = ''; });
 }
 
-// ── Auto-redirect if already logged in ─────
 (async () => {
     try {
         const user = await checkAuth();
