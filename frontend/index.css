@@ -101,6 +101,58 @@
 
 .proof-dot { color: rgba(255,255,255,0.15); }
 
+/* ── Hero community links (Telegram + Discord) ── */
+.hero-community {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    flex-wrap: wrap;
+    animation: fadeInUp 0.8s ease 0.55s both;
+}
+
+.hero-community-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.03);
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
+}
+
+.hero-community-link:hover {
+    transform: translateY(-2px);
+    color: rgba(255, 255, 255, 0.90);
+}
+
+.hero-community-link--tg:hover {
+    background: rgba(38, 169, 224, 0.10);
+    border-color: rgba(38, 169, 224, 0.35);
+}
+
+.hero-community-link--dc:hover {
+    background: rgba(88, 101, 242, 0.10);
+    border-color: rgba(88, 101, 242, 0.35);
+}
+
+.hero-community-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    opacity: 0.75;
+    transition: opacity var(--t-fast);
+    flex-shrink: 0;
+}
+
+.hero-community-link:hover .hero-community-icon {
+    opacity: 1;
+}
+
 /* hero-right layout moved to dual-cards section below */
 
 .hero-card {
@@ -1086,6 +1138,7 @@
     .hero-card  { max-width: 420px; }    .hero-left  { align-items: center; }
     .hero-social-proof { justify-content: center; }
     .hero-actions { justify-content: center; }
+    .hero-community { justify-content: center; }
 
     .process-steps {
         flex-direction: column;

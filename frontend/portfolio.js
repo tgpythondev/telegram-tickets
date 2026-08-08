@@ -35,6 +35,7 @@
         mini: [
             {
                 id: 'mini-review',
+                platform: 'telegram',
                 titleKey: 'project_mini_review_title',
                 descKey: 'project_mini_review_desc',
                 featuresKeys: [
@@ -75,21 +76,25 @@
         return res;
     })();
 
-    var currentPlan = 'all';
+    var currentPlan     = 'all';
+    var currentPlatform = 'all';
 
-    function getItems(plan) {
-        if (plan === 'all') return allItems;
-        return mockData[plan] ? mockData[plan].map(function (i) {
+    function getItems(plan, platform) {
+        var base = (plan === 'all') ? allItems : (mockData[plan] ? mockData[plan].map(function (i) {
             return Object.assign({}, i, { plan: plan });
-        }) : [];
+        }) : []);
+        if (platform && platform !== 'all') {
+            base = base.filter(function (i) { return i.platform === platform; });
+        }
+        return base;
     }
 
-    function render(plan) {
+    function render(plan, platform) {
         var list = document.getElementById('pf-list');
         if (!list) return;
         list.innerHTML = '';
 
-        var items = getItems(plan);
+        var items = getItems(plan, platform);
 
         if (items.length === 0) {
             var empty = document.createElement('div');
@@ -360,19 +365,29 @@
     }
 
     function reRender() {
-        render(currentPlan);
+        render(currentPlan, currentPlatform);
     }
 
     function init() {
-        render('all');
+        render('all', 'all');
 
-        // Filters
+        // Platform picker
+        document.querySelectorAll('.pf-platform-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.pf-platform-btn').forEach(function (b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                currentPlatform = btn.dataset.platform;
+                render(currentPlan, currentPlatform);
+            });
+        });
+
+        // Plan filters
         document.querySelectorAll('.pf-filter-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 document.querySelectorAll('.pf-filter-btn').forEach(function (b) { b.classList.remove('active'); });
                 btn.classList.add('active');
                 currentPlan = btn.dataset.plan;
-                render(currentPlan);
+                render(currentPlan, currentPlatform);
             });
         });
 
