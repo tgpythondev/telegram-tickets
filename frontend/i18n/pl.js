@@ -93,6 +93,21 @@ window.LANG_PL = {
   pc_btn_discuss:    'Skonsultuj projekt',
 
   // Why section
+  // Payment Methods
+  section_payment:       'Płatności',
+  payment_title:         'Metody płatności',
+  payment_subtitle:      'Wybierz wygodną metodę — obsługujemy wszystkie regiony',
+  payment_card_holder:   'Posiadacz',
+  payment_worldwide:     'Cały świat',
+  payment_yandex_name:   'Karta Yandex',
+  payment_yandex_desc:   'Dla klientów z Rosji',
+  payment_revolut_name:  'Revolut',
+  payment_revolut_desc:  'Dla klientów z Europy',
+  payment_paypal_desc:   'Dla klientów z całego świata',
+  payment_paypal_back:   'Szybko i bezpiecznie',
+  payment_crypto_name:   'Kryptowaluty',
+  payment_crypto_desc:   'Bitcoin · USDT · ETH',
+
   section_why:       'Dlaczego my',
   why_title:         'Stawiamy na<br>jakość i profesjonalizm',
   why1_strong:       'Indywidualne podejście',
@@ -459,4 +474,17 @@ window.LANG_PL = {
   game_correct: 'Dobrze!',
   game_wrong: 'Niestety nie',
   game_complete: 'Brawo — wszystkie pytania za Tobą!',
+
+  // Payments section
+  section_payments: 'Płatności',
+  payments_title: 'Metody płatności',
+  payments_sub: 'Akceptuję płatności w wygodny dla Ciebie sposób — z Rosji, Europy i z całego świata.',
+  pay_ru_name: 'Karta rosyjska',
+  pay_ru_desc: 'SBP, MIR, Visa/MC RF — przelew na numer karty lub telefonu',
+  pay_eu_name: 'Karta europejska',
+  pay_eu_desc: 'Visa / Mastercard — płatność kartą dowolnego banku w UE',
+  pay_paypal_name: 'PayPal',
+  pay_paypal_desc: 'Szybka i bezpieczna płatność przez konto PayPal',
+  pay_crypto_name: 'Kryptowaluta',
+  pay_crypto_desc: 'USDT (TRC-20 / ERC-20) lub Bitcoin — płatność jednym przelewem',
 };

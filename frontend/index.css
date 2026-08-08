@@ -2,17 +2,7 @@
    ============================================ */
 
 
-html {
-    scroll-snap-type: y proximity;
-}
-
-.snap-section {
-    scroll-snap-align: start;
-}
-
-.snap-section {
-    scroll-snap-stop: normal;
-}
+/* scroll-snap removed — free smooth scroll via smooth-scroll.js */
 
 .stagger-container > * {
     opacity: 0;
@@ -37,14 +27,6 @@ html {
 }
 
 @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
-    html {
-        scroll-snap-type: none;
-    }
-
-    .snap-section {
-        scroll-snap-align: none;
-    }
-
     .stagger-container > * {
         opacity: 1;
         transform: none;
@@ -784,6 +766,308 @@ html {
     transform: translateY(-1px);
 }
 
+
+/* ── Payment Methods ────────────────────────── */
+.payment-section {
+    padding: var(--sp-24) 0;
+}
+
+.payment-subtitle {
+    font-size: var(--text-base);
+    color: rgba(255,255,255,0.38);
+    margin-top: var(--sp-2);
+    line-height: 1.6;
+}
+
+.payment-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-12);
+    margin-top: var(--sp-12);
+    flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════
+   PAYMENT CARDS — tilt style (photo reference)
+   ═══════════════════════════════════════════════ */
+
+.payment-layout {
+    display: flex;
+    gap: var(--sp-6);
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: var(--sp-12);
+}
+
+.pay-card-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-5);
+    width: 230px;
+}
+
+/* Card shell — static tilt, no flip */
+.pay-card {
+    width: 230px;
+    height: 148px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: default;
+    /* perspective tilt matching the photo */
+    transform: perspective(700px) rotateX(6deg) rotateY(-8deg) rotateZ(-1deg);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    border-left: 1px solid rgba(255,255,255,0.10);
+    border-right: 1px solid rgba(0,0,0,0.4);
+    border-bottom: 1px solid rgba(0,0,0,0.5);
+    box-shadow:
+        0 16px 40px rgba(0,0,0,0.55),
+        0 4px 12px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.pay-card:hover {
+    transform: perspective(700px) rotateX(2deg) rotateY(-2deg) rotateZ(0deg) translateY(-4px);
+    box-shadow:
+        0 24px 52px rgba(0,0,0,0.65),
+        0 6px 18px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.10);
+}
+
+/* Holographic sheen */
+.pay-card__sheen {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        115deg,
+        transparent 20%,
+        rgba(255,255,255,0.07) 45%,
+        rgba(255,255,255,0.13) 55%,
+        transparent 80%
+    );
+    pointer-events: none;
+    z-index: 5;
+    border-radius: 12px;
+}
+
+/* Top row: chip + badge */
+.pay-card__top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+}
+.pay-card__top-row--pp {
+    align-items: flex-start;
+}
+
+/* EMV Chip */
+.pay-card__chip {
+    width: 30px;
+    height: 22px;
+    border-radius: 4px;
+    background: linear-gradient(145deg, #e8c96a 0%, #f5e08a 30%, #c9973a 55%, #f0ca60 75%, #b8861c 100%);
+    position: relative;
+    box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.45),
+        inset 0 -1px 2px rgba(0,0,0,0.25),
+        0 2px 5px rgba(0,0,0,0.4);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.pay-card__chip--dark {
+    background: linear-gradient(145deg, #c0c0c0 0%, #e8e8e8 30%, #9a9a9a 55%, #d4d4d4 75%, #888 100%);
+}
+.pay-card__chip-lines {
+    position: absolute;
+    inset: 3px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px;
+}
+.pay-card__chip-lines span {
+    background: rgba(0,0,0,0.18);
+    border-radius: 1px;
+}
+
+/* Corner badge (СБП / EU / PAYPAL / CRWEBS) */
+.pay-card__badge {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+}
+.pay-card__badge--eu      { color: rgba(255,255,255,0.6); }
+.pay-card__badge--paypal  { font-size: 9px; color: rgba(255,255,255,0.5); letter-spacing: 0.12em; }
+.pay-card__badge--crwebs  { color: rgba(255,255,255,0.45); font-size: 8px; }
+
+/* Card number */
+.pay-card__number {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.65);
+    position: relative;
+    z-index: 2;
+}
+
+/* Bottom row: holder + network */
+.pay-card__bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+}
+.pay-card__meta-value {
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+.pay-card__meta-value--dim { color: rgba(255,255,255,0.35); }
+
+/* Network badges */
+.pay-card__network-mir .mir-text {
+    font-size: 11px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #00a651 0%, #2fcc71 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 1px 2px rgba(0,100,50,0.5));
+}
+.pay-card__network-visa .visa-text {
+    font-size: 13px;
+    font-weight: 900;
+    font-style: italic;
+    background: linear-gradient(135deg, #fff 0%, #d4e4ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 1px 2px rgba(0,0,80,0.5));
+}
+
+/* ── Card 1: Russian / МИР ─────────── */
+.pay-card--ru {
+    background:
+        radial-gradient(ellipse at 85% 15%, rgba(30,120,200,0.2) 0%, transparent 55%),
+        linear-gradient(145deg, #0d1520 0%, #142035 50%, #0f2a4a 100%);
+}
+
+/* ── Card 2: European / Revolut ────── */
+.pay-card--eu {
+    background:
+        radial-gradient(ellipse at 80% 15%, rgba(80,160,80,0.18) 0%, transparent 50%),
+        linear-gradient(145deg, #0a1a0f 0%, #112a18 50%, #0e2214 100%);
+}
+
+/* ── Card 3: PayPal ─────────────────── */
+.pay-card--pp {
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(0,156,222,0.15) 0%, transparent 60%),
+        linear-gradient(145deg, #0d0d0d 0%, #181818 50%, #1e1e1e 100%);
+}
+.pay-card__pp-icon {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
+.pay-card__pp-checkout {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: relative;
+    z-index: 2;
+}
+.pay-card__pp-text {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.45);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: lowercase;
+}
+.pay-card__pp-sub {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.1em;
+}
+
+/* ── Card 4: Crypto ─────────────────── */
+.pay-card--crypto {
+    background:
+        linear-gradient(145deg, #101010 0%, #1a1a1a 50%, #141414 100%);
+}
+.pay-card__crypto-icons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+.crypto-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+}
+.crypto-icon--usdt {
+    background: radial-gradient(circle at 35% 30%, #26c87a 0%, #1aa35e 60%, #138048 100%);
+    color: rgba(255,255,255,0.95);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.35);
+}
+.crypto-icon--btc {
+    background: radial-gradient(circle at 35% 30%, #fdd26a 0%, #f7931a 55%, #c96e00 100%);
+    color: rgba(255,255,255,0.95);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.35);
+}
+.pay-card__crypto-bottom {
+    position: relative;
+    z-index: 2;
+}
+
+/* Card label below */
+.pay-card__label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+}
+.pay-card__name {
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.01em;
+}
+.pay-card__desc {
+    font-size: var(--text-sm);
+    color: rgba(255,255,255,0.42);
+    line-height: 1.5;
+    max-width: 210px;
+}
 
 @media (max-width: 1100px) {
     .pricing-grid {

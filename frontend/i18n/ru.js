@@ -93,6 +93,21 @@ window.LANG_RU = {
   pc_btn_discuss:    'Обсудить',
 
   // Why section
+  // Payment Methods
+  section_payment:       'Оплата',
+  payment_title:         'Способы оплаты',
+  payment_subtitle:      'Выбери удобный способ — работаем со всеми регионами',
+  payment_card_holder:   'Держатель',
+  payment_worldwide:     'Весь мир',
+  payment_yandex_name:   'Карта Яндекс',
+  payment_yandex_desc:   'Для клиентов из России',
+  payment_revolut_name:  'Revolut',
+  payment_revolut_desc:  'Для клиентов из Европы',
+  payment_paypal_desc:   'Для клиентов по всему миру',
+  payment_paypal_back:   'Быстро и безопасно',
+  payment_crypto_name:   'Криптовалюта',
+  payment_crypto_desc:   'Bitcoin · USDT · ETH',
+
   section_why:       'Почему я',
   why_title:         'Работаем<br>как надо',
   why1_strong:       'Индивидуальный подход',
@@ -458,4 +473,17 @@ window.LANG_RU = {
   game_correct: 'Правильно!',
   game_wrong: 'Неправильно',
   game_complete: 'Вы завершили все вопросы!',
+
+  // Payments section
+  section_payments: 'Оплата',
+  payments_title: 'Способы оплаты',
+  payments_sub: 'Принимаю оплату удобным для тебя способом — из России, Европы и по всему миру.',
+  pay_ru_name: 'Российская карта',
+  pay_ru_desc: 'СБП, МИР, Visa/MC РФ — перевод по номеру карты или телефона',
+  pay_eu_name: 'Европейская карта',
+  pay_eu_desc: 'Visa / Mastercard — оплата картой любого банка ЕС',
+  pay_paypal_name: 'PayPal',
+  pay_paypal_desc: 'Быстрая и защищённая оплата через аккаунт PayPal',
+  pay_crypto_name: 'Криптовалюта',
+  pay_crypto_desc: 'USDT (TRC-20 / ERC-20) или Bitcoin — оплата в один перевод',
 };

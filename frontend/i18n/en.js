@@ -93,6 +93,21 @@ window.LANG_EN = {
   pc_btn_discuss:    'Discuss',
 
   // Why section
+  // Payment Methods
+  section_payment:       'Payment',
+  payment_title:         'Payment Methods',
+  payment_subtitle:      'Choose what works for you — we work with all regions',
+  payment_card_holder:   'Cardholder',
+  payment_worldwide:     'Worldwide',
+  payment_yandex_name:   'Yandex Card',
+  payment_yandex_desc:   'For clients from Russia',
+  payment_revolut_name:  'Revolut',
+  payment_revolut_desc:  'For clients from Europe',
+  payment_paypal_desc:   'For clients worldwide',
+  payment_paypal_back:   'Fast and secure',
+  payment_crypto_name:   'Cryptocurrency',
+  payment_crypto_desc:   'Bitcoin · USDT · ETH',
+
   section_why:       'Why me',
   why_title:         'We do it<br>properly',
   why1_strong:       'Individual approach',
@@ -459,4 +474,17 @@ window.LANG_EN = {
   game_correct: 'Correct!',
   game_wrong: 'Incorrect',
   game_complete: 'You completed all questions!',
+
+  // Payments section
+  section_payments: 'Payment',
+  payments_title: 'Payment methods',
+  payments_sub: 'I accept payment in a way convenient for you — from Russia, Europe and worldwide.',
+  pay_ru_name: 'Russian card',
+  pay_ru_desc: 'SBP, MIR, Visa/MC RF — transfer by card or phone number',
+  pay_eu_name: 'European card',
+  pay_eu_desc: 'Visa / Mastercard — pay with any EU bank card',
+  pay_paypal_name: 'PayPal',
+  pay_paypal_desc: 'Fast and secure payment via PayPal account',
+  pay_crypto_name: 'Cryptocurrency',
+  pay_crypto_desc: 'USDT (TRC-20 / ERC-20) or Bitcoin — payment in one transfer',
 };
