@@ -116,7 +116,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    const gameQuestions = [];
+    const gameQuestions = [
+        {
+            question_key: 'game_q1',
+            answers: [
+                { text_key: 'game_q1_a1', correct: false },
+                { text_key: 'game_q1_a2', correct: true  },
+                { text_key: 'game_q1_a3', correct: false },
+            ]
+        },
+        {
+            question_key: 'game_q2',
+            answers: [
+                { text_key: 'game_q2_a1', correct: false },
+                { text_key: 'game_q2_a2', correct: true  },
+                { text_key: 'game_q2_a3', correct: false },
+            ]
+        },
+        {
+            question_key: 'game_q3',
+            answers: [
+                { text_key: 'game_q3_a1', correct: false },
+                { text_key: 'game_q3_a2', correct: true  },
+                { text_key: 'game_q3_a3', correct: false },
+            ]
+        },
+        {
+            question_key: 'game_q4',
+            answers: [
+                { text_key: 'game_q4_a1', correct: false },
+                { text_key: 'game_q4_a2', correct: true  },
+                { text_key: 'game_q4_a3', correct: false },
+            ]
+        },
+        {
+            question_key: 'game_q5',
+            answers: [
+                { text_key: 'game_q5_a1', correct: false },
+                { text_key: 'game_q5_a2', correct: true  },
+                { text_key: 'game_q5_a3', correct: false },
+            ]
+        },
+        {
+            question_key: 'game_q6',
+            answers: [
+                { text_key: 'game_q6_a1', correct: false },
+                { text_key: 'game_q6_a2', correct: false },
+                { text_key: 'game_q6_a3', correct: true  },
+            ]
+        },
+    ];
     let currentQuestionIndex = 0;
 
     const gameModal = document.getElementById('gameModal');
@@ -128,10 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const pinkVignette = document.getElementById('pinkVignette');
 
     function openGameModal() {
-        if (gameQuestions.length === 0) {
-            alert('Game content is not available yet.');
-            return;
-        }
         currentQuestionIndex = 0;
         gameModal.classList.add('active');
         renderQuestion();
@@ -143,8 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderQuestion() {
         if (currentQuestionIndex >= gameQuestions.length) {
-            gameQuestion.textContent = t ? t('game_complete') : 'Вы завершили все вопросы!';
-            gameAnswers.innerHTML = '';
+            gameQuestion.textContent = t ? t('game_complete') : 'Отлично! Теперь ты знаешь весь процесс.';
+            gameAnswers.innerHTML = `<a href="configurator.html" class="btn btn-primary" style="margin-top:1rem;">${t ? t('hero_btn_configure') : 'Настроить заказ'}</a>`;
             gameProgressText.textContent = '';
             return;
         }
@@ -153,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameQuestion.textContent = t ? t(question.question_key) : question.question_key;
 
         gameAnswers.innerHTML = '';
-        question.answers.forEach((answer, index) => {
+        question.answers.forEach((answer) => {
             const btn = document.createElement('button');
             btn.className = 'game-answer-btn';
             btn.textContent = t ? t(answer.text_key) : answer.text_key;
@@ -172,20 +217,25 @@ document.addEventListener('DOMContentLoaded', () => {
         allBtns.forEach(b => b.disabled = true);
 
         if (isCorrect) {
+            btn.style.background = 'rgba(34, 197, 94, 0.15)';
+            btn.style.borderColor = 'rgba(34, 197, 94, 0.5)';
+            btn.style.color = 'rgba(34, 197, 94, 1)';
             showVignette();
             setTimeout(() => {
                 currentQuestionIndex++;
                 renderQuestion();
-                allBtns.forEach(b => b.disabled = false);
-            }, 3000);
+            }, 1200);
         } else {
-            btn.style.background = 'rgba(255, 0, 0, 0.15)';
-            btn.style.borderColor = 'rgba(255, 0, 0, 0.3)';
+            btn.style.background = 'rgba(255, 60, 60, 0.15)';
+            btn.style.borderColor = 'rgba(255, 60, 60, 0.35)';
             setTimeout(() => {
-                allBtns.forEach(b => b.disabled = false);
-                btn.style.background = '';
-                btn.style.borderColor = '';
-            }, 1000);
+                allBtns.forEach(b => {
+                    b.disabled = false;
+                    b.style.background = '';
+                    b.style.borderColor = '';
+                    b.style.color = '';
+                });
+            }, 900);
         }
     }
 

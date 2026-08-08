@@ -7,8 +7,8 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Telegram Боты на Заказ | Kaliang</title>
-    <meta name="description" content="Разработка Telegram-ботов под заказ. От $3. Python, JavaScript, Go. Быстро, чисто, с документацией.">
+    <title>Telegram & Discord Боты на Заказ | Kaliang</title>
+    <meta name="description" content="Разработка Telegram и Discord ботов под заказ. От $3. Python, JavaScript, Go. Быстро, чисто, с документацией.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -39,12 +39,12 @@
     <section class="hero snap-section">
         <div class="hero-inner section-container">
             <div class="hero-left">
-                <span class="eyebrow eyebrow-border" data-i18n="hero_eyebrow">TELEGRAM BOT DEVELOPMENT</span>
+                <span class="eyebrow eyebrow-border" data-i18n="hero_eyebrow">TELEGRAM &amp; DISCORD BOT DEVELOPMENT</span>
                 <h1 class="hero-title">
                     <span data-i18n="hero_title_line1">Боты, которые</span><br>
                     <span class="hero-title-outline" data-i18n="hero_title_line2">работают</span>
                 </h1>
-                <p class="hero-sub" data-i18n-html="hero_sub">Автоматизация бизнеса через умных ботов.<br>От идеи до запуска — под ключ.</p>
+                <p class="hero-sub" data-i18n-html="hero_sub">Автоматизация бизнеса через умных ботов.<br>Telegram и Discord — под ключ.</p>
                 <div class="hero-actions">
                     <a href="configurator.html" class="btn btn-primary magnetic-btn" data-i18n="hero_btn_configure">Настроить заказ</a>
                     <a href="auth.html" class="btn btn-ghost magnetic-btn" data-i18n="hero_btn_ticket">Создать тикет</a>
@@ -59,37 +59,30 @@
                 </div>
             </div>
             <div class="hero-right">
-                <div class="hero-card liquid-border">
+                <!-- Telegram card -->
+                <div class="hero-card liquid-border hero-card--tg">
                     <div class="hc-header">
-                        <span class="hc-label" data-i18n="hero_card_label">Боты на серверах</span>
+                        <span class="hc-platform-badge hc-platform-badge--tg">
+                            <img src="images/other/telegram.png" alt="Telegram" class="hc-platform-icon">
+                            Telegram
+                        </span>
                         <span class="hc-dot"></span>
                     </div>
-
-                    <!-- Bot placeholders removed as per user request -->
-
                     <div class="hc-mockup">
                         <div class="hc-mockup-header">
                             <span class="hc-mockup-dot red"></span>
                             <span class="hc-mockup-dot yellow"></span>
                             <span class="hc-mockup-dot green"></span>
-                            <span class="hc-mockup-title">bot.py</span>
                         </div>
                         <div class="hc-mockup-body">
                             <div class="hc-mockup-line"><span class="hc-mockup-num">1</span><span class="hc-mockup-kw">async def</span> <span class="hc-mockup-fn">handle_order</span>(update, ctx):</div>
                             <div class="hc-mockup-line"><span class="hc-mockup-num">2</span>    user = update.effective_user</div>
                             <div class="hc-mockup-line"><span class="hc-mockup-num">3</span>    order = <span class="hc-mockup-kw">await</span> ctx.bot.create_order(user.id)</div>
                             <div class="hc-mockup-line"><span class="hc-mockup-num">4</span>    <span class="hc-mockup-kw">return</span> order.confirm()</div>
-                            <div class="hc-mockup-line"><span class="hc-mockup-num">5</span></div>
-                            <div class="hc-mockup-line"><span class="hc-mockup-num">6</span><span class="hc-mockup-comment"># uptime 99.8%</span><span class="hc-mockup-cursor"></span></div>
+                            <div class="hc-mockup-line"><span class="hc-mockup-num">5</span><span class="hc-mockup-comment"># uptime 99.8%</span><span class="hc-mockup-cursor"></span></div>
                         </div>
                     </div>
-
                     <div class="hc-footer">
-                        <span class="hc-stat">
-                            <span class="hc-stat-num">3</span>
-                            <span class="hc-stat-lbl" data-i18n="hero_stat_bots">активных бота</span>
-                        </span>
-                        <span class="hc-stat-sep">·</span>
                         <span class="hc-stat">
                             <span class="hc-stat-num">99.8%</span>
                             <span class="hc-stat-lbl" data-i18n="hero_stat_uptime">uptime</span>
@@ -98,6 +91,42 @@
                         <span class="hc-stat">
                             <span class="hc-stat-num">24/7</span>
                             <span class="hc-stat-lbl" data-i18n="hero_stat_monitor">мониторинг</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Discord card -->
+                <div class="hero-card hero-card--dc">
+                    <div class="hc-header">
+                        <span class="hc-platform-badge hc-platform-badge--dc">
+                            <img src="images/other/discord.png" alt="Discord" class="hc-platform-icon">
+                            Discord
+                        </span>
+                        <span class="hc-dot hc-dot--dc"></span>
+                    </div>
+                    <div class="hc-mockup hc-mockup--dc">
+                        <div class="hc-mockup-header">
+                            <span class="hc-mockup-dot red"></span>
+                            <span class="hc-mockup-dot yellow"></span>
+                            <span class="hc-mockup-dot green"></span>
+                        </div>
+                        <div class="hc-mockup-body">
+                            <div class="hc-mockup-line"><span class="hc-mockup-num">1</span><span class="hc-mockup-kw">client</span>.<span class="hc-mockup-fn">on</span>(<span class="hc-mockup-str">'interactionCreate'</span>, <span class="hc-mockup-kw">async</span> i =&gt; {</div>
+                            <div class="hc-mockup-line"><span class="hc-mockup-num">2</span>  <span class="hc-mockup-kw">if</span> (!i.isChatInputCommand()) <span class="hc-mockup-kw">return</span>;</div>
+                            <div class="hc-mockup-line"><span class="hc-mockup-num">3</span>  <span class="hc-mockup-kw">await</span> i.reply({ content: order.done })</div>
+                            <div class="hc-mockup-line"><span class="hc-mockup-num">4</span>})</div>
+                            <div class="hc-mockup-line"><span class="hc-mockup-num">5</span><span class="hc-mockup-comment">// slash commands ✓</span><span class="hc-mockup-cursor"></span></div>
+                        </div>
+                    </div>
+                    <div class="hc-footer">
+                        <span class="hc-stat">
+                            <span class="hc-stat-num" data-i18n="hero_dc_stat_new">Новая</span>
+                            <span class="hc-stat-lbl" data-i18n="hero_dc_stat_platform">платформа</span>
+                        </span>
+                        <span class="hc-stat-sep">·</span>
+                        <span class="hc-stat">
+                            <span class="hc-stat-num">JS</span>
+                            <span class="hc-stat-lbl">discord.js</span>
                         </span>
                     </div>
                 </div>
@@ -140,24 +169,33 @@
             <div class="services-list stagger-container">
                 <a href="configurator.html" class="service-row">
                     <span class="srv-num">01</span>
-                    <span class="srv-name" data-i18n="srv1_name">Боты для бизнеса</span>
+                    <span class="srv-name" data-i18n="srv1_name">Telegram боты</span>
                     <span class="srv-desc" data-i18n="srv1_desc">Автоматизация продаж, приём заказов, консультации клиентов</span>
                     <span class="srv-arrow">→</span>
                 </a>
-                <a href="configurator.html" class="service-row">
+                <a href="configurator.html" class="service-row service-row--discord">
                     <span class="srv-num">02</span>
+                    <span class="srv-name" data-i18n="srv_discord_name">
+                        <img src="images/other/discord.png" alt="" class="srv-platform-icon" aria-hidden="true">
+                        Discord боты
+                    </span>
+                    <span class="srv-desc" data-i18n="srv_discord_desc">Слэш-команды, авторолевые системы, модерация и интеграции для серверов</span>
+                    <span class="srv-arrow">→</span>
+                </a>
+                <a href="configurator.html" class="service-row">
+                    <span class="srv-num">03</span>
                     <span class="srv-name" data-i18n="srv2_name">Интеграции</span>
                     <span class="srv-desc" data-i18n="srv2_desc">Подключение к CRM, платёжным системам, внешним API</span>
                     <span class="srv-arrow">→</span>
                 </a>
                 <a href="configurator.html" class="service-row">
-                    <span class="srv-num">03</span>
+                    <span class="srv-num">04</span>
                     <span class="srv-name" data-i18n="srv3_name">Кастомные решения</span>
                     <span class="srv-desc" data-i18n="srv3_desc">Любая логика и функционал под конкретные задачи</span>
                     <span class="srv-arrow">→</span>
                 </a>
                 <a href="auth.html" class="service-row">
-                    <span class="srv-num">04</span>
+                    <span class="srv-num">05</span>
                     <span class="srv-name" data-i18n="srv4_name">Поддержка</span>
                     <span class="srv-desc" data-i18n="srv4_desc">Обновления, доработки, техническая поддержка 24/7</span>
                     <span class="srv-arrow">→</span>
@@ -457,7 +495,14 @@
         <div class="footer-content">
             <div class="footer-logo">KALIANG</div>
             <div class="footer-links">
-                <a href="https://t.me/Kaliang_dev" target="_blank" rel="noopener">Telegram</a>
+                <a href="https://t.me/+Ko6VQd6lrS5iNGE8" target="_blank" rel="noopener" class="footer-social-link">
+                    <img src="images/other/telegram.png" alt="Telegram" class="footer-social-icon">
+                    Telegram
+                </a>
+                <a href="https://discord.gg/638dVyaeNy" target="_blank" rel="noopener" class="footer-social-link footer-social-link--discord">
+                    <img src="images/other/discord.png" alt="Discord" class="footer-social-icon">
+                    Discord
+                </a>
                 <a href="auth.html" data-i18n="footer_support">Поддержка</a>
                 <a href="configurator.html" data-i18n="footer_config">Конфигуратор</a>
                 <a href="portfolio.html" data-i18n="footer_portfolio">Портфолио</a>

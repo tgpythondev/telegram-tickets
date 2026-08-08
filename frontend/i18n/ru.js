@@ -12,16 +12,16 @@ window.LANG_RU = {
   nav_close_menu:    'Закрыть меню',
 
   // ── Index page ────────────────────────────────
-  page_title_index:  'Telegram Боты на Заказ | Kaliang',
-  meta_desc_index:   'Разработка Telegram-ботов под заказ. От $3. Python, JavaScript, Go. Быстро, чисто, с документацией.',
-  hero_eyebrow:      'TELEGRAM BOT DEVELOPMENT',
+  page_title_index:  'Telegram & Discord Боты на Заказ | Kaliang',
+  meta_desc_index:   'Разработка Telegram и Discord ботов под заказ. От $3. Python, JavaScript, Go. Быстро, чисто, с документацией.',
+  hero_eyebrow:      'TELEGRAM & DISCORD BOT DEVELOPMENT',
   hero_title_line1:  'Боты, которые',
   hero_title_line2:  'работают',
-  hero_sub:          'Автоматизация бизнеса через умных ботов.<br>От идеи до запуска — под ключ.',
+  hero_sub:          'Автоматизация бизнеса через умных ботов.<br>Telegram и Discord — под ключ.',
   hero_btn_configure:'Настроить заказ',
   hero_btn_ticket:   'Создать тикет',
   hero_btn_how_it_works: 'Как это работает?',
-  hero_proof_bots:   '3+ ботов запущено',
+  hero_proof_bots:   '5+ ботов запущено',
   hero_proof_langs:  'Python · JS · Go',
   hero_proof_reply:  'Ответ в течение дня',
   hero_card_label:   'Боты на серверах',
@@ -29,6 +29,8 @@ window.LANG_RU = {
   hero_stat_bots:    'активных бота',
   hero_stat_uptime:  'uptime',
   hero_stat_monitor: 'мониторинг',
+  hero_dc_stat_new:  'Новая',
+  hero_dc_stat_platform: 'платформа',
 
   // Numbers bar
   num_bots_label:    'ботов запущено',
@@ -39,8 +41,10 @@ window.LANG_RU = {
   // Services
   section_services:  'Услуги',
   services_title:    'Что я делаю',
-  srv1_name:         'Боты для бизнеса',
+  srv1_name:         'Telegram боты',
   srv1_desc:         'Автоматизация продаж, приём заказов, консультации клиентов',
+  srv_discord_name:  'Discord боты',
+  srv_discord_desc:  'Слэш-команды, авторолевые системы, модерация и интеграции для серверов',
   srv2_name:         'Интеграции',
   srv2_desc:         'Подключение к CRM, платёжным системам, внешним API',
   srv3_name:         'Кастомные решения',
@@ -254,6 +258,26 @@ window.LANG_RU = {
   cfg_promo_label: 'Промокод (необязательно)',
   cfg_sum_promo: 'Промоакция',
   cfg_live_promo: 'Промо',
+
+  // ── Configurator: platform step ───────────────
+  cfg_step_platform_title: 'Платформа',
+  cfg_step_platform_desc:  'Для какого мессенджера нужен бот?',
+  cfg_platform_tg_name:    'Telegram',
+  cfg_platform_tg_desc:    'Боты на базе Telegram Bot API — команды, кнопки, платежи, мини-приложения',
+  cfg_platform_dc_name:    'Discord',
+  cfg_platform_dc_desc:    'Боты на Discord.js — слэш-команды, авторолевые системы, модерация серверов',
+  cfg_platform_both_name:  'Telegram + Discord',
+  cfg_platform_both_desc:  'Бот сразу для двух платформ с единой логикой и базой данных',
+  cfg_sum_platform:        'Платформа',
+  cfg_live_platform:       'Платформа',
+  cfg_err_platform:        'Выберите платформу',
+
+  // Discord package descriptions
+  cfg_dc_mini_desc:     'Простые боты: приветствие участников, автоответы, слэш-команды. 1–1.5 дня.',
+  cfg_dc_miniplus_desc: 'С базой данных: система очков, история команд + бесплатный хостинг. 1–3 дня.',
+  cfg_dc_std_desc:      'Магазины ролей, тикет-системы, модерация + красивые embed-сообщения. 4–7 дней.',
+  cfg_dc_max_desc:      'Сложные боты с интеграциями, высокой нагрузкой и расширенным API. 1–2.5 нед.',
+  cfg_dc_custom_desc:   'Индивидуальная разработка. Цена и сроки после обсуждения.',
 
   // ── Admin promo management ─────────────────────
   admin_nav_promo:   'Промокоды',
@@ -472,7 +496,37 @@ window.LANG_RU = {
   game_progress: 'Вопрос {current} из {total}',
   game_correct: 'Правильно!',
   game_wrong: 'Неправильно',
-  game_complete: 'Вы завершили все вопросы!',
+  game_complete: 'Отлично! Теперь ты знаешь весь процесс. Создай заказ!',
+
+  game_q1: 'С чего начинается работа над ботом?',
+  game_q1_a1: 'Сразу пишем код',
+  game_q1_a2: 'Настраиваешь конфигуратор или создаёшь тикет',
+  game_q1_a3: 'Ждёшь пока разработчик тебя найдёт',
+
+  game_q2: 'Как быстро придёт первый ответ после заказа?',
+  game_q2_a1: 'Через неделю',
+  game_q2_a2: 'В течение суток',
+  game_q2_a3: 'Только после оплаты',
+
+  game_q3: 'Где отслеживать статус заказа?',
+  game_q3_a1: 'Нигде — придётся самому спрашивать',
+  game_q3_a2: 'В личном кабинете через систему тикетов',
+  game_q3_a3: 'По email',
+
+  game_q4: 'Что входит в итоговую поставку бота?',
+  game_q4_a1: 'Только ссылка на работающего бота',
+  game_q4_a2: 'Бот + исходный код + документация (README)',
+  game_q4_a3: 'Один файл без пояснений',
+
+  game_q5: 'Что если после сдачи обнаружится баг?',
+  game_q5_a1: 'Платишь за исправление отдельно',
+  game_q5_a2: 'Исправляется бесплатно — есть гарантия на все работы',
+  game_q5_a3: 'Баги не исправляются',
+
+  game_q6: 'Какие платформы поддерживаются?',
+  game_q6_a1: 'Только Telegram',
+  game_q6_a2: 'Только Discord',
+  game_q6_a3: 'Telegram и Discord — можно заказать сразу под обе',
 
   // Payments section
   section_payments: 'Оплата',

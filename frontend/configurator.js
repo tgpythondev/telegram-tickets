@@ -1,5 +1,6 @@
 // Configuration state
 let config = {
+    platform: null,           // 'telegram' | 'discord' | 'both'
     package: null,
     packagePriceMin: 0,
     packagePriceMax: 0,
@@ -18,11 +19,12 @@ let config = {
 };
 
 let currentStep = 0;     // starts at promo step
-const totalSteps = 7;    // 0…6 (step 0 = promo, steps 1-6 = original)
+const totalSteps = 8;    // 0…7 (step 0 = promo, step 1 = platform, steps 2-7 = package/desc/lang/host/prio/summary)
 
 // ── Init ───────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     setupPromoStep();
+    setupPlatformStep();
     setupOptionRows();
     setupTextareas();
     setupExtraResources();
@@ -175,6 +177,47 @@ function clearPromo() {
 function advanceFromPromoStep() {
     currentStep = 1;
     showStep(1);
+}
+
+// ── Platform step (step 1) ─────────────────
+function setupPlatformStep() {
+    document.querySelectorAll('#platform-list .cfg-option-row').forEach(row => {
+        row.addEventListener('click', () => {
+            selectRow('#platform-list', row);
+            config.platform = row.dataset.platform;
+            updatePackageDescriptions();
+            updateLiveSummary();
+            autoAdvance();
+        });
+    });
+}
+
+// Swap package descriptions based on selected platform
+function updatePackageDescriptions() {
+    const isDiscord = config.platform === 'discord' || config.platform === 'both';
+    const tr = (typeof t === 'function') ? t : k => k;
+
+    const descMap = isDiscord ? {
+        'Mini':     tr('cfg_dc_mini_desc'),
+        'Mini+':    tr('cfg_dc_miniplus_desc'),
+        'Standard': tr('cfg_dc_std_desc'),
+        'Max':      tr('cfg_dc_max_desc'),
+        'Custom':   tr('cfg_dc_custom_desc'),
+    } : {
+        'Mini':     tr('cfg_mini_desc'),
+        'Mini+':    tr('cfg_miniplus_desc'),
+        'Standard': tr('cfg_std_desc'),
+        'Max':      tr('cfg_max_desc'),
+        'Custom':   tr('cfg_custom_desc'),
+    };
+
+    document.querySelectorAll('#package-list .cfg-option-row').forEach(row => {
+        const pkg = row.dataset.package;
+        const descEl = row.querySelector('.cor-desc');
+        if (descEl && descMap[pkg]) {
+            descEl.textContent = descMap[pkg];
+        }
+    });
 }
 
 // ── Option rows (packages, languages, hosting, priority) ──
@@ -349,10 +392,7 @@ function showStep(n) {
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
 function updateProgress() {
-    const displayStep  = currentStep; // 0-based internally, show 0 as "Promo"
-    const displayTotal = totalSteps - 1; // steps 1..6 visible to user
     const pct = currentStep === 0 ? 0 : ((currentStep - 1) / (totalSteps - 2)) * 100;
     document.getElementById('cfg-progress-fill').style.width = pct + '%';
 
@@ -396,16 +436,24 @@ function validateStep(n) {
             }
             return true;
         case 1:
-            if (!config.package) { e = typeof t === 'function' ? t('cfg_err_package') : 'Wybierz pakiet'; showError(e); return false; }
+            // Platform step
+            if (!config.platform) {
+                e = typeof t === 'function' ? t('cfg_err_platform') : 'Wybierz platformę';
+                showError(e);
+                return false;
+            }
             return true;
         case 2:
+            if (!config.package) { e = typeof t === 'function' ? t('cfg_err_package') : 'Wybierz pakiet'; showError(e); return false; }
+            return true;
+        case 3:
             if (!config.shortDescription.trim()) { e = typeof t === 'function' ? t('cfg_err_short') : 'Wpisz krótki opis'; showError(e); return false; }
             if (config.shortDescription.length < 5) { e = typeof t === 'function' ? t('cfg_err_min5') : 'Minimum 5 znaków'; showError(e); return false; }
             return true;
-        case 3:
+        case 4:
             if (!config.language) { e = typeof t === 'function' ? t('cfg_err_lang') : 'Wybierz język programowania'; showError(e); return false; }
             return true;
-        case 4:
+        case 5:
             if (!config.hosting.type) { e = typeof t === 'function' ? t('cfg_err_hosting') : 'Wybierz opcję hostingu'; showError(e); return false; }
             // Double-check: free_mini cannot have paid/free hosting
             if (config.chosenBenefit === 'free_mini' && config.hosting.type !== 'none') {
@@ -460,6 +508,16 @@ function updatePrice() {
 }
 
 function updateLiveSummary() {
+    var tr = (typeof t === 'function') ? t : function(k) { return k; };
+
+    // Platform
+    const platformNames = {
+        telegram: tr('cfg_platform_tg_name'),
+        discord:  tr('cfg_platform_dc_name'),
+        both:     tr('cfg_platform_both_name'),
+    };
+    setLive('live-platform', config.platform ? platformNames[config.platform] : '—', !!config.platform);
+
     setLive('live-package',  config.package   || '—', !!config.package);
     setLive('live-language', config.language  || '—', !!config.language);
 
@@ -505,6 +563,16 @@ function setLive(id, val, filled) {
 
 function buildSummaryStep() {
     var tr = (typeof t === 'function') ? t : function(k) { return k; };
+
+    // Platform
+    const platformNames = {
+        telegram: tr('cfg_platform_tg_name'),
+        discord:  tr('cfg_platform_dc_name'),
+        both:     tr('cfg_platform_both_name'),
+    };
+    const platformEl = document.getElementById('sum-platform');
+    if (platformEl) platformEl.textContent = config.platform ? platformNames[config.platform] : '—';
+
     document.getElementById('sum-package').textContent  = config.package || '—';
     document.getElementById('sum-short').textContent    = config.shortDescription
         ? config.shortDescription.slice(0, 80) + (config.shortDescription.length > 80 ? '…' : '')
@@ -570,7 +638,8 @@ async function submitOrder() {
 
         document.getElementById('loading-overlay').classList.add('active');
 
-        const subject = tr('cfg_order_subject', { pkg: config.package });
+        const subject = tr('cfg_order_subject', { pkg: config.package }) +
+            (config.platform ? ` [${config.platform}]` : '');
         const initialMessage = tr('cfg_order_msg');
 
         // Pass promo fields both inside orderConfig and at top level
@@ -613,6 +682,11 @@ window.addEventListener('load', () => {
 });
 
 function restoreConfigState() {
+    if (config.platform) {
+        const row = document.querySelector(`#platform-list .cfg-option-row[data-platform="${config.platform}"]`);
+        if (row) selectRow('#platform-list', row);
+        updatePackageDescriptions();
+    }
     if (config.package) {
         const row = document.querySelector(`#package-list .cfg-option-row[data-package="${config.package}"]`);
         if (row) selectRow('#package-list', row);

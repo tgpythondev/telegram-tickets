@@ -101,11 +101,7 @@
 
 .proof-dot { color: rgba(255,255,255,0.15); }
 
-.hero-right {
-    display: flex;
-    justify-content: center;
-    animation: fadeInUp 0.9s ease 0.2s both;
-}
+/* hero-right layout moved to dual-cards section below */
 
 .hero-card {
     width: 100%;
@@ -1087,8 +1083,7 @@
     }
 
     .hero-right { justify-content: center; }
-    .hero-card  { max-width: 420px; }
-    .hero-left  { align-items: center; }
+    .hero-card  { max-width: 420px; }    .hero-left  { align-items: center; }
     .hero-social-proof { justify-content: center; }
     .hero-actions { justify-content: center; }
 
@@ -1276,4 +1271,190 @@
     20% { opacity: 1; }
     80% { opacity: 1; }
     100% { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════
+   HERO — dual platform cards (Telegram + Discord)
+   ═══════════════════════════════════════════════ */
+
+.hero-right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    align-items: stretch;
+    animation: fadeInUp 0.9s ease 0.2s both;
+}
+
+/* Each card fills the column */
+.hero-card--tg,
+.hero-card--dc {
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: var(--radius-md);
+    padding: var(--sp-4) var(--sp-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+}
+
+/* Discord card — subtle purple tint */
+.hero-card--dc {
+    background: rgba(88, 101, 242, 0.06);
+    border-color: rgba(88, 101, 242, 0.20);
+}
+
+/* Platform badge inside hc-header */
+.hc-platform-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+}
+
+.hc-platform-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+/* Discord dot — blurple */
+.hc-dot--dc {
+    background: rgba(88, 101, 242, 0.80);
+}
+
+/* Discord mockup — slightly tinted */
+.hc-mockup--dc {
+    background: rgba(88, 101, 242, 0.06);
+    border-color: rgba(88, 101, 242, 0.15);
+}
+
+/* Discord string highlight */
+.hc-mockup-str { color: rgba(241, 250, 140, 0.85); }
+
+/* Discord card hc-footer top border */
+.hero-card--dc .hc-footer {
+    border-top-color: rgba(88, 101, 242, 0.15);
+}
+
+/* ═══════════════════════════════════════════════
+   SERVICES — platform icon in srv-name
+   ═══════════════════════════════════════════════ */
+
+.srv-platform-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    opacity: 0.6;
+    vertical-align: middle;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+/* Discord service row — subtle left accent */
+.service-row--discord {
+    border-left: 2px solid rgba(88, 101, 242, 0.35);
+    padding-left: calc(var(--sp-4) - 2px);
+}
+
+.service-row--discord:hover {
+    border-left-color: rgba(88, 101, 242, 0.65);
+    background: rgba(88, 101, 242, 0.04);
+}
+
+.service-row--discord .srv-name {
+    display: flex;
+    align-items: center;
+}
+
+/* ═══════════════════════════════════════════════
+   FOOTER — social links (Telegram + Discord)
+   ═══════════════════════════════════════════════ */
+
+.footer-social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.footer-social-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    opacity: 0.55;
+    transition: opacity var(--t-fast);
+    flex-shrink: 0;
+}
+
+.footer-social-link:hover .footer-social-icon { opacity: 0.90; }
+
+.footer-social-link--discord:hover { color: rgba(88, 101, 242, 0.90); }
+
+/* ═══════════════════════════════════════════════
+   CONFIGURATOR — platform icons in cor-name
+   ═══════════════════════════════════════════════ */
+
+.cor-platform-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    opacity: 0.65;
+    vertical-align: middle;
+    margin-right: 5px;
+    flex-shrink: 0;
+}
+
+/* Platform tag badges (TG / DC / Both) in cor-price position */
+.cor-platform-tag {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.35);
+    white-space: nowrap;
+    align-self: center;
+}
+
+.cor-platform-tag--tg {
+    background: rgba(38, 169, 224, 0.12);
+    border-color: rgba(38, 169, 224, 0.25);
+    color: rgba(38, 169, 224, 0.80);
+}
+
+.cor-platform-tag--dc {
+    background: rgba(88, 101, 242, 0.12);
+    border-color: rgba(88, 101, 242, 0.25);
+    color: rgba(88, 101, 242, 0.85);
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — hero dual cards
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 960px) {
+    /* on tablet/mobile cards are already stacked (column) */
+    .hero-card--tg,
+    .hero-card--dc {
+        max-width: 420px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-card--tg,
+    .hero-card--dc {
+        padding: var(--sp-3) var(--sp-4);
+    }
+    /* shrink mockup font on small screens */
+    .hc-mockup-line { font-size: 0.68rem; }
 }

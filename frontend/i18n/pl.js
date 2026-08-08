@@ -12,12 +12,12 @@ window.LANG_PL = {
   nav_close_menu:    'Zamknij menu',
 
   // ── Index page ────────────────────────────────
-  page_title_index:  'Boty Telegram na zamówienie | Kaliang',
-  meta_desc_index:   'Tworzymy profesjonalne boty Telegram na zamówienie — już od $3. Python, JavaScript, Go. Szybka realizacja i pełna dokumentacja.',
-  hero_eyebrow:      'TELEGRAM BOT DEVELOPMENT',
+  page_title_index:  'Boty Telegram i Discord na zamówienie | Kaliang',
+  meta_desc_index:   'Tworzymy profesjonalne boty Telegram i Discord na zamówienie — już od $3. Python, JavaScript, Go. Szybka realizacja i pełna dokumentacja.',
+  hero_eyebrow:      'TELEGRAM & DISCORD BOT DEVELOPMENT',
   hero_title_line1:  'Boty, które',
   hero_title_line2:  'naprawdę działają',
-  hero_sub:          'Zautomatyzuj swój biznes dzięki inteligentnym botom.<br>Od pomysłu po wdrożenie — kompleksowo.',
+  hero_sub:          'Zautomatyzuj swój biznes dzięki inteligentnym botom.<br>Telegram i Discord — kompleksowo.',
   hero_btn_configure:'Złóż zamówienie',
   hero_btn_ticket:   'Załóż zgłoszenie',
   hero_btn_how_it_works: 'Jak to działa?',
@@ -29,6 +29,8 @@ window.LANG_PL = {
   hero_stat_bots:    'wdrożonych botów',
   hero_stat_uptime:  'dostęponości (uptime)',
   hero_stat_monitor: 'strojony monitoring',
+  hero_dc_stat_new:  'Nowa',
+  hero_dc_stat_platform: 'platforma',
 
   // Numbers bar
   num_bots_label:    'zrealizowanych botów',
@@ -39,8 +41,10 @@ window.LANG_PL = {
   // Services
   section_services:  'Usługi',
   services_title:    'Zakres usług',
-  srv1_name:         'Boty dla biznesu',
+  srv1_name:         'Boty Telegram',
   srv1_desc:         'Automatyzacja sprzedaży, przyjmowanie zamówień i obsługa klientów',
+  srv_discord_name:  'Boty Discord',
+  srv_discord_desc:  'Komendy slash, systemy autoroli, moderacja i integracje dla serwerów',
   srv2_name:         'Integracje',
   srv2_desc:         'Łączenie z systemami CRM, bramkami płatności i zewnętrznymi API',
   srv3_name:         'Rozwiązania dedykowane',
@@ -254,6 +258,26 @@ window.LANG_PL = {
   cfg_promo_label: 'Kod promocyjny (opcjonalnie)',
   cfg_sum_promo: 'Promocja',
   cfg_live_promo: 'Promo',
+
+  // ── Configurator: platform step ───────────────
+  cfg_step_platform_title: 'Platforma',
+  cfg_step_platform_desc:  'Dla jakiego komunikatora potrzebujesz bota?',
+  cfg_platform_tg_name:    'Telegram',
+  cfg_platform_tg_desc:    'Boty na Telegram Bot API — komendy, przyciski, płatności, mini-aplikacje',
+  cfg_platform_dc_name:    'Discord',
+  cfg_platform_dc_desc:    'Boty na Discord.js — komendy slash, systemy autoroli, moderacja serwerów',
+  cfg_platform_both_name:  'Telegram + Discord',
+  cfg_platform_both_desc:  'Bot na obie platformy jednocześnie — wspólna logika i baza danych',
+  cfg_sum_platform:        'Platforma',
+  cfg_live_platform:       'Platforma',
+  cfg_err_platform:        'Wybierz platformę',
+
+  // Discord package descriptions
+  cfg_dc_mini_desc:     'Proste boty: powitanie użytkowników, automatyczne odpowiedzi, komendy slash. 1–1.5 dnia.',
+  cfg_dc_miniplus_desc: 'Z bazą danych: system punktów, historia komend + darmowy hosting. 1–3 dni.',
+  cfg_dc_std_desc:      'Sklepy ról, systemy zgłoszeń, moderacja + eleganckie wiadomości embed. 4–7 dni.',
+  cfg_dc_max_desc:      'Zaawansowane boty z integracjami, dużym ruchem i rozszerzonym API. 1–2.5 tyg.',
+  cfg_dc_custom_desc:   'Projekt indywidualny. Wycena oraz czas realizacji ustalane po konsultacji.',
 
   // ── Admin promo management ─────────────────────
   admin_nav_promo:   'Kody promocyjne',
@@ -473,7 +497,37 @@ window.LANG_PL = {
   game_progress: 'Pytanie {current} z {total}',
   game_correct: 'Dobrze!',
   game_wrong: 'Niestety nie',
-  game_complete: 'Brawo — wszystkie pytania za Tobą!',
+  game_complete: 'Brawo! Znasz już cały proces. Złóż zamówienie!',
+
+  game_q1: 'Od czego zaczyna się praca nad botem?',
+  game_q1_a1: 'Od razu piszemy kod',
+  game_q1_a2: 'Wypełniasz konfigurator lub zakładasz zgłoszenie',
+  game_q1_a3: 'Czekasz aż deweloper Cię znajdzie',
+
+  game_q2: 'Jak szybko otrzymasz pierwszą odpowiedź po złożeniu zamówienia?',
+  game_q2_a1: 'Po tygodniu',
+  game_q2_a2: 'W ciągu doby',
+  game_q2_a3: 'Dopiero po wpłacie',
+
+  game_q3: 'Gdzie śledzić status zamówienia?',
+  game_q3_a1: 'Nigdzie — trzeba samemu pytać',
+  game_q3_a2: 'W panelu użytkownika przez system zgłoszeń',
+  game_q3_a3: 'Przez e-mail',
+
+  game_q4: 'Co wchodzi w skład finalnej dostawy bota?',
+  game_q4_a1: 'Tylko link do działającego bota',
+  game_q4_a2: 'Bot + kod źródłowy + dokumentacja (README)',
+  game_q4_a3: 'Jeden plik bez wyjaśnień',
+
+  game_q5: 'Co jeśli po oddaniu projektu wykryty zostanie błąd?',
+  game_q5_a1: 'Płacisz za naprawę osobno',
+  game_q5_a2: 'Naprawa jest bezpłatna — obowiązuje gwarancja na wszystkie prace',
+  game_q5_a3: 'Błędy nie są naprawiane',
+
+  game_q6: 'Jakie platformy są obsługiwane?',
+  game_q6_a1: 'Tylko Telegram',
+  game_q6_a2: 'Tylko Discord',
+  game_q6_a3: 'Telegram i Discord — można zamówić bota na obie platformy naraz',
 
   // Payments section
   section_payments: 'Płatności',

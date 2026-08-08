@@ -37,7 +37,7 @@
                     <div class="cfg-progress-bar">
                         <div class="cfg-progress-fill" id="cfg-progress-fill"></div>
                     </div>
-                    <div class="cfg-progress-text" id="cfg-progress-text" data-i18n="cfg_step_label" data-i18n-step="1" data-i18n-total="6">Krok 1 / 6</div>
+                    <div class="cfg-progress-text" id="cfg-progress-text" data-i18n="cfg_step_label" data-i18n-step="1" data-i18n-total="7">Krok 1 / 7</div>
                 </div>
 
                 <!-- Step 0: Promo code -->
@@ -82,8 +82,32 @@
                     <button class="cfg-promo-skip" id="promo-skip-btn" data-i18n="cfg_promo_skip">Nie mam kodu — pomiń →</button>
                 </div>
 
-                <!-- Step 1: Package -->
+                <!-- Step 1: Platform -->
                 <div class="cfg-step" id="step-1">
+                    <h2 class="cfg-step-title" data-i18n="cfg_step_platform_title">Платформа</h2>
+                    <p class="cfg-step-desc" data-i18n="cfg_step_platform_desc">Для какого мессенджера нужен бот?</p>
+
+                    <div class="cfg-option-list" id="platform-list">
+                        <div class="cfg-option-row" data-platform="telegram">
+                            <span class="cor-name" data-i18n="cfg_platform_tg_name">Telegram</span>
+                            <span class="cor-desc" data-i18n="cfg_platform_tg_desc">Боты на базе Telegram Bot API — команды, кнопки, платежи, мини-приложения</span>
+                            <span class="cor-price cor-platform-tag cor-platform-tag--tg">TG</span>
+                        </div>
+                        <div class="cfg-option-row" data-platform="discord">
+                            <span class="cor-name" data-i18n="cfg_platform_dc_name">Discord</span>
+                            <span class="cor-desc" data-i18n="cfg_platform_dc_desc">Боты на Discord.js — слэш-команды, авторолевые системы, модерация серверов</span>
+                            <span class="cor-price cor-platform-tag cor-platform-tag--dc">DC</span>
+                        </div>
+                        <div class="cfg-option-row" data-platform="both">
+                            <span class="cor-name" data-i18n="cfg_platform_both_name">Telegram + Discord</span>
+                            <span class="cor-desc" data-i18n="cfg_platform_both_desc">Бот сразу для двух платформ с единой логикой и базой данных</span>
+                            <span class="cor-price cor-platform-tag">Both</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Package -->
+                <div class="cfg-step" id="step-2">
                     <h2 class="cfg-step-title" data-i18n="cfg_step1_title">Wybierz pakiet</h2>
                     <p class="cfg-step-desc" data-i18n="cfg_step1_desc">Wybierz odpowiedni pakiet dla swojego projektu</p>
 
@@ -116,8 +140,8 @@
                     </div>
                 </div>
 
-                <!-- Step 2: Description (combined) -->
-                <div class="cfg-step" id="step-2">
+                <!-- Step 3: Description (combined) -->
+                <div class="cfg-step" id="step-3">
                     <h2 class="cfg-step-title" data-i18n="cfg_step2_title">Opisz zadanie</h2>
                     <p class="cfg-step-desc" data-i18n="cfg_step2_desc">Powiedz, co bot ma robić</p>
 
@@ -137,7 +161,7 @@
                 </div>
 
                 <!-- Step 3: Language -->
-                <div class="cfg-step" id="step-3">
+                <div class="cfg-step" id="step-4">
                     <h2 class="cfg-step-title" data-i18n="cfg_step3_title">Język programowania</h2>
                     <p class="cfg-step-desc" data-i18n="cfg_step3_desc">Wybór nie wpływa na koszt</p>
 
@@ -161,7 +185,7 @@
                 </div>
 
                 <!-- Step 4: Hosting -->
-                <div class="cfg-step" id="step-4">
+                <div class="cfg-step" id="step-5">
                     <h2 class="cfg-step-title" data-i18n="cfg_step4_title">Hosting</h2>
                     <p class="cfg-step-desc" data-i18n="cfg_step4_desc">Gdzie bot będzie działał</p>
 
@@ -201,7 +225,7 @@
                 </div>
 
                 <!-- Step 5: Priority -->
-                <div class="cfg-step" id="step-5">
+                <div class="cfg-step" id="step-6">
                     <h2 class="cfg-step-title" data-i18n="cfg_step5_title">Priorytet zamówienia</h2>
                     <p class="cfg-step-desc" data-i18n="cfg_step5_desc">Wpływa na szybkość realizacji</p>
 
@@ -234,11 +258,12 @@
                 </div>
 
                 <!-- Step 6: Summary -->
-                <div class="cfg-step" id="step-6">
+                <div class="cfg-step" id="step-7">
                     <h2 class="cfg-step-title" data-i18n="cfg_step6_title">Potwierdzenie zamówienia</h2>
                     <p class="cfg-step-desc" data-i18n="cfg_step6_desc">Sprawdź parametry przed wysłaniem</p>
 
                     <div class="cfg-summary-block">
+                        <div class="csb-row"><span class="csb-label" data-i18n="cfg_sum_platform">Платформа</span><span class="csb-value" id="sum-platform">—</span></div>
                         <div class="csb-row"><span class="csb-label" data-i18n="cfg_sum_package">Pakiet</span><span class="csb-value" id="sum-package">—</span></div>
                         <div class="csb-row"><span class="csb-label" data-i18n="cfg_sum_desc">Opis</span><span class="csb-value" id="sum-short">—</span></div>
                         <div class="csb-row"><span class="csb-label" data-i18n="cfg_sum_lang">Język</span><span class="csb-value" id="sum-language">—</span></div>
@@ -275,6 +300,10 @@
             <div class="cfs-label" data-i18n="cfg_order_label">TWOJE ZAMÓWIENIE</div>
 
             <div class="cfs-rows">
+                <div class="cfs-row">
+                    <span class="cfs-key" data-i18n="cfg_live_platform">Платформа</span>
+                    <span class="cfs-val" id="live-platform">—</span>
+                </div>
                 <div class="cfs-row">
                     <span class="cfs-key" data-i18n="cfg_live_package">Pakiet</span>
                     <span class="cfs-val" id="live-package">—</span>

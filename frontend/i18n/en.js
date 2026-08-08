@@ -12,16 +12,16 @@ window.LANG_EN = {
   nav_close_menu:    'Close menu',
 
   // ── Index page ────────────────────────────────
-  page_title_index:  'Custom Telegram Bots | Kaliang',
-  meta_desc_index:   'Custom Telegram bot development. From $3. Python, JavaScript, Go. Fast, clean, with documentation.',
-  hero_eyebrow:      'TELEGRAM BOT DEVELOPMENT',
+  page_title_index:  'Custom Telegram & Discord Bots | Kaliang',
+  meta_desc_index:   'Custom Telegram and Discord bot development. From $3. Python, JavaScript, Go. Fast, clean, with documentation.',
+  hero_eyebrow:      'TELEGRAM & DISCORD BOT DEVELOPMENT',
   hero_title_line1:  'Bots that',
   hero_title_line2:  'work',
-  hero_sub:          'Business automation through smart bots.<br>From idea to launch — turnkey.',
+  hero_sub:          'Business automation through smart bots.<br>Telegram and Discord — turnkey.',
   hero_btn_configure:'Configure order',
   hero_btn_ticket:   'Create ticket',
   hero_btn_how_it_works: 'How does it work?',
-  hero_proof_bots:   '3+ bots launched',
+  hero_proof_bots:   '5+ bots launched',
   hero_proof_langs:  'Python · JS · Go',
   hero_proof_reply:  'Reply same day',
   hero_card_label:   'Bots on servers',
@@ -29,6 +29,8 @@ window.LANG_EN = {
   hero_stat_bots:    'active bots',
   hero_stat_uptime:  'uptime',
   hero_stat_monitor: 'monitoring',
+  hero_dc_stat_new:  'New',
+  hero_dc_stat_platform: 'platform',
 
   // Numbers bar
   num_bots_label:    'bots launched',
@@ -39,8 +41,10 @@ window.LANG_EN = {
   // Services
   section_services:  'Services',
   services_title:    'What I do',
-  srv1_name:         'Business bots',
+  srv1_name:         'Telegram bots',
   srv1_desc:         'Sales automation, order taking, customer consultations',
+  srv_discord_name:  'Discord bots',
+  srv_discord_desc:  'Slash commands, auto-role systems, moderation and integrations for servers',
   srv2_name:         'Integrations',
   srv2_desc:         'Connection to CRM, payment systems, external APIs',
   srv3_name:         'Custom solutions',
@@ -254,6 +258,26 @@ window.LANG_EN = {
   cfg_promo_label: 'Promo code (optional)',
   cfg_sum_promo: 'Promo',
   cfg_live_promo: 'Promo',
+
+  // ── Configurator: platform step ───────────────
+  cfg_step_platform_title: 'Platform',
+  cfg_step_platform_desc:  'Which messenger do you need a bot for?',
+  cfg_platform_tg_name:    'Telegram',
+  cfg_platform_tg_desc:    'Bots on the Telegram Bot API — commands, buttons, payments, mini-apps',
+  cfg_platform_dc_name:    'Discord',
+  cfg_platform_dc_desc:    'Bots on Discord.js — slash commands, auto-role systems, server moderation',
+  cfg_platform_both_name:  'Telegram + Discord',
+  cfg_platform_both_desc:  'One bot for both platforms — shared logic and database',
+  cfg_sum_platform:        'Platform',
+  cfg_live_platform:       'Platform',
+  cfg_err_platform:        'Choose a platform',
+
+  // Discord package descriptions
+  cfg_dc_mini_desc:     'Simple bots: welcome messages, auto-replies, slash commands. 1–1.5 days.',
+  cfg_dc_miniplus_desc: 'With a database: points system, command history + free hosting. 1–3 days.',
+  cfg_dc_std_desc:      'Role shops, ticket systems, moderation + rich embed messages. 4–7 days.',
+  cfg_dc_max_desc:      'Complex bots with integrations, high load and extended API. 1–2.5 wks.',
+  cfg_dc_custom_desc:   'Individual development. Price and timeline after discussion.',
 
   // ── Admin promo management ─────────────────────
   admin_nav_promo:   'Promo codes',
@@ -473,7 +497,37 @@ window.LANG_EN = {
   game_progress: 'Question {current} of {total}',
   game_correct: 'Correct!',
   game_wrong: 'Incorrect',
-  game_complete: 'You completed all questions!',
+  game_complete: 'Great! Now you know the whole process. Place an order!',
+
+  game_q1: 'How does work on a bot start?',
+  game_q1_a1: 'We write the code right away',
+  game_q1_a2: 'You set up the configurator or create a ticket',
+  game_q1_a3: 'You wait for the developer to find you',
+
+  game_q2: 'How quickly will you get a first reply after ordering?',
+  game_q2_a1: 'Within a week',
+  game_q2_a2: 'Within one day',
+  game_q2_a3: 'Only after payment',
+
+  game_q3: 'Where do you track the order status?',
+  game_q3_a1: 'Nowhere — you have to ask yourself',
+  game_q3_a2: 'In your personal account via the ticket system',
+  game_q3_a3: 'By email',
+
+  game_q4: 'What is included in the final bot delivery?',
+  game_q4_a1: 'Just a link to the working bot',
+  game_q4_a2: 'Bot + source code + documentation (README)',
+  game_q4_a3: 'One file with no explanations',
+
+  game_q5: 'What if a bug is found after delivery?',
+  game_q5_a1: 'You pay for the fix separately',
+  game_q5_a2: 'It\'s fixed for free — there\'s a guarantee on all work',
+  game_q5_a3: 'Bugs are not fixed',
+
+  game_q6: 'Which platforms are supported?',
+  game_q6_a1: 'Telegram only',
+  game_q6_a2: 'Discord only',
+  game_q6_a3: 'Telegram and Discord — you can order a bot for both at once',
 
   // Payments section
   section_payments: 'Payment',
