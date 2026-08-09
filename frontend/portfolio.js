@@ -36,8 +36,6 @@
     var isLoading       = false;
 
     // ── Normalize API row → internal item ────────────────────────────────────
-    // DB columns: id, title, description, platform, plan, lang, price, term,
-    //             bot_url, source_url, screenshots (JSONB), features (JSONB)
     function normalize(row) {
         var screenshots = [];
         if (Array.isArray(row.screenshots)) {
@@ -47,20 +45,24 @@
             });
         }
 
-        var features = Array.isArray(row.features) ? row.features : [];
+        // Pick description by current language
+        var lang = (typeof I18n !== 'undefined' && I18n.currentLang) ? I18n.currentLang : 'pl';
+        var desc = row['description_' + lang] || row.description_pl || row.description_ru || row.description_en || '';
 
         return {
             id:          row.id,
-            title:       row.title       || '',
-            desc:        row.description || '',
-            platform:    row.platform    || 'telegram',
-            plan:        row.plan        || 'mini',
-            lang:        row.lang        || null,
-            price:       row.price       || null,
-            term:        row.term        || null,
-            botUrl:      row.bot_url     || null,
-            sourcesUrl:  row.source_url  || null,
-            features:    features,
+            title:       row.title         || '',
+            desc:        desc,
+            descRu:      row.description_ru || '',
+            descPl:      row.description_pl || '',
+            descEn:      row.description_en || '',
+            platform:    row.platform       || 'telegram',
+            plan:        row.plan           || 'mini',
+            lang:        row.lang           || null,
+            price:       row.price          || null,
+            term:        row.term           || null,
+            botUrl:      row.bot_url        || null,
+            sourcesUrl:  row.source_url     || null,
             screenshots: screenshots
         };
     }
@@ -245,80 +247,6 @@
         descDiv.appendChild(dTitle);
         descDiv.appendChild(dP);
 
-        // Features
-        var featuresDiv = document.createElement('div');
-        featuresDiv.className = 'pf-modal-features';
-        if (item.features && item.features.length > 0) {
-            var fTitle = document.createElement('h4');
-            fTitle.textContent = _t('pf_modal_features');
-            var ul = document.createElement('ul');
-            item.features.forEach(function (f) {
-                var li = document.createElement('li');
-                li.textContent = f;
-                ul.appendChild(li);
-            });
-            featuresDiv.appendChild(fTitle);
-            featuresDiv.appendChild(ul);
-        }
-
-        // Screenshots
-        var screenshotsDiv = document.createElement('div');
-        screenshotsDiv.className = 'pf-modal-screenshots';
-
-        if (item.screenshots && item.screenshots.length > 0) {
-            var screenshotList = document.createElement('ul');
-            screenshotList.className = 'pms-list';
-
-            item.screenshots.forEach(function (s, i) {
-                var li = document.createElement('li');
-                li.className = 'pms-item' + (i === 0 ? ' active' : '');
-                li.innerHTML = '<img src="' + escapeHtml(s.src) + '" alt="' + escapeHtml(s.alt || item.title) + '">';
-                screenshotList.appendChild(li);
-            });
-
-            var navDiv = document.createElement('div');
-            navDiv.className = 'pms-nav';
-
-            var prevBtn = document.createElement('button');
-            prevBtn.className = 'pms-btn pms-prev';
-            prevBtn.innerHTML = '←';
-            prevBtn.setAttribute('aria-label', 'Previous screenshot');
-
-            var nextBtn = document.createElement('button');
-            nextBtn.className = 'pms-btn pms-next';
-            nextBtn.innerHTML = '→';
-            nextBtn.setAttribute('aria-label', 'Next screenshot');
-
-            navDiv.appendChild(prevBtn);
-            navDiv.appendChild(nextBtn);
-
-            var indicator = document.createElement('div');
-            indicator.className = 'pms-indicator';
-            indicator.textContent = '1 / ' + item.screenshots.length;
-
-            screenshotsDiv.appendChild(screenshotList);
-            screenshotsDiv.appendChild(navDiv);
-            screenshotsDiv.appendChild(indicator);
-
-            var currentIdx = 0;
-            function updateSlider() {
-                var slides = screenshotList.querySelectorAll('.pms-item');
-                slides.forEach(function (slide, i) {
-                    slide.classList.toggle('active', i === currentIdx);
-                });
-                indicator.textContent = (currentIdx + 1) + ' / ' + slides.length;
-            }
-
-            prevBtn.addEventListener('click', function () {
-                currentIdx = (currentIdx - 1 + item.screenshots.length) % item.screenshots.length;
-                updateSlider();
-            });
-            nextBtn.addEventListener('click', function () {
-                currentIdx = (currentIdx + 1) % item.screenshots.length;
-                updateSlider();
-            });
-        }
-
         // Action buttons
         var actionsDiv = document.createElement('div');
         actionsDiv.className = 'pf-modal-actions';
@@ -344,8 +272,6 @@
         }
 
         rightCol.appendChild(descDiv);
-        rightCol.appendChild(featuresDiv);
-        rightCol.appendChild(screenshotsDiv);
         rightCol.appendChild(actionsDiv);
 
         body.appendChild(rightCol);
@@ -430,8 +356,13 @@
             if (e.key === 'Escape') closeModal();
         });
 
-        // Re-render on language change (no reload needed — data is language-agnostic)
+        // Re-render on language change — пересчитываем описание по новому языку
         window.addEventListener('langchange', function () {
+            allItems = allItems.map(function (item) {
+                var lang = (typeof I18n !== 'undefined' && I18n.currentLang) ? I18n.currentLang : 'pl';
+                item.desc = item['desc' + lang.charAt(0).toUpperCase() + lang.slice(1)] || item.descPl || item.descRu || item.descEn || '';
+                return item;
+            });
             render(currentPlan, currentPlatform);
         });
     }

@@ -206,12 +206,6 @@
                         <input type="text" id="pf-form-title" required maxlength="200" autocomplete="off">
                     </div>
 
-                    <!-- Description -->
-                    <div class="form-group">
-                        <label for="pf-form-desc" data-i18n="admin_portfolio_col_desc">Opis</label>
-                        <textarea id="pf-form-desc" rows="3" required maxlength="2000" style="resize:vertical;"></textarea>
-                    </div>
-
                     <!-- Platform + Plan row -->
                     <div class="pf-form-row">
                         <div class="form-group">
@@ -233,12 +227,8 @@
                         </div>
                     </div>
 
-                    <!-- Lang + Price + Term row -->
-                    <div class="pf-form-row pf-form-row--3">
-                        <div class="form-group">
-                            <label for="pf-form-lang" data-i18n="pf_modal_lang">Język</label>
-                            <input type="text" id="pf-form-lang" maxlength="50" placeholder="RU/PL/ENG" autocomplete="off">
-                        </div>
+                    <!-- Price + Term row -->
+                    <div class="pf-form-row">
                         <div class="form-group">
                             <label for="pf-form-price" data-i18n="pf_modal_price">Cena</label>
                             <input type="text" id="pf-form-price" maxlength="50" placeholder="$10–20" autocomplete="off">
@@ -261,23 +251,23 @@
                         <input type="url" id="pf-form-source-url" maxlength="500" placeholder="https://github.com/..." autocomplete="off">
                     </div>
 
-                    <!-- Features -->
-                    <div class="form-group">
-                        <label data-i18n="pf_modal_features">Funkcje</label>
-                        <div id="pf-features-list" class="pf-tags-list"></div>
-                        <div class="pf-tag-input-row">
-                            <input type="text" id="pf-feature-input" class="pf-tag-input" maxlength="200" placeholder="Dodaj funkcję…" autocomplete="off">
-                            <button type="button" class="btn btn-ghost pf-tag-add-btn" id="pf-feature-add">+</button>
-                        </div>
-                    </div>
+                    <!-- Descriptions i18n -->
+                    <div class="pf-desc-section">
+                        <div class="pf-desc-label" data-i18n="admin_portfolio_col_desc">Opis (w trzech językach)</div>
 
-                    <!-- Screenshots -->
-                    <div class="form-group">
-                        <label data-i18n="admin_portfolio_col_screenshots">Screenshoty (URL)</label>
-                        <div id="pf-screenshots-list" class="pf-tags-list"></div>
-                        <div class="pf-tag-input-row">
-                            <input type="url" id="pf-screenshot-input" class="pf-tag-input" maxlength="500" placeholder="https://..." autocomplete="off">
-                            <button type="button" class="btn btn-ghost pf-tag-add-btn" id="pf-screenshot-add">+</button>
+                        <div class="form-group">
+                            <label class="pf-lang-label pf-lang-ru">🇷🇺 <span data-i18n="admin_portfolio_desc_ru">Opis po rosyjsku</span></label>
+                            <textarea id="pf-form-desc-ru" rows="3" required maxlength="2000" style="resize:vertical;"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="pf-lang-label pf-lang-pl">🇵🇱 <span data-i18n="admin_portfolio_desc_pl">Opis po polsku</span></label>
+                            <textarea id="pf-form-desc-pl" rows="3" required maxlength="2000" style="resize:vertical;"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="pf-lang-label pf-lang-en">🇬🇧 <span data-i18n="admin_portfolio_desc_en">Opis po angielsku</span></label>
+                            <textarea id="pf-form-desc-en" rows="3" required maxlength="2000" style="resize:vertical;"></textarea>
                         </div>
                     </div>
 

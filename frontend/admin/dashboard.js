@@ -765,14 +765,12 @@ window.closeModal = Dashboard.closeModal;
 // PORTFOLIO ADMIN MODULE
 // ═══════════════════════════════════════════════════════
 const PortfolioAdmin = (() => {
-    let pfFeatures    = [];
-    let pfScreenshots = [];
-    let pfEditId      = null;
+    let pfEditId = null;
 
     // ── Helpers ───────────────────────────────────────
-    function esc(t) {
-        if (!t) return '';
-        return String(t).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    function esc(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
     }
 
     function showToast(msg, type) {
@@ -784,43 +782,7 @@ const PortfolioAdmin = (() => {
         if (type === 'error') el.style.borderColor = 'rgba(255,51,51,0.3)';
         container.appendChild(el);
         requestAnimationFrame(() => el.classList.add('show'));
-        setTimeout(() => {
-            el.classList.remove('show');
-            setTimeout(() => el.remove(), 350);
-        }, 3500);
-    }
-
-    // ── Tag inputs (features / screenshots) ───────────
-    function renderTags(containerId, items, onRemove) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        container.innerHTML = '';
-        items.forEach((item, idx) => {
-            const tag = document.createElement('div');
-            tag.className = 'pf-tag';
-            tag.innerHTML = `<span class="pf-tag-text">${esc(item)}</span><button type="button" class="pf-tag-remove" data-idx="${idx}">×</button>`;
-            tag.querySelector('.pf-tag-remove').addEventListener('click', () => onRemove(idx));
-            container.appendChild(tag);
-        });
-    }
-
-    function bindTagInput(inputId, addBtnId, items, containerId, onRemove) {
-        const input  = document.getElementById(inputId);
-        const addBtn = document.getElementById(addBtnId);
-        if (!input || !addBtn) return;
-
-        const doAdd = () => {
-            const val = input.value.trim();
-            if (!val) return;
-            items.push(val);
-            input.value = '';
-            renderTags(containerId, items, onRemove);
-        };
-
-        addBtn.addEventListener('click', doAdd);
-        input.addEventListener('keydown', e => {
-            if (e.key === 'Enter') { e.preventDefault(); doAdd(); }
-        });
+        setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 3500);
     }
 
     // ── Load & render table ────────────────────────────
@@ -855,8 +817,8 @@ const PortfolioAdmin = (() => {
                     <td><span class="badge ${p.is_visible ? 'status-open' : 'status-closed'}">${p.is_visible ? t('promo_yes') : t('promo_no')}</span></td>
                     <td>
                         <div style="display:flex;gap:var(--sp-2);">
-                            <button class="btn btn-ghost pf-edit-btn" data-id="${p.id}" style="padding:var(--sp-1) var(--sp-3);font-size:var(--text-xs);" data-i18n="promo_btn_save">${t('promo_btn_save')}</button>
-                            <button class="btn btn-ghost pf-delete-btn" data-id="${p.id}" style="padding:var(--sp-1) var(--sp-3);font-size:var(--text-xs);color:var(--accent-urgent);" data-i18n="promo_btn_delete">${t('promo_btn_delete')}</button>
+                            <button class="btn btn-ghost pf-edit-btn" data-id="${p.id}" style="padding:var(--sp-1) var(--sp-3);font-size:var(--text-xs);">${t('promo_btn_save')}</button>
+                            <button class="btn btn-ghost pf-delete-btn" data-id="${p.id}" style="padding:var(--sp-1) var(--sp-3);font-size:var(--text-xs);color:var(--accent-urgent);">${t('promo_btn_delete')}</button>
                         </div>
                     </td>
                 `;
@@ -875,72 +837,49 @@ const PortfolioAdmin = (() => {
         }
     }
 
-    // ── Reset & open modal ─────────────────────────────
+    // ── Reset form ─────────────────────────────────────
     function resetForm() {
-        pfEditId      = null;
-        pfFeatures    = [];
-        pfScreenshots = [];
-
-        document.getElementById('pf-edit-id').value         = '';
-        document.getElementById('pf-form-title').value      = '';
-        document.getElementById('pf-form-desc').value       = '';
-        document.getElementById('pf-form-platform').value   = 'telegram';
-        document.getElementById('pf-form-plan').value       = 'mini';
-        document.getElementById('pf-form-lang').value       = '';
-        document.getElementById('pf-form-price').value      = '';
-        document.getElementById('pf-form-term').value       = '';
-        document.getElementById('pf-form-bot-url').value    = '';
-        document.getElementById('pf-form-source-url').value = '';
-        document.getElementById('pf-form-visible').checked  = true;
-        document.getElementById('pf-form-sort').value       = '0';
-
-        renderTags('pf-features-list',    pfFeatures,    removeFeature);
-        renderTags('pf-screenshots-list', pfScreenshots, removeScreenshot);
-
+        pfEditId = null;
+        document.getElementById('pf-edit-id').value            = '';
+        document.getElementById('pf-form-title').value         = '';
+        document.getElementById('pf-form-desc-ru').value       = '';
+        document.getElementById('pf-form-desc-pl').value       = '';
+        document.getElementById('pf-form-desc-en').value       = '';
+        document.getElementById('pf-form-platform').value      = 'telegram';
+        document.getElementById('pf-form-plan').value          = 'mini';
+        document.getElementById('pf-form-price').value         = '';
+        document.getElementById('pf-form-term').value          = '';
+        document.getElementById('pf-form-bot-url').value       = '';
+        document.getElementById('pf-form-source-url').value    = '';
+        document.getElementById('pf-form-visible').checked     = true;
+        document.getElementById('pf-form-sort').value          = '0';
         document.getElementById('pf-modal-title').textContent  = t('admin_portfolio_modal_create');
         document.getElementById('pf-form-submit').textContent  = t('admin_portfolio_btn_create');
     }
 
-    function removeFeature(idx) {
-        pfFeatures.splice(idx, 1);
-        renderTags('pf-features-list', pfFeatures, removeFeature);
-    }
-
-    function removeScreenshot(idx) {
-        pfScreenshots.splice(idx, 1);
-        renderTags('pf-screenshots-list', pfScreenshots, removeScreenshot);
-    }
-
+    // ── Open edit ──────────────────────────────────────
     async function openEdit(id) {
         try {
             const data = await API.adminGetPortfolioProject(id);
             if (!data || !data.project) throw new Error('Not found');
             const p = data.project;
 
-            pfEditId      = p.id;
-            pfFeatures    = Array.isArray(p.features)    ? [...p.features]    : [];
-            pfScreenshots = Array.isArray(p.screenshots)
-                ? p.screenshots.map(s => typeof s === 'string' ? s : s.src || '')
-                : [];
-
-            document.getElementById('pf-edit-id').value         = p.id;
-            document.getElementById('pf-form-title').value      = p.title       || '';
-            document.getElementById('pf-form-desc').value       = p.description || '';
-            document.getElementById('pf-form-platform').value   = p.platform    || 'telegram';
-            document.getElementById('pf-form-plan').value       = p.plan        || 'mini';
-            document.getElementById('pf-form-lang').value       = p.lang        || '';
-            document.getElementById('pf-form-price').value      = p.price       || '';
-            document.getElementById('pf-form-term').value       = p.term        || '';
-            document.getElementById('pf-form-bot-url').value    = p.bot_url     || '';
-            document.getElementById('pf-form-source-url').value = p.source_url  || '';
-            document.getElementById('pf-form-visible').checked  = p.is_visible;
-            document.getElementById('pf-form-sort').value       = p.sort_order  || 0;
-
-            renderTags('pf-features-list',    pfFeatures,    removeFeature);
-            renderTags('pf-screenshots-list', pfScreenshots, removeScreenshot);
-
-            document.getElementById('pf-modal-title').textContent = t('admin_portfolio_modal_edit');
-            document.getElementById('pf-form-submit').textContent = t('promo_btn_save');
+            pfEditId = p.id;
+            document.getElementById('pf-edit-id').value            = p.id;
+            document.getElementById('pf-form-title').value         = p.title            || '';
+            document.getElementById('pf-form-desc-ru').value       = p.description_ru   || '';
+            document.getElementById('pf-form-desc-pl').value       = p.description_pl   || '';
+            document.getElementById('pf-form-desc-en').value       = p.description_en   || '';
+            document.getElementById('pf-form-platform').value      = p.platform         || 'telegram';
+            document.getElementById('pf-form-plan').value          = p.plan             || 'mini';
+            document.getElementById('pf-form-price').value         = p.price            || '';
+            document.getElementById('pf-form-term').value          = p.term             || '';
+            document.getElementById('pf-form-bot-url').value       = p.bot_url          || '';
+            document.getElementById('pf-form-source-url').value    = p.source_url       || '';
+            document.getElementById('pf-form-visible').checked     = p.is_visible;
+            document.getElementById('pf-form-sort').value          = p.sort_order       || 0;
+            document.getElementById('pf-modal-title').textContent  = t('admin_portfolio_modal_edit');
+            document.getElementById('pf-form-submit').textContent  = t('promo_btn_save');
 
             document.getElementById('pf-modal').classList.add('active');
         } catch (err) {
@@ -948,6 +887,7 @@ const PortfolioAdmin = (() => {
         }
     }
 
+    // ── Delete ─────────────────────────────────────────
     async function deleteProject(id) {
         if (!confirm(t('admin_portfolio_confirm_delete'))) return;
         try {
@@ -964,25 +904,29 @@ const PortfolioAdmin = (() => {
         document.getElementById('pf-form').addEventListener('submit', async e => {
             e.preventDefault();
 
-            const title = document.getElementById('pf-form-title').value.trim();
-            const desc  = document.getElementById('pf-form-desc').value.trim();
-            if (!title) { showToast(t('admin_portfolio_col_title') + ': required', 'error'); return; }
-            if (!desc)  { showToast(t('admin_portfolio_col_desc')  + ': required', 'error'); return; }
+            const title   = document.getElementById('pf-form-title').value.trim();
+            const descRu  = document.getElementById('pf-form-desc-ru').value.trim();
+            const descPl  = document.getElementById('pf-form-desc-pl').value.trim();
+            const descEn  = document.getElementById('pf-form-desc-en').value.trim();
+
+            if (!title)  { showToast(t('admin_portfolio_col_title') + ': required', 'error'); return; }
+            if (!descRu) { showToast('🇷🇺 ' + t('admin_portfolio_desc_ru') + ': required', 'error'); return; }
+            if (!descPl) { showToast('🇵🇱 ' + t('admin_portfolio_desc_pl') + ': required', 'error'); return; }
+            if (!descEn) { showToast('🇬🇧 ' + t('admin_portfolio_desc_en') + ': required', 'error'); return; }
 
             const payload = {
                 title,
-                description: desc,
-                platform:    document.getElementById('pf-form-platform').value,
-                plan:        document.getElementById('pf-form-plan').value,
-                lang:        document.getElementById('pf-form-lang').value.trim()       || null,
-                price:       document.getElementById('pf-form-price').value.trim()      || null,
-                term:        document.getElementById('pf-form-term').value.trim()       || null,
-                botUrl:      document.getElementById('pf-form-bot-url').value.trim()    || null,
-                sourceUrl:   document.getElementById('pf-form-source-url').value.trim() || null,
-                features:    [...pfFeatures],
-                screenshots: pfScreenshots.map(src => ({ src, alt: title })),
-                isVisible:   document.getElementById('pf-form-visible').checked,
-                sortOrder:   parseInt(document.getElementById('pf-form-sort').value) || 0
+                descriptionRu: descRu,
+                descriptionPl: descPl,
+                descriptionEn: descEn,
+                platform:  document.getElementById('pf-form-platform').value,
+                plan:      document.getElementById('pf-form-plan').value,
+                price:     document.getElementById('pf-form-price').value.trim()      || null,
+                term:      document.getElementById('pf-form-term').value.trim()       || null,
+                botUrl:    document.getElementById('pf-form-bot-url').value.trim()    || null,
+                sourceUrl: document.getElementById('pf-form-source-url').value.trim() || null,
+                isVisible: document.getElementById('pf-form-visible').checked,
+                sortOrder: parseInt(document.getElementById('pf-form-sort').value) || 0
             };
 
             const submitBtn = document.getElementById('pf-form-submit');
@@ -1016,12 +960,10 @@ const PortfolioAdmin = (() => {
             resetForm();
             document.getElementById('pf-modal').classList.add('active');
         });
-
         document.getElementById('pf-modal-close').addEventListener('click', () => {
             document.getElementById('pf-modal').classList.remove('active');
             resetForm();
         });
-
         document.getElementById('pf-modal').addEventListener('click', e => {
             if (e.target === document.getElementById('pf-modal')) {
                 document.getElementById('pf-modal').classList.remove('active');
@@ -1043,9 +985,6 @@ const PortfolioAdmin = (() => {
         setupModal();
         setupForm();
         setupFilters();
-
-        bindTagInput('pf-feature-input',    'pf-feature-add',    pfFeatures,    'pf-features-list',    removeFeature);
-        bindTagInput('pf-screenshot-input', 'pf-screenshot-add', pfScreenshots, 'pf-screenshots-list', removeScreenshot);
     }
 
     return { init, load };
