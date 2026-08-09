@@ -1,10 +1,12 @@
 (function () {
     'use strict';
 
+    // ── Helpers ──────────────────────────────────────────────────────────────
     function escapeHtml(t) {
         if (!t) return '';
-        return String(t).replace(/[&<>"']/g, m =>
-            ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+        return String(t).replace(/[&<>"']/g, function (m) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+        });
     }
 
     function isSafeUrl(url) {
@@ -15,9 +17,8 @@
         } catch (_) { return false; }
     }
 
-    function _t(key, params) {
-        var fn = (typeof window.t === 'function') ? window.t : function(k) { return k; };
-        return fn(key, params);
+    function _t(key) {
+        return (typeof window.t === 'function') ? window.t(key) : key;
     }
 
     var planLabels = {
@@ -28,67 +29,75 @@
         custom:   'Custom'
     };
 
-    // ============================================
-    // PROJECT DATA
-    // ============================================
-    var mockData = {
-        mini: [
-            {
-                id: 'mini-review',
-                platform: 'telegram',
-                titleKey: 'project_mini_review_title',
-                descKey: 'project_mini_review_desc',
-                featuresKeys: [
-                    'project_mini_review_f1',
-                    'project_mini_review_f2',
-                    'project_mini_review_f3',
-                    'project_mini_review_f4'
-                ],
-                lang: 'RU/PL/ENG',
-                term: '20 минут',
-                price: '$1–2',
-                botUrl: 'https://t.me/Mini_review_bot',
-                sourcesUrl: 'https://example.com/mini-review-sources.zip',
-                screenshots: [
-                    { src: 'images/Mini-review/1.png', alt: 'Mini-review bot screenshot 1' },
-                    { src: 'images/Mini-review/2.png', alt: 'Mini-review bot screenshot 2' },
-                    { src: 'images/Mini-review/3.png', alt: 'Mini-review bot screenshot 3' },
-                    { src: 'images/Mini-review/4.png', alt: 'Mini-review bot screenshot 4' },
-                    { src: 'images/Mini-review/5.png', alt: 'Mini-review bot screenshot 5' },
-                    { src: 'images/Mini-review/6.png', alt: 'Mini-review bot screenshot 6' },
-                    { src: 'images/Mini-review/7.png', alt: 'Mini-review bot screenshot 7' }
-                ]
-            }
-        ],
-        miniplus: [],
-        standard: [],
-        max: [],
-        custom: []
-    };
-
-    var allItems = (function () {
-        var res = [];
-        Object.keys(mockData).forEach(function (plan) {
-            mockData[plan].forEach(function (item) {
-                res.push(Object.assign({}, item, { plan: plan }));
-            });
-        });
-        return res;
-    })();
-
+    // ── State ─────────────────────────────────────────────────────────────────
+    var allItems        = [];   // raw from API
     var currentPlan     = 'all';
     var currentPlatform = 'all';
+    var isLoading       = false;
 
-    function getItems(plan, platform) {
-        var base = (plan === 'all') ? allItems : (mockData[plan] ? mockData[plan].map(function (i) {
-            return Object.assign({}, i, { plan: plan });
-        }) : []);
-        if (platform && platform !== 'all') {
-            base = base.filter(function (i) { return i.platform === platform; });
+    // ── Normalize API row → internal item ────────────────────────────────────
+    // DB columns: id, title, description, platform, plan, lang, price, term,
+    //             bot_url, source_url, screenshots (JSONB), features (JSONB)
+    function normalize(row) {
+        var screenshots = [];
+        if (Array.isArray(row.screenshots)) {
+            screenshots = row.screenshots.map(function (s) {
+                if (typeof s === 'string') return { src: s, alt: row.title };
+                return { src: s.src || '', alt: s.alt || row.title };
+            });
         }
-        return base;
+
+        var features = Array.isArray(row.features) ? row.features : [];
+
+        return {
+            id:          row.id,
+            title:       row.title       || '',
+            desc:        row.description || '',
+            platform:    row.platform    || 'telegram',
+            plan:        row.plan        || 'mini',
+            lang:        row.lang        || null,
+            price:       row.price       || null,
+            term:        row.term        || null,
+            botUrl:      row.bot_url     || null,
+            sourcesUrl:  row.source_url  || null,
+            features:    features,
+            screenshots: screenshots
+        };
     }
 
+    // ── Filter ────────────────────────────────────────────────────────────────
+    function getItems(plan, platform) {
+        return allItems.filter(function (item) {
+            var planOk     = (plan     === 'all' || item.plan     === plan);
+            var platformOk = (platform === 'all' || item.platform === platform);
+            return planOk && platformOk;
+        });
+    }
+
+    // ── Loading state helpers ─────────────────────────────────────────────────
+    function showListLoading() {
+        var list = document.getElementById('pf-list');
+        if (!list) return;
+        list.innerHTML = '';
+        var wrap = document.createElement('div');
+        wrap.className = 'pf-loading';
+        wrap.innerHTML = '<div class="pf-loading-spinner"></div>';
+        list.appendChild(wrap);
+    }
+
+    function showListError(msg) {
+        var list = document.getElementById('pf-list');
+        if (!list) return;
+        list.innerHTML = '';
+        var wrap = document.createElement('div');
+        wrap.className = 'pf-empty';
+        wrap.innerHTML =
+            '<div class="pf-empty-icon">⚠</div>' +
+            '<div class="pf-empty-title">' + escapeHtml(msg) + '</div>';
+        list.appendChild(wrap);
+    }
+
+    // ── Render list ───────────────────────────────────────────────────────────
     function render(plan, platform) {
         var list = document.getElementById('pf-list');
         if (!list) return;
@@ -124,43 +133,40 @@
             row.className = 'pf-case-row';
             row.setAttribute('role', 'button');
             row.setAttribute('tabindex', '0');
-            var title = item.titleKey ? _t(item.titleKey) : item.title || '';
-            row.setAttribute('aria-label', 'Open ' + title + ' details');
+            row.setAttribute('aria-label', 'Open ' + item.title + ' details');
 
             // Left
             var left = document.createElement('div');
             left.className = 'pcr-left';
-            left.innerHTML = `
-                <span class="pcr-num">${String(idx + 1).padStart(2, '0')}</span>
-                <span class="badge priority-normal">${escapeHtml(planLabels[item.plan] || item.plan)}</span>
-            `;
+            left.innerHTML =
+                '<span class="pcr-num">' + String(idx + 1).padStart(2, '0') + '</span>' +
+                '<span class="badge priority-normal">' + escapeHtml(planLabels[item.plan] || item.plan) + '</span>';
 
             // Center
             var center = document.createElement('div');
             center.className = 'pcr-center';
+
             var titleEl = document.createElement('span');
             titleEl.className = 'pcr-title';
-            titleEl.textContent = title;
+            titleEl.textContent = item.title;
+
             var desc = document.createElement('span');
             desc.className = 'pcr-desc';
-            desc.textContent = item.descKey ? _t(item.descKey) : item.desc || '';
+            desc.textContent = item.desc;
+
             center.appendChild(titleEl);
             center.appendChild(desc);
 
             // Right
             var right = document.createElement('div');
             right.className = 'pcr-right';
+            right.appendChild(makeMeta(_t('pf_modal_lang'),  item.lang));
+            right.appendChild(makeMeta(_t('pf_modal_term'),  item.term));
+            right.appendChild(makeMeta(_t('pf_modal_price'), item.price));
 
-            var metaLang = makeMeta(_t('pf_modal_lang'), item.lang);
-            var metaTerm = makeMeta(_t('pf_modal_term'), item.term);
-            var metaPrice = makeMeta(_t('pf_modal_price'), item.price);
             var arrow = document.createElement('span');
             arrow.className = 'pcr-arrow';
             arrow.textContent = '→';
-
-            right.appendChild(metaLang);
-            right.appendChild(metaTerm);
-            right.appendChild(metaPrice);
             right.appendChild(arrow);
 
             row.appendChild(left);
@@ -174,23 +180,26 @@
                     openModal(item);
                 }
             });
+
             list.appendChild(row);
         });
     }
 
-    function makeMeta(key, val) {
+    function makeMeta(label, val) {
         var div = document.createElement('div');
         div.className = 'pcr-meta';
-        div.innerHTML = `<span class="pcr-meta-key">${escapeHtml(key)}</span><span class="pcr-meta-val">${escapeHtml(val)}</span>`;
+        div.innerHTML =
+            '<span class="pcr-meta-key">'  + escapeHtml(label)       + '</span>' +
+            '<span class="pcr-meta-val">'  + escapeHtml(val || '—')  + '</span>';
         return div;
     }
 
+    // ── Modal ─────────────────────────────────────────────────────────────────
     function openModal(item) {
         var modal   = document.getElementById('pf-modal');
         var content = document.getElementById('pf-modal-content');
         if (!modal || !content) return;
 
-        // Clear old content (keep close button)
         var closeBtn = document.getElementById('pf-modal-close');
         content.innerHTML = '';
         content.appendChild(closeBtn);
@@ -198,21 +207,22 @@
         // Header
         var header = document.createElement('div');
         header.className = 'pf-modal-header';
-        var itemTitle = item.titleKey ? _t(item.titleKey) : item.title || '';
-        header.innerHTML = '<h2 class="pf-modal-title">' + escapeHtml(itemTitle) + '</h2>';
+        header.innerHTML = '<h2 class="pf-modal-title">' + escapeHtml(item.title) + '</h2>';
 
         var meta = document.createElement('div');
         meta.className = 'pf-modal-meta';
-        var metaPairs = [
-            [_t('pf_modal_package'), planLabels[item.plan]],
-            [_t('pf_modal_lang'), item.lang],
-            [_t('pf_modal_term'), item.term],
-            [_t('pf_modal_price'), item.price]
-        ];
-        metaPairs.forEach(function (pair) {
+        [
+            [_t('pf_modal_package'), planLabels[item.plan] || item.plan],
+            [_t('pf_modal_lang'),    item.lang],
+            [_t('pf_modal_term'),    item.term],
+            [_t('pf_modal_price'),   item.price]
+        ].forEach(function (pair) {
+            if (!pair[1]) return;
             var div = document.createElement('div');
             div.className = 'pmm-item';
-            div.innerHTML = '<span class="pmm-label">' + escapeHtml(pair[0]) + '</span><span class="pmm-value">' + escapeHtml(pair[1]) + '</span>';
+            div.innerHTML =
+                '<span class="pmm-label">' + escapeHtml(pair[0]) + '</span>' +
+                '<span class="pmm-value">' + escapeHtml(pair[1]) + '</span>';
             meta.appendChild(div);
         });
 
@@ -220,10 +230,8 @@
         content.appendChild(header);
 
         // Body
-        var body = document.createElement('div');
+        var body    = document.createElement('div');
         body.className = 'pf-modal-body';
-
-        // Right column: description, features, screenshots, actions (all in one column)
         var rightCol = document.createElement('div');
         rightCol.className = 'pf-modal-right';
 
@@ -233,51 +241,49 @@
         var dTitle = document.createElement('h4');
         dTitle.textContent = _t('pf_modal_desc');
         var dP = document.createElement('p');
-        dP.textContent = item.descKey ? _t(item.descKey) : item.desc || '';
+        dP.textContent = item.desc;
         descDiv.appendChild(dTitle);
         descDiv.appendChild(dP);
 
         // Features
-        var features = document.createElement('div');
-        features.className = 'pf-modal-features';
-        var fTitle = document.createElement('h4');
-        fTitle.textContent = _t('pf_modal_features');
-        var ul = document.createElement('ul');
-        
-        // Handle both featuresKeys (translation keys) and features (direct text)
-        var featuresList = item.featuresKeys 
-            ? item.featuresKeys.map(function(key) { return _t(key); })
-            : (item.features || []);
-            
-        featuresList.forEach(function (f) {
-            var li = document.createElement('li');
-            li.textContent = f;
-            ul.appendChild(li);
-        });
-        features.appendChild(fTitle);
-        features.appendChild(ul);
+        var featuresDiv = document.createElement('div');
+        featuresDiv.className = 'pf-modal-features';
+        if (item.features && item.features.length > 0) {
+            var fTitle = document.createElement('h4');
+            fTitle.textContent = _t('pf_modal_features');
+            var ul = document.createElement('ul');
+            item.features.forEach(function (f) {
+                var li = document.createElement('li');
+                li.textContent = f;
+                ul.appendChild(li);
+            });
+            featuresDiv.appendChild(fTitle);
+            featuresDiv.appendChild(ul);
+        }
 
         // Screenshots
         var screenshotsDiv = document.createElement('div');
         screenshotsDiv.className = 'pf-modal-screenshots';
-        var screenshotList = document.createElement('ul');
-        screenshotList.className = 'pms-list';
 
         if (item.screenshots && item.screenshots.length > 0) {
-            item.screenshots.forEach(function (s, idx) {
+            var screenshotList = document.createElement('ul');
+            screenshotList.className = 'pms-list';
+
+            item.screenshots.forEach(function (s, i) {
                 var li = document.createElement('li');
-                li.className = 'pms-item' + (idx === 0 ? ' active' : '');
-                li.innerHTML = '<img src="' + escapeHtml(s.src) + '" alt="' + escapeHtml(s.alt) + '">';
+                li.className = 'pms-item' + (i === 0 ? ' active' : '');
+                li.innerHTML = '<img src="' + escapeHtml(s.src) + '" alt="' + escapeHtml(s.alt || item.title) + '">';
                 screenshotList.appendChild(li);
             });
 
-            // Navigation buttons
             var navDiv = document.createElement('div');
             navDiv.className = 'pms-nav';
+
             var prevBtn = document.createElement('button');
             prevBtn.className = 'pms-btn pms-prev';
             prevBtn.innerHTML = '←';
             prevBtn.setAttribute('aria-label', 'Previous screenshot');
+
             var nextBtn = document.createElement('button');
             nextBtn.className = 'pms-btn pms-next';
             nextBtn.innerHTML = '→';
@@ -286,7 +292,6 @@
             navDiv.appendChild(prevBtn);
             navDiv.appendChild(nextBtn);
 
-            // Current indicator
             var indicator = document.createElement('div');
             indicator.className = 'pms-indicator';
             indicator.textContent = '1 / ' + item.screenshots.length;
@@ -295,25 +300,21 @@
             screenshotsDiv.appendChild(navDiv);
             screenshotsDiv.appendChild(indicator);
 
-            // Add slider navigation logic
             var currentIdx = 0;
             function updateSlider() {
-                var items = screenshotList.querySelectorAll('.pms-item');
-                items.forEach(function(li, i) {
-                    li.classList.toggle('active', i === currentIdx);
+                var slides = screenshotList.querySelectorAll('.pms-item');
+                slides.forEach(function (slide, i) {
+                    slide.classList.toggle('active', i === currentIdx);
                 });
-                indicator.textContent = (currentIdx + 1) + ' / ' + items.length;
+                indicator.textContent = (currentIdx + 1) + ' / ' + slides.length;
             }
 
-            prevBtn.addEventListener('click', function() {
-                var total = screenshotList.querySelectorAll('.pms-item').length;
-                currentIdx = (currentIdx - 1 + total) % total;
+            prevBtn.addEventListener('click', function () {
+                currentIdx = (currentIdx - 1 + item.screenshots.length) % item.screenshots.length;
                 updateSlider();
             });
-
-            nextBtn.addEventListener('click', function() {
-                var total = screenshotList.querySelectorAll('.pms-item').length;
-                currentIdx = (currentIdx + 1) % total;
+            nextBtn.addEventListener('click', function () {
+                currentIdx = (currentIdx + 1) % item.screenshots.length;
                 updateSlider();
             });
         }
@@ -322,31 +323,28 @@
         var actionsDiv = document.createElement('div');
         actionsDiv.className = 'pf-modal-actions';
 
-        var btnBot = document.createElement('a');
-        btnBot.className = 'btn btn-primary';
-        btnBot.href = isSafeUrl(item.botUrl) ? item.botUrl : '#';
-        btnBot.target = '_blank';
-        btnBot.rel = 'noopener noreferrer';
-        btnBot.textContent = _t('pf_btn_go_bot');
-
-        var btnDownload = document.createElement('a');
-        btnDownload.className = 'btn btn-ghost';
-        btnDownload.href = isSafeUrl(item.sourcesUrl) ? item.sourcesUrl : '#';
-        btnDownload.target = '_blank';
-        btnDownload.rel = 'noopener noreferrer';
-        btnDownload.textContent = _t('pf_btn_download');
-
-        if (item.sourcesUrl === 'https://example.com/mini-review-sources.zip') {
-            btnDownload.title = 'Placeholder - sources link will be added later';
-            btnDownload.href = '#';
+        if (isSafeUrl(item.botUrl)) {
+            var btnBot = document.createElement('a');
+            btnBot.className = 'btn btn-primary';
+            btnBot.href      = item.botUrl;
+            btnBot.target    = '_blank';
+            btnBot.rel       = 'noopener noreferrer';
+            btnBot.textContent = _t('pf_btn_go_bot');
+            actionsDiv.appendChild(btnBot);
         }
 
-        actionsDiv.appendChild(btnBot);
-        actionsDiv.appendChild(btnDownload);
+        if (isSafeUrl(item.sourcesUrl)) {
+            var btnDownload = document.createElement('a');
+            btnDownload.className  = 'btn btn-ghost';
+            btnDownload.href       = item.sourcesUrl;
+            btnDownload.target     = '_blank';
+            btnDownload.rel        = 'noopener noreferrer';
+            btnDownload.textContent = _t('pf_btn_download');
+            actionsDiv.appendChild(btnDownload);
+        }
 
-        // Append all to right column in correct order
         rightCol.appendChild(descDiv);
-        rightCol.appendChild(features);
+        rightCol.appendChild(featuresDiv);
         rightCol.appendChild(screenshotsDiv);
         rightCol.appendChild(actionsDiv);
 
@@ -354,22 +352,48 @@
         content.appendChild(body);
 
         modal.classList.add('active');
-        closeBtn.focus();
+        if (closeBtn) closeBtn.focus();
     }
 
     function closeModal() {
         var modal = document.getElementById('pf-modal');
-        if (modal) {
-            modal.classList.remove('active');
+        if (modal) modal.classList.remove('active');
+    }
+
+    // ── Load from API ─────────────────────────────────────────────────────────
+    function loadProjects() {
+        if (isLoading) return;
+        isLoading = true;
+        showListLoading();
+
+        // API.getPortfolioProjects is defined in api.js
+        var promise;
+        if (typeof API !== 'undefined' && typeof API.getPortfolioProjects === 'function') {
+            promise = API.getPortfolioProjects();
+        } else {
+            // Fallback: direct fetch (no auth needed for public endpoint)
+            var apiUrl = (typeof API_URL !== 'undefined') ? API_URL : 'http://localhost:3000/api';
+            promise = fetch(apiUrl + '/portfolio')
+                .then(function (r) { return r.json(); });
         }
+
+        promise
+            .then(function (data) {
+                isLoading = false;
+                if (!data || !Array.isArray(data.projects)) throw new Error('Invalid response');
+                allItems = data.projects.map(normalize);
+                render(currentPlan, currentPlatform);
+            })
+            .catch(function (err) {
+                isLoading = false;
+                console.error('[Portfolio] load error:', err);
+                showListError(_t('pf_empty_title'));
+            });
     }
 
-    function reRender() {
-        render(currentPlan, currentPlatform);
-    }
-
+    // ── Init ──────────────────────────────────────────────────────────────────
     function init() {
-        render('all', 'all');
+        loadProjects();
 
         // Platform picker
         document.querySelectorAll('.pf-platform-btn').forEach(function (btn) {
@@ -406,8 +430,10 @@
             if (e.key === 'Escape') closeModal();
         });
 
-        // Re-render on language change
-        window.addEventListener('langchange', reRender);
+        // Re-render on language change (no reload needed — data is language-agnostic)
+        window.addEventListener('langchange', function () {
+            render(currentPlan, currentPlatform);
+        });
     }
 
     if (document.readyState === 'loading') {

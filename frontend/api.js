@@ -365,6 +365,44 @@ const API = {
     adminGetPromoCode: (id) =>
         apiRequest(`/promo/admin/${id}`),
 
+    // Portfolio (public)
+    getPortfolioProjects: (platform, plan) => {
+        const params = new URLSearchParams();
+        if (platform && platform !== 'all') params.append('platform', platform);
+        if (plan     && plan     !== 'all') params.append('plan',     plan);
+        const query = params.toString() ? `?${params.toString()}` : '';
+        return apiRequest(`/portfolio${query}`);
+    },
+
+    // Portfolio (admin)
+    adminListPortfolio: (platform, plan) => {
+        const params = new URLSearchParams();
+        if (platform && platform !== 'all') params.append('platform', platform);
+        if (plan     && plan     !== 'all') params.append('plan',     plan);
+        const query = params.toString() ? `?${params.toString()}` : '';
+        return apiRequest(`/portfolio/admin${query}`);
+    },
+
+    adminGetPortfolioProject: (id) =>
+        apiRequest(`/portfolio/admin/${id}`),
+
+    adminCreatePortfolioProject: (data) =>
+        apiRequest('/portfolio/admin', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }),
+
+    adminUpdatePortfolioProject: (id, data) =>
+        apiRequest(`/portfolio/admin/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        }),
+
+    adminDeletePortfolioProject: (id) =>
+        apiRequest(`/portfolio/admin/${id}`, {
+            method: 'DELETE'
+        }),
+
     // Telegram
     getTelegramStatus: () =>
         apiRequest('/auth/telegram/status'),
