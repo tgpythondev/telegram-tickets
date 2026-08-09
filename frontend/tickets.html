@@ -26,7 +26,7 @@
         </nav>
     </header>
 
-    <div class="tickets-app" style="display:grid;grid-template-columns:280px 1fr;min-height:100vh;padding-top:var(--header-h,64px);">
+    <div class="tickets-app" style="display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh;padding-top:var(--header-h,64px);max-width:100%;overflow-x:hidden;">
         <!-- ── Sidebar ──────────────────────── -->
         <aside class="tickets-sidebar">
             <div class="sidebar-user">
@@ -131,14 +131,6 @@
                         <textarea id="ticket-message" required rows="5"
                                   data-i18n-ph="create_form_message_ph"
                                   placeholder="Opisz swoje pytanie lub zadanie..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="ticket-priority" data-i18n="create_form_priority">Priorytet</label>
-                        <select id="ticket-priority">
-                            <option value="normal" data-i18n="priority_normal">Normalny</option>
-                            <option value="high" data-i18n="priority_high">Wysoki</option>
-                            <option value="urgent" data-i18n="priority_urgent">Pilny</option>
-                        </select>
                     </div>
 
                     <!-- Promo code section -->

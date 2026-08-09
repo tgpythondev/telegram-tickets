@@ -613,7 +613,6 @@ const Tickets = (() => {
             e.preventDefault();
             const subject  = document.getElementById('ticket-subject').value.trim();
             const message  = document.getElementById('ticket-message').value.trim();
-            const priority = document.getElementById('ticket-priority').value;
 
             if (!subject || !message) { showError(t('fill_all_fields')); return; }
 
@@ -631,8 +630,8 @@ const Tickets = (() => {
                 await API.createTicket(
                     subject,
                     message,
-                    priority,
-                    null,                          // no orderConfig
+                    'normal',
+                    null,
                     modalPromoCode     || null,
                     modalChosenBenefit || null
                 );
