@@ -6,10 +6,11 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { startTokenCleanupSchedule } = require('./utils/cleanup');
 
-const authRoutes = require('./routes/auth.routes');
-const ticketsRoutes = require('./routes/tickets.routes');
-const adminRoutes = require('./routes/admin.routes');
-const promoRoutes = require('./routes/promo.routes');
+const authRoutes      = require('./routes/auth.routes');
+const ticketsRoutes   = require('./routes/tickets.routes');
+const adminRoutes     = require('./routes/admin.routes');
+const promoRoutes     = require('./routes/promo.routes');
+const portfolioRoutes = require('./routes/portfolio.routes');
 const sseAuth = require('./middleware/sseAuth');
 const sseController = require('./controllers/sse.controller');
 
@@ -170,11 +171,12 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/tickets', ticketsRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/promo', promoRoutes);
-app.get('/api/events', sseLimiter, sseAuth, sseController.stream);
+app.use('/api/auth',      authLimiter, authRoutes);
+app.use('/api/tickets',  ticketsRoutes);
+app.use('/api/admin',    adminRoutes);
+app.use('/api/promo',    promoRoutes);
+app.use('/api/portfolio', portfolioRoutes);
+app.get('/api/events',   sseLimiter, sseAuth, sseController.stream);
 
 // Health check с проверкой БД
 app.get('/health', async (req, res) => {
