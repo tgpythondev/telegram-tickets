@@ -21,7 +21,6 @@ window.LANG_EN = {
   hero_btn_configure:'Configure order',
   hero_btn_ticket:   'Create ticket',
   hero_btn_how_it_works: 'How does it work?',
-  hero_proof_bots:   '5+ bots launched',
   hero_proof_langs:  'Python · JS · Go',
   hero_proof_reply:  'Reply same day',
   hero_card_label:   'Bots on servers',
@@ -32,8 +31,10 @@ window.LANG_EN = {
   hero_dc_stat_new:  'New',
   hero_dc_stat_platform: 'platform',
 
-  // Numbers bar
-  num_bots_label:    'bots launched',
+  // Numbers bar — payment methods
+  num_pay_label:     'payment methods',
+  num_langs_label:   'languages: Python · JS · Go',
+  num_price_label:   'starting at',
   num_langs_label:   'languages: Python · JS · Go',
   num_price_label:   'starting at',
   num_reply_label:   'first reply',

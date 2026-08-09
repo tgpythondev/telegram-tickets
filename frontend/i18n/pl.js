@@ -21,7 +21,6 @@ window.LANG_PL = {
   hero_btn_configure:'Złóż zamówienie',
   hero_btn_ticket:   'Załóż zgłoszenie',
   hero_btn_how_it_works: 'Jak to działa?',
-  hero_proof_bots:   'Ponad 5 botów działa na żywo',
   hero_proof_langs:  'Python · JS · Go',
   hero_proof_reply:  'Odpowiedź tego samego dnia',
   hero_card_label:   'Boty aktywne na serwerach',
@@ -32,8 +31,10 @@ window.LANG_PL = {
   hero_dc_stat_new:  'Nowa',
   hero_dc_stat_platform: 'platforma',
 
-  // Numbers bar
-  num_bots_label:    'zrealizowanych botów',
+  // Numbers bar — payment methods
+  num_pay_label:     'metody płatności',
+  num_langs_label:   'języki: Python · JS · Go',
+  num_price_label:   'ceny od',
   num_langs_label:   'języki: Python · JS · Go',
   num_price_label:   'ceny od',
   num_reply_label:   'pierwszy kontakt',

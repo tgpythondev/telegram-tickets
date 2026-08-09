@@ -21,7 +21,6 @@ window.LANG_RU = {
   hero_btn_configure:'Настроить заказ',
   hero_btn_ticket:   'Создать тикет',
   hero_btn_how_it_works: 'Как это работает?',
-  hero_proof_bots:   '5+ ботов запущено',
   hero_proof_langs:  'Python · JS · Go',
   hero_proof_reply:  'Ответ в течение дня',
   hero_card_label:   'Боты на серверах',
@@ -32,8 +31,10 @@ window.LANG_RU = {
   hero_dc_stat_new:  'Новая',
   hero_dc_stat_platform: 'платформа',
 
-  // Numbers bar
-  num_bots_label:    'ботов запущено',
+  // Numbers bar — payment methods
+  num_pay_label:     'способа оплаты',
+  num_langs_label:   'языка: Python · JS · Go',
+  num_price_label:   'стартовая цена',
   num_langs_label:   'языка: Python · JS · Go',
   num_price_label:   'стартовая цена',
   num_reply_label:   'первый ответ',

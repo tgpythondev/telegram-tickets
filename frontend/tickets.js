@@ -710,14 +710,12 @@ const Tickets = (() => {
             const nameEl = document.getElementById('sidebar-username');
             if (nameEl) nameEl.textContent = user.username || 'Пользователь';
 
-            await loadTelegramStatus();
             await loadTickets();
 
             setupFilters();
             setupLogout();
             setupPanelClose();
             setupCreateTicket();
-            setupTelegramSidebar();
 
             initSSE();
         } catch (err) {

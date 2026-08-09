@@ -385,6 +385,16 @@
 .num-value {
     font-size: 2.2rem;
     font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--white);
+}
+
+.num-value--pay {
+    font-size: 1.8rem;
+    font-weight: 400;
+    letter-spacing: 0;
+}
     letter-spacing: -0.03em;
     color: var(--white);
     line-height: 1;

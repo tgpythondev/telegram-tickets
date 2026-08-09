@@ -58,26 +58,6 @@
                 </button>
             </nav>
 
-            <!-- Telegram integration -->
-            <div class="sidebar-telegram">
-                <div class="tg-status-row">
-                    <span class="tg-icon">📱</span>
-                    <span class="tg-status-text" id="tg-status-text">Ładowanie...</span>
-                </div>
-                <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap;">
-                    <button class="btn tg-btn" id="bind-bot-btn" data-i18n="tg_bind">Połącz</button>
-                    <button class="btn tg-btn" id="toggle-telegram-btn" data-i18n="tg_notif">Powiadomienia</button>
-                </div>
-                <button class="tg-toggle-btn" id="tg-instructions-toggle" data-i18n="tg_how">Jak połączyć? ↓</button>
-                <div class="tg-instructions" id="tg-instructions">
-                    <ol>
-                        <li data-i18n-html="tg_step1">Kliknij "Połącz" i napisz do bota <code>/start</code></li>
-                        <li data-i18n-html="tg_step2">Zaloguj się komendą <code>/login username password</code></li>
-                        <li data-i18n="tg_step3">Wróć i włącz powiadomienia</li>
-                    </ol>
-                </div>
-            </div>
-
             <div class="sidebar-footer">
                 <button class="btn btn-logout" id="logout-btn" style="width:100%;justify-content:center;" data-i18n="logout_btn">Wyloguj się</button>
             </div>
