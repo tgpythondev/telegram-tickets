@@ -297,10 +297,7 @@
         if (typeof API !== 'undefined' && typeof API.getPortfolioProjects === 'function') {
             promise = API.getPortfolioProjects();
         } else {
-            // Fallback: direct fetch (no auth needed for public endpoint)
-            var apiUrl = (typeof API_URL !== 'undefined') ? API_URL : 'http://localhost:3000/api';
-            promise = fetch(apiUrl + '/portfolio')
-                .then(function (r) { return r.json(); });
+            promise = Promise.reject(new Error('API not available'));
         }
 
         promise
