@@ -9,6 +9,16 @@
         });
     }
 
+    function getCurrentLang() {
+        if (typeof I18n !== 'undefined' && typeof I18n.getLang === 'function') {
+            return I18n.getLang();
+        }
+        // fallback: read from localStorage directly
+        var STORAGE_KEY = 'kaliang_lang';
+        var saved = localStorage.getItem(STORAGE_KEY);
+        return (saved && ['ru','pl','en'].indexOf(saved) !== -1) ? saved : 'ru';
+    }
+
     function isSafeUrl(url) {
         if (!url) return false;
         try {
@@ -46,8 +56,8 @@
         }
 
         // Pick description by current language
-        var lang = (typeof I18n !== 'undefined' && I18n.currentLang) ? I18n.currentLang : 'pl';
-        var desc = row['description_' + lang] || row.description_pl || row.description_ru || row.description_en || '';
+        var lang = getCurrentLang();
+        var desc = row['description_' + lang] || row.description_ru || row.description_pl || row.description_en || '';
 
         return {
             id:          row.id,
@@ -242,10 +252,18 @@
         descDiv.className = 'pf-modal-desc';
         var dTitle = document.createElement('h4');
         dTitle.textContent = _t('pf_modal_desc');
-        var dP = document.createElement('p');
-        dP.textContent = item.desc;
         descDiv.appendChild(dTitle);
-        descDiv.appendChild(dP);
+
+        // Рендерим каждую строку как отдельный <p> чтобы сохранить форматирование
+        var descText = item.desc || '';
+        descText.split('\n').forEach(function (line) {
+            var p = document.createElement('p');
+            p.textContent = line;
+            if (!line.trim()) {
+                p.style.marginTop = '0.4em';
+            }
+            descDiv.appendChild(p);
+        });
 
         // Action buttons
         var actionsDiv = document.createElement('div');
@@ -355,9 +373,10 @@
 
         // Re-render on language change — пересчитываем описание по новому языку
         window.addEventListener('langchange', function () {
+            var lang = getCurrentLang();
             allItems = allItems.map(function (item) {
-                var lang = (typeof I18n !== 'undefined' && I18n.currentLang) ? I18n.currentLang : 'pl';
-                item.desc = item['desc' + lang.charAt(0).toUpperCase() + lang.slice(1)] || item.descPl || item.descRu || item.descEn || '';
+                item.desc = item['desc' + lang.charAt(0).toUpperCase() + lang.slice(1)]
+                         || item.descRu || item.descPl || item.descEn || '';
                 return item;
             });
             render(currentPlan, currentPlatform);
