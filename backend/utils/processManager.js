@@ -34,9 +34,9 @@ const PROCESSES = [
     },
     {
         name: 'tg-bot',
-        // На Render.com Python обычно доступен как "python3"
-        // Фолбек на "python" если python3 не найден
-        command: process.platform === 'win32' ? 'python' : 'python3',
+        // Запускаем через изолированный venv созданный в build.sh (tg-bot/.venv).
+        // Это гарантирует совместимую версию Python независимо от системного дефолта.
+        command: path.join(ROOT, 'tg-bot', '.venv', 'bin', 'python'),
         args: ['bot.py'],
         cwd: path.join(ROOT, 'tg-bot'),
         enabled: () => !!process.env.BOT_TOKEN
