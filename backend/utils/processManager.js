@@ -35,11 +35,20 @@ const PROCESSES = [
     {
         name: 'tg-bot',
         // Запускаем через изолированный venv созданный в build.sh (tg-bot/.venv).
-        // Это гарантирует совместимую версию Python независимо от системного дефолта.
+        // Если venv не существует (pip упал при билде) — пропускаем запуск.
         command: path.join(ROOT, 'tg-bot', '.venv', 'bin', 'python'),
         args: ['bot.py'],
         cwd: path.join(ROOT, 'tg-bot'),
-        enabled: () => !!process.env.BOT_TOKEN
+        enabled: () => {
+            if (!process.env.BOT_TOKEN) return false;
+            const fs = require('fs');
+            const venvPython = path.join(ROOT, 'tg-bot', '.venv', 'bin', 'python');
+            if (!fs.existsSync(venvPython)) {
+                console.warn('[process-manager] tg-bot: venv не найден (tg-bot/.venv/bin/python), пропускаем');
+                return false;
+            }
+            return true;
+        }
     }
 ];
 
