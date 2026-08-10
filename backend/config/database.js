@@ -1,21 +1,24 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+// На одноядерном сервере большой пул только создаёт давление на PostgreSQL
+// и расходует память впустую. 5 соединений достаточно для нашей нагрузки;
+// pg сам будет их переиспользовать через очередь.
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === 'production' ? {
-        rejectUnauthorized: true, // Изменено на true для безопасности
-        // Если используется самоподписанный сертификат, нужно указать ca:
-        // ca: fs.readFileSync('/path/to/server-certificates/root.crt').toString()
+        rejectUnauthorized: true
     } : false,
+    max: 5,                      // было 20 — снижаем для 1-core
+    min: 1,                      // держать хотя бы одно соединение живым
     connectionTimeoutMillis: 5000,
     idleTimeoutMillis: 30000,
-    max: 20, // максимум 20 соединений в пуле
+    // Количество ожидающих в очереди запросов (защита от OOM при пике)
+    maxWaitingClients: 50
 });
 
 pool.on('error', (err) => {
     console.error('Unexpected error on idle client', err);
-    // Graceful shutdown вместо немедленного выхода
     setTimeout(() => {
         console.error('Exiting due to database error');
         process.exit(-1);

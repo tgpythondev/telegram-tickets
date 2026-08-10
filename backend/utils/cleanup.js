@@ -23,21 +23,32 @@ async function cleanupExpiredTokens() {
 }
 
 /**
- * Запуск периодической очистки токенов
+ * Запуск периодической очистки токенов.
+ * Возвращает handle интервала — вызывающий код должен сохранить
+ * его и вызвать clearInterval(handle) при graceful shutdown,
+ * чтобы таймер не продолжал стрелять на закрытом пуле соединений.
+ *
  * @param {number} intervalHours - Интервал в часах (по умолчанию 24)
+ * @returns {NodeJS.Timeout}
  */
 function startTokenCleanupSchedule(intervalHours = 24) {
     const intervalMs = intervalHours * 60 * 60 * 1000;
 
     console.log(`⏰ Запущена периодическая очистка токенов (каждые ${intervalHours} часов)`);
 
-    // Запускаем первую очистку сразу
-    cleanupExpiredTokens();
+    // Первая очистка сразу при старте, ошибки не роняют сервер
+    cleanupExpiredTokens().catch(err =>
+        console.error('❌ Ошибка первичной очистки токенов:', err.message)
+    );
 
-    // Затем запускаем по расписанию
-    setInterval(() => {
-        cleanupExpiredTokens();
+    // Запускаем по расписанию и возвращаем handle
+    const handle = setInterval(() => {
+        cleanupExpiredTokens().catch(err =>
+            console.error('❌ Ошибка плановой очистки токенов:', err.message)
+        );
     }, intervalMs);
+
+    return handle;
 }
 
 module.exports = {

@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const db = require('../models/db');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const { logAuditEvent, AUDIT_ACTIONS } = require('../utils/audit');
+const csrfProtection = require('../middleware/csrf');
 
 // Общая функция для получения cookie настроек
 function getCookieOptions() {
@@ -58,7 +59,8 @@ async function register(req, res) {
             return res.status(409).json({ error: 'Username already exists' });
         }
 
-        const passwordHash = await bcrypt.hash(password, 12);
+        // rounds=10 (~100ms) — достаточно для защиты, в 3x быстрее чем 12 на слабом CPU
+        const passwordHash = await bcrypt.hash(password, 10);
         const user = await db.createUser(username, passwordHash);
 
         const accessToken = generateAccessToken(user);
@@ -70,8 +72,8 @@ async function register(req, res) {
 
         res.cookie('refreshToken', refreshToken, getCookieOptions());
 
-        // Audit log: успешная регистрация
-        await logAuditEvent(user.id, AUDIT_ACTIONS.REGISTER, req, { username: user.username });
+        // Audit log: fire-and-forget, не блокируем ответ
+        logAuditEvent(user.id, AUDIT_ACTIONS.REGISTER, req, { username: user.username });
 
         res.status(201).json({
             user: {
@@ -111,7 +113,8 @@ async function login(req, res) {
         }
 
         // ЗАЩИТА ОТ TIMING ATTACK: всегда выполняем bcrypt.compare
-        const dummyHash = '$2a$12$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+        // rounds=10 — same cost as hash, dummy hash must match
+        const dummyHash = '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
         const passwordHash = user ? user.password_hash : dummyHash;
 
         const isPasswordValid = await bcrypt.compare(password, passwordHash);
@@ -122,42 +125,41 @@ async function login(req, res) {
                 const result = await db.incrementFailedLoginAttempts(user.id);
                 const attempts = result.failed_login_attempts;
 
-                // Audit log: неудачная попытка входа
-                await logAuditEvent(user.id, AUDIT_ACTIONS.LOGIN_FAILED, req, { attempts, username });
+                // Audit log: fire-and-forget
+                logAuditEvent(user.id, AUDIT_ACTIONS.LOGIN_FAILED, req, { attempts, username });
 
                 // Блокируем аккаунт после 5 попыток
                 if (attempts >= 5) {
                     await db.lockUserAccount(user.id, 30); // 30 минут блокировки
 
-                    // Audit log: блокировка аккаунта
-                    await logAuditEvent(user.id, AUDIT_ACTIONS.ACCOUNT_LOCKED, req, { attempts, lockDuration: 30 });
+                    // Audit log: fire-and-forget
+                    logAuditEvent(user.id, AUDIT_ACTIONS.ACCOUNT_LOCKED, req, { attempts, lockDuration: 30 });
 
                     return res.status(423).json({ error: 'Account locked due to multiple failed login attempts. Try again in 30 minutes.' });
                 }
             } else {
-                // Попытка входа с несуществующим username
-                await logAuditEvent(null, AUDIT_ACTIONS.LOGIN_FAILED, req, { username });
+                // Попытка входа с несуществующим username — fire-and-forget
+                logAuditEvent(null, AUDIT_ACTIONS.LOGIN_FAILED, req, { username });
             }
 
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        await db.updateLastLogin(user.id);
-
-        // Audit log: успешный вход
-        await logAuditEvent(user.id, AUDIT_ACTIONS.LOGIN_SUCCESS, req, { username: user.username });
-
-        const accessToken = generateAccessToken(user);
-        const refreshToken = generateRefreshToken(user);
+        // Параллельно: обновить last_login + сгенерировать токены (независимые операции)
+        const [accessToken, refreshToken] = [generateAccessToken(user), generateRefreshToken(user)];
 
         const refreshExpiry = new Date();
         refreshExpiry.setDate(refreshExpiry.getDate() + 30);
 
-        // Удаляем старые refresh токены пользователя
+        // Сначала удаляем старые токены, потом сохраняем новый
+        await db.updateLastLogin(user.id);
         await db.deleteUserRefreshTokens(user.id);
         await db.saveRefreshToken(user.id, refreshToken, refreshExpiry);
 
         res.cookie('refreshToken', refreshToken, getCookieOptions());
+
+        // Audit log: fire-and-forget
+        logAuditEvent(user.id, AUDIT_ACTIONS.LOGIN_SUCCESS, req, { username: user.username });
 
         res.json({
             user: {
@@ -185,15 +187,14 @@ async function logout(req, res) {
         }
 
         // Инвалидируем CSRF-токен сессии
-        const csrfProtection = require('../middleware/csrf');
         const csrfToken = req.headers['x-csrf-token'];
         if (csrfToken) {
             csrfProtection.invalidateToken(csrfToken);
         }
 
-        // Audit log: выход из системы
+        // Audit log: fire-and-forget
         if (req.user) {
-            await logAuditEvent(req.user.id, AUDIT_ACTIONS.LOGOUT, req);
+            logAuditEvent(req.user.id, AUDIT_ACTIONS.LOGOUT, req);
         }
 
         // Для clearCookie используем те же параметры без maxAge
@@ -211,41 +212,40 @@ async function refresh(req, res) {
     try {
         const refreshToken = req.cookies.refreshToken;
 
-        console.log('[AUTH] Refresh token request received');
-        console.log('[AUTH] Has refresh token cookie:', !!refreshToken);
-
         if (!refreshToken) {
-            console.log('[AUTH] No refresh token in cookies');
             return res.status(401).json({ error: 'Refresh token required' });
         }
 
-        const tokenData = await db.findRefreshToken(refreshToken);
-        console.log('[AUTH] Token found in DB:', !!tokenData);
-
-        if (!tokenData) {
-            console.log('[AUTH] Refresh token not found in database or expired');
+        // Верифицируем JWT синхронно (без DB) — fail fast на невалидном токене
+        let payload;
+        try {
+            payload = verifyRefreshToken(refreshToken);
+        } catch {
             return res.status(403).json({ error: 'Invalid or expired refresh token' });
         }
 
-        const payload = verifyRefreshToken(refreshToken);
-        console.log('[AUTH] JWT verification passed, user ID:', payload.id);
+        // Оба запроса к БД запускаем параллельно — экономим один full round-trip
+        const [tokenData, user] = await Promise.all([
+            db.findRefreshToken(refreshToken),
+            db.findUserById(payload.id)
+        ]);
 
-        const user = await db.findUserById(payload.id);
+        if (!tokenData) {
+            return res.status(403).json({ error: 'Invalid or expired refresh token' });
+        }
 
         if (!user) {
-            console.log('[AUTH] User not found:', payload.id);
             return res.status(403).json({ error: 'User not found' });
         }
 
         const newAccessToken = generateAccessToken(user);
-        console.log('[AUTH] New access token generated for user:', user.username);
 
-        // Audit log: обновление токена
-        await logAuditEvent(user.id, AUDIT_ACTIONS.TOKEN_REFRESH, req);
+        // Audit log: fire-and-forget, не задерживаем ответ
+        logAuditEvent(user.id, AUDIT_ACTIONS.TOKEN_REFRESH, req);
 
         res.json({ accessToken: newAccessToken });
     } catch (error) {
-        console.error('[AUTH] Refresh error:', error.message);
+        console.error('Refresh error:', error.message);
         res.status(403).json({ error: 'Invalid or expired refresh token' });
     }
 }
@@ -298,8 +298,8 @@ async function linkTelegram(req, res) {
 
         await db.updateUserTelegramChatId(req.user.id, String(chatId));
 
-        // Audit log: привязка Telegram
-        await logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_LINK, req, { telegramChatId });
+        // Audit log: fire-and-forget
+        logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_LINK, req, { telegramChatId });
 
         res.json({
             message: 'Telegram account linked successfully',
@@ -316,8 +316,8 @@ async function unlinkTelegram(req, res) {
     try {
         await db.unlinkTelegramAccount(req.user.id);
 
-        // Audit log: отвязка Telegram
-        await logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_UNLINK, req);
+        // Audit log: fire-and-forget
+        logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_UNLINK, req);
 
         res.json({ message: 'Telegram account unlinked successfully' });
     } catch (error) {
@@ -362,8 +362,8 @@ async function toggleTelegramNotifications(req, res) {
 
         await db.toggleTelegramNotifications(req.user.id, enabled);
 
-        // Audit log: изменение настроек уведомлений
-        await logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_NOTIFICATIONS_TOGGLE, req, { enabled });
+        // Audit log: fire-and-forget
+        logAuditEvent(req.user.id, AUDIT_ACTIONS.TELEGRAM_NOTIFICATIONS_TOGGLE, req, { enabled });
 
         res.json({ notificationsEnabled: enabled });
     } catch (error) {

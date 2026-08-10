@@ -5,14 +5,23 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { startTokenCleanupSchedule } = require('./utils/cleanup');
+const { startAll: startChildProcesses, stopAll: stopChildProcesses } = require('./utils/processManager');
+
+// compression — подключаем если установлен, иначе пропускаем без ошибки
+let compression;
+try { compression = require('compression'); } catch (_) { compression = null; }
+
+// pino-http — подключаем если установлен
+let pinoHttp;
+try { pinoHttp = require('pino-http'); } catch (_) { pinoHttp = null; }
 
 const authRoutes      = require('./routes/auth.routes');
 const ticketsRoutes   = require('./routes/tickets.routes');
 const adminRoutes     = require('./routes/admin.routes');
 const promoRoutes     = require('./routes/promo.routes');
 const portfolioRoutes = require('./routes/portfolio.routes');
-const sseAuth = require('./middleware/sseAuth');
-const sseController = require('./controllers/sse.controller');
+const sseAuth         = require('./middleware/sseAuth');
+const sseController   = require('./controllers/sse.controller');
 
 const app = express();
 
@@ -21,7 +30,6 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 // /ping — самый первый роут, до helmet/CORS/rate-limit/всего
-// Доступен без Origin заголовка (server-to-server, Telegram-бот, healthcheck)
 app.get('/ping', (req, res) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -30,11 +38,7 @@ app.get('/ping', (req, res) => {
 
 // Валидация критических переменных окружения при старте
 function validateEnvironment() {
-    const required = [
-        'JWT_ACCESS_SECRET',
-        'JWT_REFRESH_SECRET',
-        'DATABASE_URL'
-    ];
+    const required = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'DATABASE_URL'];
     const missing = required.filter(key => !process.env[key]);
 
     if (missing.length > 0) {
@@ -42,7 +46,6 @@ function validateEnvironment() {
         process.exit(1);
     }
 
-    // Проверка минимальной длины JWT секретов
     if (process.env.JWT_ACCESS_SECRET.length < 32) {
         console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: JWT_ACCESS_SECRET должен быть минимум 32 символа');
         process.exit(1);
@@ -53,7 +56,6 @@ function validateEnvironment() {
         process.exit(1);
     }
 
-    // Валидация FRONTEND_URL
     if (process.env.FRONTEND_URL) {
         try {
             new URL(process.env.FRONTEND_URL);
@@ -68,40 +70,42 @@ function validateEnvironment() {
 
 validateEnvironment();
 
-// Запуск периодической очистки истёкших refresh токенов (каждые 24 часа)
-startTokenCleanupSchedule(24);
+// Запуск очистки токенов — сохраняем handle для остановки при shutdown
+const cleanupHandle = startTokenCleanupSchedule(24);
 
-// Rate limiting для всех запросов
+// Rate limiting
 const generalLimiter = rateLimit({
-    windowMs: 20 * 1000, // 20 секунд
-    max: 100, // максимум 100 запросов с одного IP
+    windowMs: 20 * 1000,
+    max: 100,
     message: { error: 'Слишком много запросов, попробуйте через 20 секунд' },
     standardHeaders: true,
     legacyHeaders: false
 });
 
-// Строгий rate limiting для auth эндпоинтов
 const authLimiter = rateLimit({
-    windowMs: 20 * 1000, // 20 секунд
-    max: 10, // максимум 10 попыток входа
+    windowMs: 20 * 1000,
+    max: 10,
     message: { error: 'Слишком много попыток входа, попробуйте через 20 секунд' },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-// SSE endpoint не должен попадать под короткий generalLimiter —
-// соединение долгоживущее, повторные подключения при reconnect не должны блокироваться
 const sseLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 минута
-    max: 20, // до 20 reconnect-попыток в минуту с одного IP
+    windowMs: 60 * 1000,
+    max: 20,
     message: { error: 'Слишком много SSE подключений' },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-// Middleware
+// ── Middleware ────────────────────────────────────────────────────────────────
 
-// Security headers с helmet
+// Gzip-сжатие ответов (экономит трафик и время передачи)
+if (compression) {
+    app.use(compression());
+}
+
+// Security headers
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -123,15 +127,25 @@ app.use(helmet({
     }
 }));
 
+// HTTP request logging:
+// - pino-http (async JSON) если установлен
+// - иначе только в dev-режиме через console.log
+if (pinoHttp) {
+    app.use(pinoHttp({
+        level: process.env.LOG_LEVEL || 'warn',
+        // Не логируем /ping и /health чтобы не засорять логи
+        autoLogging: {
+            ignore: (req) => req.url === '/ping' || req.url === '/health'
+        }
+    }));
+} else if (process.env.NODE_ENV !== 'production') {
+    app.use((req, res, next) => {
+        console.log(`${req.method} ${req.path}`);
+        next();
+    });
+}
 
-// Безопасное логирование запросов (ПЕРЕД парсингом, чтобы ловить ошибки парсинга)
-app.use((req, res, next) => {
-    const safeUrl = req.path;
-    console.log(`${req.method} ${safeUrl}`);
-    next();
-});
-
-// Разрешённые origins для CORS
+// CORS
 const allowedOrigins = [
     process.env.FRONTEND_URL || 'https://telegram-bots.pl',
     'https://telegram-bots.pl',
@@ -140,15 +154,12 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        // In production, reject requests with no Origin header (e.g. server-to-server curl)
-        // In development, allow no-origin for easier local testing
         if (!origin) {
             if (process.env.NODE_ENV === 'production') {
                 return callback(new Error('Origin header required'));
             }
             return callback(null, true);
         }
-
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -158,19 +169,16 @@ app.use(cors({
     credentials: true
 }));
 
-app.use(express.json({
-    limit: '1mb',
-    strict: true
-}));
-
+app.use(express.json({ limit: '1mb', strict: true }));
 app.use(cookieParser());
+
 app.use((req, res, next) => {
-    // SSE endpoint gets its own limiter — skip general limiter for it
+    // SSE endpoint — долгоживущее соединение, обходит короткий general limiter
     if (req.path === '/api/events') return next();
     return generalLimiter(req, res, next);
 });
 
-// Routes
+// ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth',      authLimiter, authRoutes);
 app.use('/api/tickets',  ticketsRoutes);
 app.use('/api/admin',    adminRoutes);
@@ -204,14 +212,11 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-    // Логируем полную ошибку на сервере
     console.error('Server error:', err.stack || err);
 
-    // Отправляем клиенту только общее сообщение в production
     if (process.env.NODE_ENV === 'production') {
         res.status(500).json({ error: 'Internal server error' });
     } else {
-        // В development можем показать детали
         res.status(500).json({
             error: 'Internal server error',
             message: err.message,
@@ -220,9 +225,15 @@ app.use((err, req, res, next) => {
     }
 });
 
-// Graceful shutdown handler
+// Graceful shutdown
 const gracefulShutdown = async (signal) => {
     console.log(`\n${signal} received. Starting graceful shutdown...`);
+
+    // Останавливаем таймер очистки — больше не стреляет на закрытом пуле
+    clearInterval(cleanupHandle);
+
+    // Останавливаем дочерние процессы (discord-bot, tg-bot)
+    stopChildProcesses();
 
     const sse = require('./utils/sse');
     sse.closeAll();
@@ -248,16 +259,13 @@ const gracefulShutdown = async (signal) => {
     }, 10000);
 };
 
-// Обработчики необработанных ошибок
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
-    setTimeout(() => {
-        process.exit(1);
-    }, 1000);
+    setTimeout(() => process.exit(1), 1000);
 });
 
 // Start server
@@ -268,7 +276,10 @@ const server = app.listen(PORT, () => {
     } else {
         console.log(`Server started on port ${PORT}`);
     }
+
+    // Запускаем дочерние процессы после того как сервер поднялся
+    startChildProcesses();
 });
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGINT',  () => gracefulShutdown('SIGINT'));

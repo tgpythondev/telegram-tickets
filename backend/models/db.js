@@ -157,14 +157,20 @@ async function findUserTickets(userId, status = null) {
 }
 
 async function findAllTickets(filters = {}) {
+    // Используем LEFT JOIN вместо коррелированного подзапроса — один запрос вместо N+1
     let query = `
         SELECT t.*,
-               u.username as user_username,
-               a.username as assigned_admin_username,
-               CAST((SELECT COUNT(*) FROM messages WHERE ticket_id = t.id) AS INTEGER) as message_count
+               u.username AS user_username,
+               a.username AS assigned_admin_username,
+               COALESCE(mc.message_count, 0) AS message_count
         FROM tickets t
         JOIN users u ON t.user_id = u.id
         LEFT JOIN users a ON t.assigned_admin_id = a.id
+        LEFT JOIN (
+            SELECT ticket_id, COUNT(*)::INTEGER AS message_count
+            FROM messages
+            GROUP BY ticket_id
+        ) mc ON mc.ticket_id = t.id
         WHERE 1=1
     `;
     const params = [];
@@ -189,7 +195,6 @@ async function findAllTickets(filters = {}) {
 }
 
 async function updateTicketStatus(ticketId, status) {
-    // Безопасное использование параметризованного запроса
     const result = await db.query(
         `UPDATE tickets
          SET status = $1,
@@ -214,7 +219,6 @@ async function updateTicket(ticketId, updates) {
         params.push(updates.status);
         paramIndex++;
 
-        // Use parameterized CASE — never raw string concatenation
         fields.push(`closed_at = CASE WHEN $${paramIndex} = 'closed' THEN CURRENT_TIMESTAMP ELSE NULL END`);
         params.push(updates.status);
         paramIndex++;
@@ -240,19 +244,17 @@ async function updateTicket(ticketId, updates) {
     }
 
     params.push(ticketId);
-    await db.query(
-        `UPDATE tickets SET ${fields.join(', ')} WHERE id = $${paramIndex}`,
-        params
-    );
 
-    // Re-fetch with JOINs so the returned shape matches findTicketById
+    // CTE: UPDATE + SELECT в одном запросе вместо двух round-tripов
     const result = await db.query(
-        `SELECT t.*, u.username as user_username, a.username as assigned_admin_username
-         FROM tickets t
-         JOIN users u ON t.user_id = u.id
-         LEFT JOIN users a ON t.assigned_admin_id = a.id
-         WHERE t.id = $1`,
-        [ticketId]
+        `WITH updated AS (
+            UPDATE tickets SET ${fields.join(', ')} WHERE id = $${paramIndex} RETURNING *
+        )
+        SELECT u.*, uu.username AS user_username, a.username AS assigned_admin_username
+        FROM updated u
+        JOIN users uu ON uu.id = u.user_id
+        LEFT JOIN users a ON a.id = u.assigned_admin_id`,
+        params
     );
     return result.rows[0] || null;
 }
@@ -287,7 +289,6 @@ async function getAdminStats() {
         FROM tickets
     `);
     const row = result.rows[0];
-    // pg returns COUNT() as strings — cast to numbers for frontend
     return {
         open_tickets: parseInt(row.open_tickets, 10),
         in_progress_tickets: parseInt(row.in_progress_tickets, 10),
