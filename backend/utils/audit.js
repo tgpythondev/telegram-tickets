@@ -13,7 +13,8 @@ const AUDIT_ACTIONS = {
     TELEGRAM_LINK: 'telegram_link',
     TELEGRAM_UNLINK: 'telegram_unlink',
     TOKEN_REFRESH: 'token_refresh',
-    TELEGRAM_NOTIFICATIONS_TOGGLE: 'telegram_notifications_toggle'
+    TELEGRAM_NOTIFICATIONS_TOGGLE: 'telegram_notifications_toggle',
+    DDOS_BLOCK: 'ddos_block'
 };
 
 /**

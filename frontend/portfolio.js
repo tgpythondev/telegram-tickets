@@ -140,70 +140,103 @@
             return;
         }
 
+        var grid = document.createElement('div');
+        grid.className = 'pf-grid';
+        list.appendChild(grid);
+
         items.forEach(function (item, idx) {
-            var row = document.createElement('div');
-            row.className = 'pf-case-row';
-            row.setAttribute('role', 'button');
-            row.setAttribute('tabindex', '0');
-            row.setAttribute('aria-label', 'Open ' + item.title + ' details');
+            var card = document.createElement('article');
+            card.className = 'pf-card pf-card--' + (item.platform || 'telegram');
+            card.setAttribute('role', 'button');
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('aria-label', 'Open ' + item.title + ' details');
+            card.style.setProperty('--pf-delay', (idx % 9) * 60 + 'ms');
 
-            // Left
-            var left = document.createElement('div');
-            left.className = 'pcr-left';
-            left.innerHTML =
-                '<span class="pcr-num">' + String(idx + 1).padStart(2, '0') + '</span>' +
-                '<span class="badge priority-normal">' + escapeHtml(planLabels[item.plan] || item.plan) + '</span>';
+            // ── Preview (screenshot or fallback) ──
+            var media = document.createElement('div');
+            media.className = 'pf-card-media';
 
-            // Center
-            var center = document.createElement('div');
-            center.className = 'pcr-center';
+            var cover = (item.screenshots && item.screenshots.length && isSafeUrl(item.screenshots[0].src))
+                ? item.screenshots[0].src : '';
 
-            var titleEl = document.createElement('span');
-            titleEl.className = 'pcr-title';
+            if (cover) {
+                var img = document.createElement('img');
+                img.className = 'pf-card-img';
+                img.src = cover;
+                img.alt = item.title;
+                img.loading = 'lazy';
+                img.onerror = function () {
+                    media.classList.add('pf-card-media--empty');
+                    img.remove();
+                };
+                media.appendChild(img);
+            } else {
+                media.classList.add('pf-card-media--empty');
+                media.innerHTML = '<span class="pf-card-media-mark">&#9187;</span>';
+            }
+
+            // shots count badge
+            if (item.screenshots && item.screenshots.length > 1) {
+                var shots = document.createElement('span');
+                shots.className = 'pf-card-shots';
+                shots.textContent = '\uD83D\uDDBC ' + item.screenshots.length;
+                media.appendChild(shots);
+            }
+
+            // platform badge (top-left over media)
+            var plat = document.createElement('span');
+            plat.className = 'pf-card-platform pf-card-platform--' + (item.platform || 'telegram');
+            plat.textContent = (item.platform === 'discord') ? 'Discord' : 'Telegram';
+            media.appendChild(plat);
+
+            // hover overlay
+            var overlay = document.createElement('span');
+            overlay.className = 'pf-card-overlay';
+            overlay.innerHTML = '<span class="pf-card-overlay-btn">' + escapeHtml(_t('pf_card_view') || 'View') + ' &rarr;</span>';
+            media.appendChild(overlay);
+
+            // ── Body ──
+            var bodyEl = document.createElement('div');
+            bodyEl.className = 'pf-card-body';
+
+            var head = document.createElement('div');
+            head.className = 'pf-card-head';
+            head.innerHTML =
+                '<span class="badge priority-normal pf-card-plan">' + escapeHtml(planLabels[item.plan] || item.plan) + '</span>' +
+                (item.lang ? '<span class="pf-card-lang">' + escapeHtml(item.lang) + '</span>' : '');
+
+            var titleEl = document.createElement('h3');
+            titleEl.className = 'pf-card-title';
             titleEl.textContent = item.title;
 
-            var desc = document.createElement('span');
-            desc.className = 'pcr-desc';
+            var desc = document.createElement('p');
+            desc.className = 'pf-card-desc';
             desc.textContent = item.desc;
 
-            center.appendChild(titleEl);
-            center.appendChild(desc);
+            var foot = document.createElement('div');
+            foot.className = 'pf-card-foot';
+            foot.innerHTML =
+                '<span class="pf-card-foot-item"><span class="pf-card-foot-key">' + escapeHtml(_t('pf_modal_term') || 'Term') + '</span><span class="pf-card-foot-val">' + escapeHtml(item.term || '—') + '</span></span>' +
+                '<span class="pf-card-price">' + escapeHtml(item.price || '—') + '</span>';
 
-            // Right
-            var right = document.createElement('div');
-            right.className = 'pcr-right';
-            right.appendChild(makeMeta(_t('pf_modal_lang'),  item.lang));
-            right.appendChild(makeMeta(_t('pf_modal_term'),  item.term));
-            right.appendChild(makeMeta(_t('pf_modal_price'), item.price));
+            bodyEl.appendChild(head);
+            bodyEl.appendChild(titleEl);
+            bodyEl.appendChild(desc);
+            bodyEl.appendChild(foot);
 
-            var arrow = document.createElement('span');
-            arrow.className = 'pcr-arrow';
-            arrow.textContent = '→';
-            right.appendChild(arrow);
+            card.appendChild(media);
+            card.appendChild(bodyEl);
 
-            row.appendChild(left);
-            row.appendChild(center);
-            row.appendChild(right);
-
-            row.addEventListener('click', function () { openModal(item); });
-            row.addEventListener('keydown', function (e) {
+            card.addEventListener('click', function () { openModal(item); });
+            card.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     openModal(item);
                 }
             });
 
-            list.appendChild(row);
+            grid.appendChild(card);
         });
-    }
-
-    function makeMeta(label, val) {
-        var div = document.createElement('div');
-        div.className = 'pcr-meta';
-        div.innerHTML =
-            '<span class="pcr-meta-key">'  + escapeHtml(label)       + '</span>' +
-            '<span class="pcr-meta-val">'  + escapeHtml(val || '—')  + '</span>';
-        return div;
     }
 
     // ── Modal ─────────────────────────────────────────────────────────────────
@@ -246,6 +279,55 @@
         body.className = 'pf-modal-body';
         var rightCol = document.createElement('div');
         rightCol.className = 'pf-modal-right';
+
+        // ── Screenshot gallery ──
+        var shots = (item.screenshots || []).filter(function (s) { return isSafeUrl(s.src); });
+        if (shots.length) {
+            var gallery = document.createElement('div');
+            gallery.className = 'pf-modal-screenshots';
+            var ul = document.createElement('ul');
+            ul.className = 'pms-list';
+            shots.forEach(function (s, i) {
+                var li = document.createElement('li');
+                li.className = 'pms-item' + (i === 0 ? ' active' : '');
+                var im = document.createElement('img');
+                im.src = s.src;
+                im.alt = s.alt || item.title;
+                im.loading = 'lazy';
+                li.appendChild(im);
+                ul.appendChild(li);
+            });
+            gallery.appendChild(ul);
+            if (shots.length > 1) {
+                var cur = 0;
+                var indicator = document.createElement('div');
+                indicator.className = 'pms-indicator';
+                indicator.textContent = '1 / ' + shots.length;
+                var nav = document.createElement('div');
+                nav.className = 'pms-nav';
+                var prev = document.createElement('button');
+                prev.className = 'pms-btn';
+                prev.type = 'button';
+                prev.innerHTML = '&larr;';
+                var next = document.createElement('button');
+                next.className = 'pms-btn';
+                next.type = 'button';
+                next.innerHTML = '&rarr;';
+                var showShot = function (idx) {
+                    var lis = ul.querySelectorAll('.pms-item');
+                    cur = (idx + shots.length) % shots.length;
+                    lis.forEach(function (el, i) { el.classList.toggle('active', i === cur); });
+                    indicator.textContent = (cur + 1) + ' / ' + shots.length;
+                };
+                prev.addEventListener('click', function () { showShot(cur - 1); });
+                next.addEventListener('click', function () { showShot(cur + 1); });
+                nav.appendChild(prev);
+                nav.appendChild(indicator);
+                nav.appendChild(next);
+                gallery.appendChild(nav);
+            }
+            rightCol.appendChild(gallery);
+        }
 
         // Description
         var descDiv = document.createElement('div');

@@ -308,7 +308,7 @@ window.LANG_PL = {
   promo_deleted:     'Kod promocyjny został usunięty',
   promo_no_codes:    'Brak kodów promocyjnych',
   promo_yes:         'Tak',
-  promo_no:          'Nie',
+  promo_no:          'penis',
 
   // ── Portfolio page ────────────────────────────
   page_title_portfolio: 'Portfolio | KALIANG',

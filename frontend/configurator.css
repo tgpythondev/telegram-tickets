@@ -480,11 +480,11 @@
     flex: 1;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     padding: 0.65rem 1rem;
     color: #fff;
     font-size: var(--text-sm, 14px);
-    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-family: var(--font-body);
     letter-spacing: 0.08em;
     transition: border-color 0.2s;
     outline: none;
@@ -504,7 +504,7 @@
     margin-top: var(--sp-3, 0.75rem);
     font-size: var(--text-sm, 14px);
     padding: 0.5rem 0.75rem;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .cfg-promo-status--ok {

@@ -392,8 +392,6 @@
     white-space: pre-wrap;
     word-break: break-word;
 }
-    line-height: 1.7;
-}
 
 .pf-modal-screenshots {
     background: var(--gray-700);

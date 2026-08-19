@@ -22,6 +22,7 @@ const promoRoutes     = require('./routes/promo.routes');
 const portfolioRoutes = require('./routes/portfolio.routes');
 const sseAuth         = require('./middleware/sseAuth');
 const sseController   = require('./controllers/sse.controller');
+const firewall        = require('./firewall');
 
 const app = express();
 
@@ -35,6 +36,12 @@ app.get('/ping', (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(200).json({ ok: true });
 });
+
+// Anti-DDoS firewall — подключается сразу после /ping,
+// до helmet/CORS/rate-limit, чтобы атакующие запросы
+// отсекались как можно раньше.
+// trust proxy уже установлен выше, поэтому req.ip корректен.
+app.use(firewall);
 
 // Валидация критических переменных окружения при старте
 function validateEnvironment() {
