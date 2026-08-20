@@ -104,7 +104,7 @@
         var wrap = document.createElement('div');
         wrap.className = 'pf-empty';
         wrap.innerHTML =
-            '<div class="pf-empty-icon">⚠</div>' +
+            '<div class="pf-empty-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>' +
             '<div class="pf-empty-title">' + escapeHtml(msg) + '</div>';
         list.appendChild(wrap);
     }
@@ -149,7 +149,7 @@
             card.className = 'pf-card pf-card--' + (item.platform || 'telegram');
             card.setAttribute('role', 'button');
             card.setAttribute('tabindex', '0');
-            card.setAttribute('aria-label', 'Open ' + item.title + ' details');
+            card.setAttribute('aria-label', item.title);
             card.style.setProperty('--pf-delay', (idx % 9) * 60 + 'ms');
 
             // ── Preview (screenshot or fallback) ──
@@ -179,7 +179,8 @@
             if (item.screenshots && item.screenshots.length > 1) {
                 var shots = document.createElement('span');
                 shots.className = 'pf-card-shots';
-                shots.textContent = '\uD83D\uDDBC ' + item.screenshots.length;
+                shots.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>' +
+                    escapeHtml(String(item.screenshots.length));
                 media.appendChild(shots);
             }
 

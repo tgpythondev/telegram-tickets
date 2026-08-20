@@ -1,8 +1,9 @@
+/* ============================================
    Tickets page — app-like layout
    ============================================ */
 
 .tickets-app {
-    display: grid !important;
+    display: grid;
     grid-template-columns: 280px minmax(0, 1fr);
     min-height: 100vh;
     padding-top: var(--header-h);
@@ -178,6 +179,11 @@
 .sidebar-footer {
     padding: var(--sp-4) var(--sp-6);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-footer .btn {
+    width: 100%;
+    justify-content: center;
 }
 
 
@@ -522,6 +528,11 @@
     align-items: center;
 }
 
+.tp-form .btn-primary {
+    padding: 0.55rem 1.2rem;
+    font-size: var(--text-sm);
+}
+
 .tp-close-ticket {
     font-size: var(--text-xs);
     color: rgba(255, 255, 255, 0.28);
@@ -560,6 +571,11 @@
     gap: var(--sp-5);
 }
 
+.create-form .btn-primary {
+    width: 100%;
+    justify-content: center;
+}
+
 
 @media (max-width: 860px) {
     .tickets-app {
@@ -570,46 +586,65 @@
         position: relative;
         top: 0;
         height: auto;
+        width: 100%;
         border-right: none;
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
 
-    .sidebar-user    { display: none; }
-    .sidebar-footer  { display: none; }
-    .sidebar-telegram { display: none; }
+    /* Compact user strip */
+    .sidebar-user {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        padding: var(--sp-3) var(--sp-4) var(--sp-1);
+        border-bottom: none;
+    }
+
+    .sidebar-username {
+        margin-bottom: 0;
+        font-size: var(--text-xs);
+    }
+
+    .sidebar-role { font-size: 0.6rem; }
 
     .sidebar-create {
+        padding: var(--sp-2) var(--sp-4);
         border-bottom: none;
-        padding: var(--sp-3) var(--sp-4);
     }
 
     .sidebar-create .btn {
-        width: auto;
-        justify-content: center;
         font-size: var(--text-sm);
+        padding: 0.5rem 1rem;
     }
 
+    /* Horizontal scrollable filter chips */
     .sidebar-filters {
         display: flex;
         flex-direction: row;
-        flex-wrap: wrap;
-        overflow-x: visible;
-        padding: var(--sp-3) var(--sp-4);
-        border-bottom: none;
         gap: var(--sp-2);
+        padding: var(--sp-1) var(--sp-4) var(--sp-3);
+        overflow-x: auto;
+        flex: none;
+        scrollbar-width: none;
     }
+
+    .sidebar-filters::-webkit-scrollbar { display: none; }
 
     .filter-label { display: none; }
 
     .filter-link {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--sp-2);
         white-space: nowrap;
         border-left: none;
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: var(--radius-sm);
-        padding: var(--sp-2) var(--sp-4);
+        padding: var(--sp-1) var(--sp-3);
+        width: auto;
         flex-shrink: 0;
+        font-size: var(--text-xs);
         color: rgba(255, 255, 255, 0.45);
-        font-size: var(--text-sm);
     }
 
     .filter-link:hover {
@@ -622,6 +657,31 @@
         color: var(--black);
         border-color: var(--white);
     }
+
+    .filter-count {
+        background: transparent;
+        padding: 0;
+        min-width: auto;
+    }
+
+    .filter-link.active .filter-count {
+        color: rgba(0, 0, 0, 0.55);
+    }
+
+    /* Logout stays reachable on mobile */
+    .sidebar-footer {
+        padding: 0 var(--sp-4) var(--sp-3);
+        border-top: none;
+    }
+
+    .sidebar-footer .btn {
+        width: auto;
+        justify-content: flex-start;
+        padding: var(--sp-1) 0;
+        border: none;
+    }
+
+    .sidebar-telegram { display: none; }
 
     .ticket-row {
         grid-template-columns: 8px 44px 1fr auto;
@@ -678,11 +738,11 @@
 }
 
 .ticket-promo-status--ok {
-    color: var(--accent-ok, #22c55e);
+    color: var(--accent-ok);
 }
 
 .ticket-promo-status--error {
-    color: var(--accent-urgent, #ff4444);
+    color: var(--accent-urgent);
 }
 
 .ticket-promo-benefits {
@@ -719,7 +779,7 @@
 }
 
 .ticket-promo-benefit input[type="radio"] {
-    accent-color: var(--accent-ok, #22c55e);
+    accent-color: var(--accent-ok);
 }
 
 .tpb-name {

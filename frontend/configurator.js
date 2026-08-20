@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupPromoStep();
     setupPlatformStep();
     setupOptionRows();
+    enhanceOptionRowsA11y();
     setupTextareas();
     setupExtraResources();
     setupNavigation();
@@ -293,6 +294,21 @@ function setupOptionRows() {
             config.priority = row.dataset.priority;
             config.priorityCost = parseInt(row.dataset.cost) || 0;
             updatePrice();
+        });
+    });
+}
+
+// ── Keyboard accessibility for option rows ──
+function enhanceOptionRowsA11y() {
+    document.querySelectorAll('.cfg-option-row').forEach(row => {
+        row.setAttribute('tabindex', '0');
+        row.setAttribute('role', 'button');
+        row.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (row.classList.contains('cfg-option-disabled')) return;
+                row.click();
+            }
         });
     });
 }

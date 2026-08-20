@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://telegram-bots-backend.onrender.com https://telegram-bots.pl http://localhost:3000; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src https://telegram-bots-backend.onrender.com https://telegram-bots.pl http://localhost:3000; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Konfigurator | KALIANG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="configurator.css">
     <link rel="stylesheet" href="i18n/i18n.css">
@@ -69,12 +72,12 @@
                             <div class="cfg-option-row cfg-promo-benefit-row" id="benefit-free-mini" data-benefit="free_mini">
                                 <span class="cor-name" data-i18n="cfg_promo_free_mini_name">Darmowy bot Mini</span>
                                 <span class="cor-desc" data-i18n="cfg_promo_free_mini_desc">Otrzymasz bota kategorii Mini całkowicie za darmo. Hosting tylko na własnym serwerze.</span>
-                                <span class="cor-price" style="color:var(--accent-ok,#22c55e);">$0</span>
+                                <span class="cor-price" style="color:var(--accent-ok);">$0</span>
                             </div>
                             <div class="cfg-option-row cfg-promo-benefit-row" id="benefit-percent-10" data-benefit="percent_10">
                                 <span class="cor-name" data-i18n="cfg_promo_pct_name">Zniżka 10%</span>
                                 <span class="cor-desc" data-i18n="cfg_promo_pct_desc">10% zniżki na dowolny pakiet.</span>
-                                <span class="cor-price" style="color:var(--accent-ok,#22c55e);">−10%</span>
+                                <span class="cor-price" style="color:var(--accent-ok);">−10%</span>
                             </div>
                         </div>
                     </div>
@@ -275,7 +278,7 @@
                         </div>
                         <div class="csb-row" id="sum-promo-row" style="display:none;">
                             <span class="csb-label" data-i18n="cfg_sum_promo">Promocja</span>
-                            <span class="csb-value" id="sum-promo" style="color:var(--accent-ok,#22c55e);">—</span>
+                            <span class="csb-value" id="sum-promo" style="color:var(--accent-ok);">—</span>
                         </div>
                     </div>
 
@@ -322,7 +325,7 @@
                 </div>
                 <div class="cfs-row" id="live-promo-row" style="display:none;">
                     <span class="cfs-key" data-i18n="cfg_live_promo">Promo</span>
-                    <span class="cfs-val" id="live-promo" style="color:var(--accent-ok,#22c55e);">—</span>
+                    <span class="cfs-val" id="live-promo" style="color:var(--accent-ok);">—</span>
                 </div>
             </div>
 

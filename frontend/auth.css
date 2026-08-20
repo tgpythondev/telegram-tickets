@@ -1,3 +1,4 @@
+/* ============================================
    Auth page — split-screen layout
    ============================================ */
 
@@ -260,17 +261,29 @@
 @media (max-width: 860px) {
     .auth-layout {
         grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
     }
 
+    /* Compact identity strip: logo + back link stay reachable */
     .auth-identity {
-        display: none;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-4);
+        padding: var(--sp-4) var(--sp-6);
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     }
+
+    .auth-identity-body { display: none; }
+
+    .auth-logo { font-size: var(--text-base); }
 
     .auth-panel {
-        min-height: 100vh;
+        min-height: 0;
         padding: var(--sp-8) var(--sp-6);
         align-items: flex-start;
-        padding-top: var(--sp-16);
+        padding-top: var(--sp-12);
     }
 
     .auth-panel-inner {

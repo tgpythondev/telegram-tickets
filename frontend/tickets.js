@@ -183,7 +183,7 @@ const Tickets = (() => {
         const div = document.createElement('div');
         div.className = 'tickets-empty';
         div.innerHTML = `
-            <div class="tickets-empty-icon">📋</div>
+            <div class="tickets-empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h6"/></svg></div>
             <div class="tickets-empty-title">${escapeHtml(title)}</div>
             <div class="tickets-empty-sub">${escapeHtml(sub)}</div>
         `;
@@ -370,8 +370,6 @@ const Tickets = (() => {
         const sendBtn = document.createElement('button');
         sendBtn.className = 'btn btn-primary';
         sendBtn.textContent = t('btn_send');
-        sendBtn.style.padding = '0.55rem 1.2rem';
-        sendBtn.style.fontSize = 'var(--text-sm)';
 
         sendBtn.addEventListener('click', async () => {
             const content = textarea.value.trim();
@@ -418,31 +416,29 @@ const Tickets = (() => {
         return new Promise(resolve => {
             const overlay = document.createElement('div');
             overlay.className = 'confirm-overlay';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
 
             const dialog = document.createElement('div');
             dialog.className = 'confirm-dialog';
-            dialog.setAttribute('role', 'dialog');
+            dialog.setAttribute('role', 'alertdialog');
             dialog.setAttribute('aria-modal', 'true');
-            dialog.style.cssText = 'background:var(--bg-card,#1a1a2e);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:2rem;max-width:360px;width:90%;text-align:center;';
 
             const msg = document.createElement('p');
-            msg.style.cssText = 'margin:0 0 1.5rem;color:rgba(255,255,255,.85);font-size:var(--text-sm,14px);';
             msg.textContent = message;
 
             const btnRow = document.createElement('div');
-            btnRow.style.cssText = 'display:flex;gap:.75rem;justify-content:center;';
+            btnRow.className = 'confirm-actions';
+
+            const dismiss = (result) => { document.body.removeChild(overlay); resolve(result); };
 
             const cancelBtn = document.createElement('button');
             cancelBtn.className = 'btn btn-ghost';
-            cancelBtn.textContent = t('cfg_btn_back') || '← Назад';
-            cancelBtn.addEventListener('click', () => { document.body.removeChild(overlay); resolve(false); });
+            cancelBtn.textContent = t('cfg_btn_back');
+            cancelBtn.addEventListener('click', () => dismiss(false));
 
             const confirmBtn = document.createElement('button');
-            confirmBtn.className = 'btn btn-primary';
+            confirmBtn.className = 'btn btn-danger';
             confirmBtn.textContent = t('btn_close_ticket');
-            confirmBtn.style.cssText = 'background:var(--accent-urgent,#ff3333);border-color:var(--accent-urgent,#ff3333);';
-            confirmBtn.addEventListener('click', () => { document.body.removeChild(overlay); resolve(true); });
+            confirmBtn.addEventListener('click', () => dismiss(true));
 
             btnRow.appendChild(cancelBtn);
             btnRow.appendChild(confirmBtn);
@@ -688,10 +684,13 @@ const Tickets = (() => {
 
     function formatDate(iso, full) {
         if (!iso) return '';
+        if (typeof I18n !== 'undefined' && typeof I18n.formatDate === 'function') {
+            return I18n.formatDate(iso, full);
+        }
         const d = new Date(iso);
-        if (full) return d.toLocaleString('ru-RU');
-        return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) +
-               ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        if (full) return d.toLocaleString();
+        return d.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' }) +
+               ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
     }
 
     function ending(n) {

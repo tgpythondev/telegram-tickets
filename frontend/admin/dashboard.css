@@ -1,3 +1,4 @@
+/* ============================================
    Admin dashboard — Precision Dark
    ============================================ */
 
@@ -117,7 +118,11 @@
     font-weight: 600;
 }
 
-.asb-nav-icon { opacity: 0.55; }
+.asb-nav-icon { opacity: 0.55; display: inline-flex; align-items: center; }
+
+.asb-nav-icon svg { display: block; }
+
+.asb-nav-item.active .asb-nav-icon { opacity: 1; }
 
 .asb-bottom {
     padding: var(--sp-4) var(--sp-6);
@@ -919,7 +924,7 @@
 .form-checkbox input[type="checkbox"] {
     width: 18px;
     height: 18px;
-    accent-color: var(--accent-ok, #22c55e);
+    accent-color: var(--accent-ok);
     cursor: pointer;
 }
 
@@ -1167,4 +1172,20 @@
     font-weight: 500;
     color: rgba(255, 255, 255, 0.65);
     margin-bottom: var(--sp-2);
+}
+
+.pf-lang-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    padding: 1px 6px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.60);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-sm);
 }

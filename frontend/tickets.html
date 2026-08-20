@@ -19,14 +19,17 @@
     <header id="site-header">
         <nav>
             <div class="logo"><a href="index.html">KALIANG</a></div>
-            <ul class="nav-links">
+            <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Открыть меню" aria-expanded="false" data-i18n-aria="nav_open_menu">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links" id="nav-links">
                 <li><a href="index.html#services" data-i18n="nav_services">Usługi</a></li>
                 <li><a href="index.html#portfolio" data-i18n="nav_portfolio">Portfolio</a></li>
             </ul>
         </nav>
     </header>
 
-    <div class="tickets-app" style="display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh;padding-top:var(--header-h,64px);max-width:100%;overflow-x:hidden;">
+    <div class="tickets-app">
         <!-- ── Sidebar ──────────────────────── -->
         <aside class="tickets-sidebar">
             <div class="sidebar-user">
@@ -59,7 +62,7 @@
             </nav>
 
             <div class="sidebar-footer">
-                <button class="btn btn-logout" id="logout-btn" style="width:100%;justify-content:center;" data-i18n="logout_btn">Wyloguj się</button>
+                <button class="btn btn-logout" id="logout-btn" data-i18n="logout_btn">Wyloguj się</button>
             </div>
         </aside>
 
@@ -151,7 +154,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" data-i18n="create_submit">
+                    <button type="submit" class="btn btn-primary" data-i18n="create_submit">
                         Utwórz zgłoszenie
                     </button>
                 </form>

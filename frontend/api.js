@@ -49,48 +49,20 @@ function showToast(message, type = 'error', duration = 5000) {
     if (!toast) {
         toast = document.createElement('div');
         toast.id = toastId;
-        const bgColor = type === 'error' ? '#ff4444' : '#22c55e';
-        toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: ${bgColor};
-            color: white;
-            padding: 16px 24px;
-            border-radius: 4px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 10000;
-            max-width: 400px;
-            word-wrap: break-word;
-            animation: slideIn 0.3s ease-out;
-        `;
+        toast.className = 'app-toast ' + (type === 'error' ? 'app-toast--error' : 'app-toast--success');
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
         document.body.appendChild(toast);
-
-        if (!document.getElementById('toast-styles')) {
-            const style = document.createElement('style');
-            style.id = 'toast-styles';
-            style.textContent = `
-                @keyframes slideIn {
-                    from { transform: translateX(400px); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                @keyframes slideOut {
-                    from { transform: translateX(0); opacity: 1; }
-                    to { transform: translateX(400px); opacity: 0; }
-                }
-            `;
-            document.head.appendChild(style);
-        }
     }
 
     toast.textContent = message;
     toast.style.display = 'block';
 
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease-out';
+        toast.style.animation = 'toastOut 0.3s ease-out';
         setTimeout(() => {
             toast.style.display = 'none';
-            toast.style.animation = 'slideIn 0.3s ease-out';
+            toast.style.animation = 'toastIn 0.3s ease-out';
         }, 300);
     }, duration);
 }
