@@ -20,10 +20,63 @@ async function findUserByUsername(username) {
 
 async function findUserById(id) {
     const result = await db.query(
-        'SELECT id, username, is_admin, created_at, last_login, telegram_chat_id, telegram_notifications_enabled, telegram_linked_at FROM users WHERE id = $1',
+        'SELECT id, username, is_admin, created_at, last_login, email, telegram_chat_id, telegram_notifications_enabled, telegram_linked_at FROM users WHERE id = $1',
         [id]
     );
     return result.rows[0];
+}
+
+async function findUserByEmail(email) {
+    const result = await db.query(
+        'SELECT * FROM users WHERE email = $1',
+        [email]
+    );
+    return result.rows[0];
+}
+
+// Создание пользователя без пароля (регистрация через OAuth)
+async function createUserOAuth(username, email) {
+    const result = await db.query(
+        'INSERT INTO users (username, email) VALUES ($1, $2) RETURNING id, username, is_admin, created_at, email, telegram_chat_id, telegram_notifications_enabled, telegram_linked_at',
+        [username, email]
+    );
+    return result.rows[0];
+}
+
+// ============ OAUTH ACCOUNTS ============
+
+async function findOAuthAccount(provider, providerUserId) {
+    const result = await db.query(
+        'SELECT * FROM oauth_accounts WHERE provider = $1 AND provider_user_id = $2',
+        [provider, providerUserId]
+    );
+    return result.rows[0];
+}
+
+async function linkOAuthAccount(userId, provider, providerUserId, email = null) {
+    const result = await db.query(
+        `INSERT INTO oauth_accounts (user_id, provider, provider_user_id, email, last_used_at)
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+         ON CONFLICT (provider, provider_user_id) DO UPDATE SET last_used_at = CURRENT_TIMESTAMP
+         RETURNING *`,
+        [userId, provider, providerUserId, email]
+    );
+    return result.rows[0];
+}
+
+async function touchOAuthAccount(provider, providerUserId) {
+    await db.query(
+        'UPDATE oauth_accounts SET last_used_at = CURRENT_TIMESTAMP WHERE provider = $1 AND provider_user_id = $2',
+        [provider, providerUserId]
+    );
+}
+
+async function findUserOAuthAccounts(userId) {
+    const result = await db.query(
+        'SELECT provider, email, created_at, last_used_at FROM oauth_accounts WHERE user_id = $1 ORDER BY created_at ASC',
+        [userId]
+    );
+    return result.rows;
 }
 
 async function updateLastLogin(userId) {
@@ -301,6 +354,12 @@ module.exports = {
     createUser,
     findUserByUsername,
     findUserById,
+    findUserByEmail,
+    createUserOAuth,
+    findOAuthAccount,
+    linkOAuthAccount,
+    touchOAuthAccount,
+    findUserOAuthAccounts,
     updateLastLogin,
     incrementFailedLoginAttempts,
     lockUserAccount,

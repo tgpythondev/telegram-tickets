@@ -166,6 +166,12 @@ window.LANG_PL = {
   pwd_len:           '· min. 8 znaków',
   pwd_let:           '· litery i cyfry',
   pwd_spc:           '· znak specjalny (!@#…)',
+  oauth_divider:     'lub przez',
+  oauth_err_access_denied: 'Logowanie zostało anulowane',
+  oauth_err_invalid_state: 'Błąd weryfikacji sesji OAuth. Spróbuj ponownie.',
+  oauth_err_provider_disabled: 'Ta metoda logowania jest tymczasowo niedostępna',
+  oauth_err_email_required: 'Wymagany jest potwierdzony adres e-mail',
+  oauth_err_internal: 'Błąd logowania OAuth. Spróbuj ponownie.',
 
   // ── Configurator page ─────────────────────────
   page_title_cfg:    'Konfigurator | KALIANG',

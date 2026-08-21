@@ -1,14 +1,25 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+// Cloud-БД (Supabase, Neon) требуют SSL даже в локальной разработке.
+// В production используем строгую проверку сертификата.
+function getSslConfig() {
+    if (process.env.NODE_ENV === 'production') {
+        return { rejectUnauthorized: true };
+    }
+    const url = process.env.DATABASE_URL || '';
+    if (/supabase\.com|neon\.tech/.test(url)) {
+        return { rejectUnauthorized: false };
+    }
+    return false;
+}
+
 // На одноядерном сервере большой пул только создаёт давление на PostgreSQL
 // и расходует память впустую. 5 соединений достаточно для нашей нагрузки;
 // pg сам будет их переиспользовать через очередь.
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? {
-        rejectUnauthorized: true
-    } : false,
+    ssl: getSslConfig(),
     max: 5,                      // было 20 — снижаем для 1-core
     min: 1,                      // держать хотя бы одно соединение живым
     connectionTimeoutMillis: 5000,

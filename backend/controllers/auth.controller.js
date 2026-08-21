@@ -264,6 +264,7 @@ async function me(req, res) {
                 id: user.id,
                 username: user.username,
                 isAdmin: user.is_admin,
+                email: user.email || null,
                 telegram_chat_id: user.telegram_chat_id || null,
                 telegram_notifications_enabled: user.telegram_notifications_enabled || false,
                 telegram_linked_at: user.telegram_linked_at || null
@@ -381,5 +382,6 @@ module.exports = {
     linkTelegram,
     unlinkTelegram,
     getTelegramStatus,
-    toggleTelegramNotifications
+    toggleTelegramNotifications,
+    getCookieOptions
 };

@@ -166,6 +166,12 @@ window.LANG_RU = {
   pwd_len:           '· 8+ символов',
   pwd_let:           '· Буквы и цифры',
   pwd_spc:           '· Спецсимвол (!@#…)',
+  oauth_divider:     'или войдите через',
+  oauth_err_access_denied: 'Вход был отменён',
+  oauth_err_invalid_state: 'Ошибка проверки OAuth-сессии. Попробуйте ещё раз.',
+  oauth_err_provider_disabled: 'Этот способ входа временно недоступен',
+  oauth_err_email_required: 'Требуется подтверждённый email',
+  oauth_err_internal: 'Ошибка входа через OAuth. Попробуйте ещё раз.',
 
   // ── Configurator page ─────────────────────────
   page_title_cfg:    'Конфигуратор | KALIANG',

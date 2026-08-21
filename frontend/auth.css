@@ -245,6 +245,77 @@
 .auth-switch-btn:hover { color: var(--white); }
 
 
+/* ── OAuth кнопки ─────────────────────────────── */
+
+.oauth-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-5);
+}
+
+.oauth-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.22);
+    white-space: nowrap;
+}
+
+.oauth-divider::before,
+.oauth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.oauth-divider.is-hidden { display: none; }
+
+.oauth-buttons {
+    display: flex;
+    gap: var(--sp-3);
+}
+
+.oauth-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    padding: 0.75rem 0.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: var(--radius-sm);
+    color: rgba(255, 255, 255, 0.70);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
+}
+
+.oauth-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.22);
+    color: var(--white);
+    transform: translateY(-1px);
+}
+
+.oauth-btn:active { transform: translateY(0); }
+
+.oauth-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.oauth-btn.is-hidden { display: none; }
+
+
 .btn-spinner {
     display: inline-block;
     width: 14px;
@@ -299,4 +370,6 @@
     .auth-heading {
         font-size: var(--text-2xl);
     }
+
+    .oauth-btn span { display: none; }
 }

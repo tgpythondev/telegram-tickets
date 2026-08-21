@@ -166,6 +166,12 @@ window.LANG_EN = {
   pwd_len:           '· 8+ characters',
   pwd_let:           '· Letters and numbers',
   pwd_spc:           '· Special character (!@#…)',
+  oauth_divider:     'or continue with',
+  oauth_err_access_denied: 'Sign-in was cancelled',
+  oauth_err_invalid_state: 'OAuth session verification failed. Please try again.',
+  oauth_err_provider_disabled: 'This sign-in method is temporarily unavailable',
+  oauth_err_email_required: 'A verified email address is required',
+  oauth_err_internal: 'OAuth sign-in error. Please try again.',
 
   // ── Configurator page ─────────────────────────
   page_title_cfg:    'Configurator | KALIANG',

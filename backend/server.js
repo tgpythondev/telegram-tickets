@@ -1,4 +1,7 @@
 require('dotenv').config();
+// Render не имеет IPv6-egress — принудительно IPv4 для DNS,
+// иначе pg не может достучаться до Supabase (ENETUNREACH на IPv6)
+require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -16,6 +19,7 @@ let pinoHttp;
 try { pinoHttp = require('pino-http'); } catch (_) { pinoHttp = null; }
 
 const authRoutes      = require('./routes/auth.routes');
+const oauthRoutes     = require('./routes/oauth.routes');
 const ticketsRoutes   = require('./routes/tickets.routes');
 const adminRoutes     = require('./routes/admin.routes');
 const promoRoutes     = require('./routes/promo.routes');
@@ -81,12 +85,15 @@ validateEnvironment();
 const cleanupHandle = startTokenCleanupSchedule(24);
 
 // Rate limiting
+// validate: false — отключаем валидацию IPv6-ключей (ERR_ERL_KEY_GEN_IPV6),
+// клиенты Render приходят с IPv6-адресами
 const generalLimiter = rateLimit({
     windowMs: 20 * 1000,
     max: 100,
     message: { error: 'Слишком много запросов, попробуйте через 20 секунд' },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    validate: false
 });
 
 const authLimiter = rateLimit({
@@ -95,6 +102,7 @@ const authLimiter = rateLimit({
     message: { error: 'Слишком много попыток входа, попробуйте через 20 секунд' },
     standardHeaders: true,
     legacyHeaders: false,
+    validate: false
 });
 
 const sseLimiter = rateLimit({
@@ -103,6 +111,7 @@ const sseLimiter = rateLimit({
     message: { error: 'Слишком много SSE подключений' },
     standardHeaders: true,
     legacyHeaders: false,
+    validate: false
 });
 
 // ── Middleware ────────────────────────────────────────────────────────────────
@@ -162,9 +171,8 @@ const allowedOrigins = [
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin) {
-            if (process.env.NODE_ENV === 'production') {
-                return callback(new Error('Origin header required'));
-            }
+            // Запросы без Origin: браузерные навигации (в т.ч. OAuth-редиректы
+            // от Discord/Google/GitHub), health-check Render, server-to-server
             return callback(null, true);
         }
         if (allowedOrigins.includes(origin)) {
@@ -186,6 +194,9 @@ app.use((req, res, next) => {
 });
 
 // ── Routes ────────────────────────────────────────────────────────────────────
+// OAuth монтируется ДО '/api/auth' с authLimiter — редиректы провайдеров
+// не должны попадать под жёсткий лимит попыток входа
+app.use('/api/auth/oauth', oauthRoutes);
 app.use('/api/auth',      authLimiter, authRoutes);
 app.use('/api/tickets',  ticketsRoutes);
 app.use('/api/admin',    adminRoutes);

@@ -6,6 +6,7 @@ const db = require('../config/database');
 const AUDIT_ACTIONS = {
     LOGIN_SUCCESS: 'login_success',
     LOGIN_FAILED: 'login_failed',
+    OAUTH_LOGIN: 'oauth_login',
     ACCOUNT_LOCKED: 'account_locked',
     REGISTER: 'register',
     LOGOUT: 'logout',

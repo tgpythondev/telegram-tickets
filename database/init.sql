@@ -5,7 +5,8 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255),
+    email VARCHAR(255),
     is_admin BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP,
@@ -16,6 +17,23 @@ CREATE TABLE users (
 );
 
 CREATE INDEX idx_users_username ON users(username);
+CREATE UNIQUE INDEX idx_users_email_unique ON users(email) WHERE email IS NOT NULL;
+
+-- Привязки внешних OAuth-провайдеров (Discord, Google, GitHub) к пользователям
+CREATE TABLE oauth_accounts (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    provider VARCHAR(20) NOT NULL,
+    provider_user_id VARCHAR(100) NOT NULL,
+    email VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TIMESTAMP,
+
+    CONSTRAINT valid_oauth_provider CHECK (provider IN ('discord', 'google', 'github')),
+    CONSTRAINT unique_provider_account UNIQUE (provider, provider_user_id)
+);
+
+CREATE INDEX idx_oauth_accounts_user_id ON oauth_accounts(user_id);
 
 -- Таблица тикетов
 CREATE TABLE tickets (

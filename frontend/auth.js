@@ -128,6 +128,60 @@ function clearFieldErrors() {
     document.querySelectorAll('.error-message').forEach(el => { el.textContent = ''; });
 }
 
+// ── OAuth (Discord / Google / GitHub) ──────────────────────────────────────
+
+function initOAuth() {
+    const params = new URLSearchParams(window.location.search);
+    const oauthError = params.get('oauth_error');
+
+    // Чистим URL после редиректа от backend
+    if (oauthError || params.get('oauth')) {
+        window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    if (oauthError) {
+        const errorKeys = {
+            access_denied: 'oauth_err_access_denied',
+            invalid_state: 'oauth_err_invalid_state',
+            provider_disabled: 'oauth_err_provider_disabled',
+            email_required: 'oauth_err_email_required',
+            internal: 'oauth_err_internal'
+        };
+
+        // Показываем ошибку на активной view логина
+        document.querySelectorAll('.auth-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('login-view').classList.add('active');
+        document.getElementById('login-error').textContent = t(errorKeys[oauthError] || 'oauth_err_internal');
+    }
+
+    // Клик по кнопке — редирект на backend, дальше на провайдера
+    document.querySelectorAll('.oauth-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            window.location.href = `${API_URL}/auth/oauth/${btn.dataset.oauth}`;
+        });
+    });
+
+    // Скрываем кнопки провайдеров, которые не настроены на backend
+    fetch(`${API_URL}/auth/oauth/providers`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+            if (!data || !data.providers) return;
+            let visible = 0;
+            document.querySelectorAll('.oauth-btn').forEach(btn => {
+                const enabled = !!data.providers[btn.dataset.oauth];
+                btn.classList.toggle('is-hidden', !enabled);
+                if (enabled) visible++;
+            });
+            if (visible === 0) {
+                document.querySelectorAll('.oauth-divider').forEach(d => d.classList.add('is-hidden'));
+            }
+        })
+        .catch(() => { /* backend недоступен — оставляем кнопки как есть */ });
+}
+
+initOAuth();
+
+
 (async () => {
     try {
         const user = await checkAuth();
