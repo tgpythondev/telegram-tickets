@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e1621"/><stop offset="1" stop-color="#17212b"/>
+    </linearGradient>
+    <linearGradient id="ava" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#37b6ec"/><stop offset="1" stop-color="#1b7fb0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+
+  <!-- header -->
+  <rect width="1600" height="112" fill="#0b111a" opacity="0.9"/>
+  <circle cx="84" cy="56" r="34" fill="url(#ava)"/>
+  <rect x="68" y="42" width="32" height="30" rx="6" fill="#0b111a" opacity="0.6"/>
+  <line x1="76" y1="36" x2="76" y2="46" stroke="#7fe3ff" stroke-width="4"/>
+  <line x1="92" y1="36" x2="92" y2="46" stroke="#7fe3ff" stroke-width="4"/>
+  <circle cx="84" cy="58" r="4" fill="#7fe3ff"/>
+  <text x="140" y="52" font-size="34" font-weight="600" fill="#e7edf2">Mini+ · Reminders</text>
+  <text x="140" y="88" font-size="24" fill="#52b0e3">all times in UTC</text>
+
+  <!-- outgoing calendar card -->
+  <rect x="1040" y="170" width="480" height="170" rx="26" fill="#2b5278"/>
+  <rect x="1040" y="170" width="480" height="62" rx="26" fill="#3a6a99"/>
+  <rect x="1040" y="204" width="480" height="28" fill="#3a6a99"/>
+  <text x="1080" y="212" font-size="26" font-weight="700" fill="#eaf3fb">AUG 22</text>
+  <text x="1480" y="212" font-size="26" font-weight="700" fill="#eaf3fb" text-anchor="end">14:00</text>
+  <text x="1080" y="300" font-size="30" fill="#eaf3fb">Dentist</text>
+
+  <!-- incoming saved -->
+  <rect x="80" y="380" width="460" height="96" rx="26" fill="#1e2c3a"/>
+  <circle cx="130" cy="428" r="16" fill="#23a559"/>
+  <path d="M122 428 l6 7 12 -14" stroke="#0b111a" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <text x="162" y="440" font-size="30" fill="#e7edf2">Saved · UTC</text>
+
+  <!-- reminder plan card -->
+  <rect x="80" y="510" width="700" height="200" rx="26" fill="#1e2c3a"/>
+  <circle cx="136" cy="566" r="20" fill="#f5a623"/>
+  <path d="M136 550 a14 14 0 0 1 14 14 v8 h-28 v-8 a14 14 0 0 1 14 -14 z" fill="#0b111a" opacity="0.55"/>
+  <circle cx="136" cy="576" r="4" fill="#0b111a" opacity="0.55"/>
+  <text x="172" y="576" font-size="28" font-weight="600" fill="#e7edf2">Reminder plan · every 20 min</text>
+  <rect x="120" y="612" width="120" height="52" rx="26" fill="#2b5278"/>
+  <text x="180" y="646" font-size="26" fill="#eaf3fb" text-anchor="middle">12:00</text>
+  <rect x="256" y="612" width="120" height="52" rx="26" fill="#2b5278"/>
+  <text x="316" y="646" font-size="26" fill="#eaf3fb" text-anchor="middle">12:20</text>
+  <rect x="392" y="612" width="120" height="52" rx="26" fill="#2b5278"/>
+  <text x="452" y="646" font-size="26" fill="#eaf3fb" text-anchor="middle">12:40</text>
+  <rect x="528" y="612" width="90" height="52" rx="26" fill="#ffffff" opacity="0.08"/>
+  <text x="573" y="646" font-size="26" fill="#9fb4c8" text-anchor="middle">…</text>
+
+  <!-- input bar -->
+  <rect y="810" width="1600" height="90" fill="#0b111a" opacity="0.9"/>
+  <rect x="80" y="828" width="1320" height="54" rx="27" fill="#1e2c3a"/>
+  <text x="112" y="863" font-size="26" fill="#6d8196">Message</text>
+  <circle cx="1490" cy="855" r="27" fill="url(#ava)"/>
+  <path d="M1478 855 l30 -12 -8 12 8 12 z" fill="#0b111a"/>
+</svg>

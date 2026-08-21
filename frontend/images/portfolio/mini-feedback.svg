@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e1621"/><stop offset="1" stop-color="#17212b"/>
+    </linearGradient>
+    <linearGradient id="ava" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#37b6ec"/><stop offset="1" stop-color="#1b7fb0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+
+  <!-- header -->
+  <rect width="1600" height="112" fill="#0b111a" opacity="0.9"/>
+  <circle cx="84" cy="56" r="34" fill="url(#ava)"/>
+  <path d="M70 62 l28 -16 -8 16 8 16 z" fill="#0b111a" opacity="0.7"/>
+  <text x="140" y="52" font-size="34" font-weight="600" fill="#e7edf2">Mini · Feedback</text>
+  <text x="140" y="88" font-size="24" fill="#52b0e3">private inbox</text>
+
+  <!-- outgoing bubble -->
+  <rect x="960" y="180" width="560" height="86" rx="26" fill="#2b5278"/>
+  <text x="1488" y="234" font-size="30" fill="#eaf3fb" text-anchor="end">Hello! I need a fix…</text>
+
+  <!-- system pill -->
+  <rect x="620" y="310" width="360" height="52" rx="26" fill="#ffffff" opacity="0.07"/>
+  <text x="800" y="344" font-size="24" fill="#9aa7b4" text-anchor="middle">→ forwarded to admin</text>
+
+  <!-- incoming bubble -->
+  <rect x="80" y="410" width="640" height="96" rx="26" fill="#1e2c3a"/>
+  <circle cx="130" cy="458" r="16" fill="#23a559"/>
+  <path d="M122 458 l6 7 12 -14" stroke="#0b111a" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <text x="162" y="470" font-size="30" fill="#e7edf2">Admin: on it, thanks!</text>
+
+  <!-- second incoming skeleton -->
+  <rect x="80" y="540" width="520" height="120" rx="26" fill="#1e2c3a"/>
+  <rect x="120" y="576" width="420" height="16" rx="8" fill="#e7edf2" opacity="0.22"/>
+  <rect x="120" y="610" width="300" height="16" rx="8" fill="#e7edf2" opacity="0.22"/>
+
+  <!-- input bar -->
+  <rect y="810" width="1600" height="90" fill="#0b111a" opacity="0.9"/>
+  <rect x="80" y="828" width="1320" height="54" rx="27" fill="#1e2c3a"/>
+  <text x="112" y="863" font-size="26" fill="#6d8196">Message</text>
+  <circle cx="1490" cy="855" r="27" fill="url(#ava)"/>
+  <path d="M1478 855 l30 -12 -8 12 8 12 z" fill="#0b111a"/>
+</svg>

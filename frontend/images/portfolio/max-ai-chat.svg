@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e1621"/><stop offset="1" stop-color="#17212b"/>
+    </linearGradient>
+    <linearGradient id="ava" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#37b6ec"/><stop offset="1" stop-color="#1b7fb0"/>
+    </linearGradient>
+    <linearGradient id="art" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff2e88"/><stop offset="0.5" stop-color="#7b2eff"/><stop offset="1" stop-color="#00e5ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+
+  <!-- header -->
+  <rect width="1600" height="112" fill="#0b111a" opacity="0.9"/>
+  <circle cx="84" cy="56" r="34" fill="url(#ava)"/>
+  <rect x="66" y="46" width="36" height="26" rx="7" fill="#0b111a" opacity="0.55"/>
+  <circle cx="77" cy="59" r="4" fill="#7fe3ff"/><circle cx="91" cy="59" r="4" fill="#7fe3ff"/>
+  <line x1="84" y1="46" x2="84" y2="38" stroke="#7fe3ff" stroke-width="3"/><circle cx="84" cy="36" r="3.5" fill="#7fe3ff"/>
+  <text x="140" y="52" font-size="34" font-weight="600" fill="#e7edf2">Max AI</text>
+  <text x="140" y="88" font-size="24" fill="#52b0e3">online · GPT-4o</text>
+  <rect x="1330" y="34" width="190" height="46" rx="23" fill="#1e2c3a"/>
+  <circle cx="1360" cy="57" r="6" fill="#4fd68b"/>
+  <text x="1380" y="66" font-size="24" fill="#9fb4c8">streaming</text>
+
+  <!-- outgoing bubble -->
+  <rect x="820" y="170" width="700" height="86" rx="26" fill="#2b5278"/>
+  <text x="1488" y="224" font-size="30" fill="#eaf3fb" text-anchor="end">Draw a cyberpunk fox logo</text>
+
+  <!-- incoming bubble with skeleton text -->
+  <rect x="80" y="292" width="900" height="230" rx="26" fill="#1e2c3a"/>
+  <text x="122" y="350" font-size="26" fill="#9fd3ef">✓ Model: GPT-4o · web search</text>
+  <rect x="122" y="382" width="760" height="16" rx="8" fill="#e7edf2" opacity="0.22"/>
+  <rect x="122" y="416" width="620" height="16" rx="8" fill="#e7edf2" opacity="0.22"/>
+  <rect x="122" y="450" width="460" height="16" rx="8" fill="#e7edf2" opacity="0.22"/>
+
+  <!-- generated art card -->
+  <rect x="80" y="556" width="560" height="200" rx="26" fill="url(#art)"/>
+  <polygon points="170,700 210,620 250,700" fill="#0e1621" opacity="0.45"/>
+  <polygon points="230,700 280,600 330,700" fill="#0e1621" opacity="0.6"/>
+  <circle cx="430" cy="640" r="10" fill="#ffffff" opacity="0.9"/>
+  <path d="M430 610 l8 22 22 8 -22 8 -8 22 -8 -22 -22 -8 22 -8 z" fill="#ffffff" opacity="0.85"/>
+  <text x="122" y="726" font-size="26" font-weight="600" fill="#ffffff">neon_fox.png</text>
+
+  <!-- input bar -->
+  <rect y="810" width="1600" height="90" fill="#0b111a" opacity="0.9"/>
+  <rect x="80" y="828" width="1320" height="54" rx="27" fill="#1e2c3a"/>
+  <text x="112" y="863" font-size="26" fill="#6d8196">Message</text>
+  <circle cx="1490" cy="855" r="27" fill="url(#ava)"/>
+  <path d="M1478 855 l30 -12 -8 12 8 12 z" fill="#0b111a"/>
+</svg>

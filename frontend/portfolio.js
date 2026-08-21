@@ -22,7 +22,8 @@
     function isSafeUrl(url) {
         if (!url) return false;
         try {
-            var u = new URL(url);
+            // relative paths resolve against the page URL (same origin = safe)
+            var u = new URL(url, window.location.href);
             return u.protocol === 'https:' || u.protocol === 'http:';
         } catch (_) { return false; }
     }
@@ -38,12 +39,199 @@
         max:      'Max',
         custom:   'Custom'
     };
+    
+    // ── Featured projects (hardcoded showcase) ──────────────────────────────
+    // Portfolio is a static showcase: admin-panel CRUD was removed.
+    // Edit titles, descriptions and source links right here.
+    var FEATURED_PROJECTS = [
+        {
+            id: 1,
+            title: 'Max — Telegram AI Chat Bot',
+            platform: 'telegram',
+            plan: 'max',
+            lang: 'Python',
+            price: '$30',
+            term: '3d',
+            bot_url: null,
+            source_url: 'https://github.com/ysiu555-alt/Max-',
+            mockup: 'ai-chat',
+            screenshots: ['images/portfolio/max-ai-chat.svg'],
+            description_ru: 'Max — AI-собеседник в Telegram: бот проксирует диалог в любой OpenAI-совместимый API (Omniroute).\nКлючевые функции\nАккаунты с регистрацией и PBKDF2-хешированием паролей.\nТекстовые и графические модели: выбор и переключение прямо в чате.\nВеб-поиск DuckDuckGo со ссылками на источники и кэшем результатов.\n11 языков интерфейса и админ-панель для управления моделями.\nСтриминг с живым обновлением сообщений, трейсинг запросов и подробные логи.',
+            description_pl: 'Max — rozmówca AI w Telegramie: bot przekazuje dialog do dowolnego API zgodnego z OpenAI (Omniroute).\nKluczowe funkcje\nKonta z rejestracją i hashowaniem haseł PBKDF2.\nModele tekstowe i graficzne: wybór i przełączanie bezpośrednio na czacie.\nWyszukiwarka DuckDuckGo z linkami do źródeł i pamięcią podręczną.\n11 języków interfejsu oraz panel administracyjny do zarządzania modelami.\nStreaming z żywą edycją wiadomości, tracing zapytań i szczegółowe logi.',
+            description_en: 'Max — AI companion in Telegram: the bot proxies chat to any OpenAI-compatible API (Omniroute).\nKey features\nAccounts with registration and PBKDF2 password hashing.\nText and image models: pick and switch right in the chat.\nDuckDuckGo web search with source links and result cache.\n11 UI languages and an admin panel for managing models.\nStreaming with live message edits, per-request tracing and detailed logs.'
+        },
+        {
+            id: 2,
+            title: 'Mini — Feedback Bot',
+            platform: 'telegram',
+            plan: 'mini',
+            lang: 'Python',
+            price: '$3',
+            term: '1d',
+            bot_url: null,
+            source_url: 'https://github.com/ysiu555-alt/Mini-telegram',
+            mockup: 'feedback',
+            screenshots: ['images/portfolio/mini-feedback.svg'],
+            description_ru: 'Mini — личный ящик обратной связи: пользователи пишут боту, владелец читает и отвечает напрямую.\nКлючевые функции\nКаждое сообщение из личного чата мгновенно пересылается администратору.\nОтвет на пересланное сообщение уходит исходному пользователю.\nСервисные сообщения (входы, закрепления, видеочаты) удаляются автоматически.\nПростой запуск: один .env с токеном бота и ID администратора.',
+            description_pl: 'Mini — prywatna skrzynka kontaktu: użytkownicy piszą do bota, właściciel czyta i odpowiada bezpośrednio.\nKluczowe funkcje\nKażda wiadomość z prywatnego czatu jest natychmiast przekazywana administratorowi.\nOdpowiedź na przekazaną wiadomość trafia do pierwotnego użytkownika.\nKomunikaty serwisowe (dołączenia, przypięcia, czaty wideo) są usuwane automatycznie.\nProsty start: jeden plik .env z tokenem bota i ID administratora.',
+            description_en: 'Mini — private feedback inbox: users write to the bot, the owner reads and replies directly.\nKey features\nEvery private chat message is instantly forwarded to the admin.\nA reply to the forwarded message goes back to the original user.\nService messages (joins, pins, video chats) are deleted automatically.\nSimple setup: a single .env with the bot token and admin ID.'
+        },
+        {
+            id: 3,
+            title: 'Mini — Discord Welcome Bot',
+            platform: 'discord',
+            plan: 'mini',
+            lang: 'JavaScript',
+            price: '$3',
+            term: '1d',
+            bot_url: null,
+            source_url: 'https://github.com/ysiu555-alt/Mini-Discord',
+            mockup: 'discord',
+            screenshots: ['images/portfolio/mini-discord-welcome.svg'],
+            description_ru: 'Mini — приветственный бот для Discord: встречает новичков и автоматически выдаёт роль.\nКлючевые функции\nПриветствие в заданном канале при входе участника.\nАвтоматическая выдача настроенной роли каждому новичку.\nОпциональная работа только на одном сервере.\nСвой текст приветствия с плейсхолдерами {user}, {username} и {guild}.',
+            description_pl: 'Mini — bot powitalny dla Discorda: wita nowych uczestników i automatycznie przydziela rolę.\nKluczowe funkcje\nPowitanie na wybranym kanale, gdy uczestnik dołącza.\nAutomatyczne przydzielanie ustawionej roli każdemu nowemu członkowi.\nOpcjonalne działanie tylko na jednym serwerze.\nWłasny tekst powitania z placeholderami {user}, {username} i {guild}.',
+            description_en: 'Mini — Discord welcome bot: greets newcomers and assigns a role automatically.\nKey features\nWelcome message in a chosen channel when a member joins.\nAutomatic assignment of a configured role to every newcomer.\nOptional single-server operation.\nCustom welcome text with {user}, {username} and {guild} placeholders.'
+        },
+        {
+            id: 4,
+            title: 'Mini+ — Appointment Reminder Bot',
+            platform: 'telegram',
+            plan: 'miniplus',
+            lang: 'Python',
+            price: '$4',
+            term: '1d',
+            bot_url: null,
+            source_url: 'https://github.com/ysiu555-alt/Mini-',
+            // NOTE: images/Mini-review/*.png are stale shots of a different bot — do NOT use.
+            mockup: 'appointments',
+            screenshots: ['images/portfolio/miniplus-reminders.svg'],
+            description_ru: 'Mini+ — бот-напоминатель о встречах: следит за расписанием и не даёт ничего пропустить.\nКлючевые функции\nДобавление встреч: дата, время и описание через удобное меню.\nСписок всех предстоящих встреч и отмена любой из них.\nНапоминания каждые 20 минут, начиная за 2 часа до события.\nПоддержка русского и английского языков.\nSQLite с хранением всех дат и времени в UTC.',
+            description_pl: 'Mini+ — bot przypominający o spotkaniach: pilnuje harmonogramu i nie pozwala niczego przegapić.\nKluczowe funkcje\nDodawanie spotkań: data, godzina i opis przez wygodne menu.\nLista wszystkich nadchodzących spotkań i anulowanie dowolnego z nich.\nPrzypomnienia co 20 minut, zaczynając 2 godziny przed wydarzeniem.\nObsługa języka rosyjskiego i angielskiego.\nSQLite z przechowywaniem dat i czasu w UTC.',
+            description_en: 'Mini+ — appointment reminder bot: watches your schedule and makes sure you never miss anything.\nKey features\nAdd appointments with date, time and description via a handy menu.\nList all upcoming appointments and cancel any of them.\nReminders every 20 minutes starting 2 hours before the event.\nRussian and English support.\nSQLite with all datetimes stored in UTC.'
+        }
+    ];
+    
+    var ICON_EXTERNAL = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
+    var ICON_CODE     = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>';
+
+    // ── CSS pseudo-screenshots (mockups) ────────────────────────────────────
+    // Cards have no real screenshots; each bot gets an interface mockup
+    // drawn purely with HTML/CSS. Text is language-neutral on purpose.
+    var MOCKUP_TEMPLATES = {
+        'ai-chat': {
+            theme: 'telegram',
+            title: 'Max · AI',
+            messages: [
+                { dir: 'out', text: 'Prompt → GPT-4o?' },
+                { dir: 'in',  text: '✓ Omniroute · streaming' },
+                { dir: 'in',  bars: [92, 74, 55] }
+            ]
+        },
+        'feedback': {
+            theme: 'telegram',
+            title: 'Mini · Feedback',
+            messages: [
+                { dir: 'out', text: 'Hello! I need a fix…' },
+                { dir: 'sys', text: '→ forwarded to admin' },
+                { dir: 'in',  text: 'Admin: on it, thanks!' }
+            ]
+        },
+        'discord': {
+            theme: 'discord',
+            title: '#welcome',
+            messages: [
+                { dir: 'in', user: 'Mini Bot', role: 'BOT', text: 'Welcome, @alex — role “member” added' },
+                { dir: 'in', bars: [88, 60] }
+            ]
+        },
+        'appointments': {
+            theme: 'telegram',
+            title: 'Mini+ · Reminders',
+            messages: [
+                { dir: 'out', text: '+ 22.08 · 14:00' },
+                { dir: 'in',  text: '✓ Saved · UTC' },
+                { dir: 'in',  text: '⏰ 2h before · every 20 min' }
+            ]
+        }
+    };
+
+    function mockBar(width) {
+        var b = document.createElement('span');
+        b.className = 'pfm-bar';
+        b.style.width = width + '%';
+        return b;
+    }
+
+    function buildMockup(key) {
+        var tpl = MOCKUP_TEMPLATES[key];
+        var root = document.createElement('div');
+        root.className = 'pf-mockup pfm--' + (tpl ? tpl.theme : 'telegram');
+        if (!tpl) return root;
+        root.setAttribute('aria-hidden', 'true');
+
+        // window bar
+        var bar = document.createElement('div');
+        bar.className = 'pfm-bar-row';
+        var dots = document.createElement('span');
+        dots.className = 'pfm-dots';
+        dots.innerHTML = '<i></i><i></i><i></i>';
+        var title = document.createElement('span');
+        title.className = 'pfm-title';
+        title.textContent = tpl.title;
+        bar.appendChild(dots);
+        bar.appendChild(title);
+        root.appendChild(bar);
+
+        // chat area
+        var chat = document.createElement('div');
+        chat.className = 'pfm-chat';
+        tpl.messages.forEach(function (m) {
+            if (m.dir === 'sys') {
+                var sys = document.createElement('div');
+                sys.className = 'pfm-sys';
+                sys.textContent = m.text || '';
+                chat.appendChild(sys);
+                return;
+            }
+            var bubble = document.createElement('div');
+            bubble.className = 'pfm-bubble pfm-bubble--' + m.dir;
+            if (m.user) {
+                var head = document.createElement('span');
+                head.className = 'pfm-user';
+                head.textContent = m.user;
+                if (m.role) {
+                    var badge = document.createElement('i');
+                    badge.className = 'pfm-role';
+                    badge.textContent = m.role;
+                    head.appendChild(badge);
+                }
+                bubble.appendChild(head);
+            }
+            if (m.bars) {
+                m.bars.forEach(function (w) { bubble.appendChild(mockBar(w)); });
+            } else {
+                var tx = document.createElement('span');
+                tx.className = 'pfm-text';
+                tx.textContent = m.text || '';
+                bubble.appendChild(tx);
+            }
+            chat.appendChild(bubble);
+        });
+        root.appendChild(chat);
+
+        // input row
+        var input = document.createElement('div');
+        input.className = 'pfm-input';
+        input.innerHTML = '<span class="pfm-input-field"></span><span class="pfm-input-send">➤</span>';
+        root.appendChild(input);
+
+        return root;
+    }
 
     // ── State ─────────────────────────────────────────────────────────────────
-    var allItems        = [];   // raw from API
+    var allItems        = [];   // normalized featured projects
     var currentPlan     = 'all';
     var currentPlatform = 'all';
-    var isLoading       = false;
 
     // ── Normalize API row → internal item ────────────────────────────────────
     function normalize(row) {
@@ -73,7 +261,8 @@
             term:        row.term           || null,
             botUrl:      row.bot_url        || null,
             sourcesUrl:  row.source_url     || null,
-            screenshots: screenshots
+            screenshots: screenshots,
+            mockup:      row.mockup         || ''
         };
     }
 
@@ -84,29 +273,6 @@
             var platformOk = (platform === 'all' || item.platform === platform);
             return planOk && platformOk;
         });
-    }
-
-    // ── Loading state helpers ─────────────────────────────────────────────────
-    function showListLoading() {
-        var list = document.getElementById('pf-list');
-        if (!list) return;
-        list.innerHTML = '';
-        var wrap = document.createElement('div');
-        wrap.className = 'pf-loading';
-        wrap.innerHTML = '<div class="pf-loading-spinner"></div>';
-        list.appendChild(wrap);
-    }
-
-    function showListError(msg) {
-        var list = document.getElementById('pf-list');
-        if (!list) return;
-        list.innerHTML = '';
-        var wrap = document.createElement('div');
-        wrap.className = 'pf-empty';
-        wrap.innerHTML =
-            '<div class="pf-empty-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>' +
-            '<div class="pf-empty-title">' + escapeHtml(msg) + '</div>';
-        list.appendChild(wrap);
     }
 
     // ── Render list ───────────────────────────────────────────────────────────
@@ -166,10 +332,17 @@
                 img.alt = item.title;
                 img.loading = 'lazy';
                 img.onerror = function () {
-                    media.classList.add('pf-card-media--empty');
                     img.remove();
+                    if (item.mockup && MOCKUP_TEMPLATES[item.mockup]) {
+                        media.appendChild(buildMockup(item.mockup));
+                    } else {
+                        media.classList.add('pf-card-media--empty');
+                    }
                 };
                 media.appendChild(img);
+            } else if (item.mockup && MOCKUP_TEMPLATES[item.mockup]) {
+                // CSS pseudo-screenshot: interface mockup drawn with HTML/CSS
+                media.appendChild(buildMockup(item.mockup));
             } else {
                 media.classList.add('pf-card-media--empty');
                 media.innerHTML = '<span class="pf-card-media-mark">&#9187;</span>';
@@ -250,16 +423,27 @@
         content.innerHTML = '';
         content.appendChild(closeBtn);
 
-        // Header
+        // Header: badges row + title + meta
         var header = document.createElement('div');
         header.className = 'pf-modal-header';
-        header.innerHTML = '<h2 class="pf-modal-title">' + escapeHtml(item.title) + '</h2>';
+
+        var badges = document.createElement('div');
+        badges.className = 'pf-modal-badges';
+        badges.innerHTML =
+            '<span class="pf-modal-badge pf-modal-badge--' + (item.platform === 'discord' ? 'discord' : 'telegram') + '">' +
+                (item.platform === 'discord' ? 'Discord' : 'Telegram') + '</span>' +
+            '<span class="pf-modal-badge pf-modal-badge--plan">' + escapeHtml(planLabels[item.plan] || item.plan) + '</span>' +
+            (item.lang ? '<span class="pf-modal-badge pf-modal-badge--lang">' + escapeHtml(item.lang) + '</span>' : '');
+        header.appendChild(badges);
+
+        var titleEl = document.createElement('h2');
+        titleEl.className = 'pf-modal-title';
+        titleEl.textContent = item.title;
+        header.appendChild(titleEl);
 
         var meta = document.createElement('div');
         meta.className = 'pf-modal-meta';
         [
-            [_t('pf_modal_package'), planLabels[item.plan] || item.plan],
-            [_t('pf_modal_lang'),    item.lang],
             [_t('pf_modal_term'),    item.term],
             [_t('pf_modal_price'),   item.price]
         ].forEach(function (pair) {
@@ -271,8 +455,7 @@
                 '<span class="pmm-value">' + escapeHtml(pair[1]) + '</span>';
             meta.appendChild(div);
         });
-
-        header.appendChild(meta);
+        if (meta.children.length) header.appendChild(meta);
         content.appendChild(header);
 
         // Body
@@ -328,6 +511,14 @@
                 gallery.appendChild(nav);
             }
             rightCol.appendChild(gallery);
+        } else if (item.mockup && MOCKUP_TEMPLATES[item.mockup]) {
+            // No real screenshots - show the large CSS mockup instead
+            var mockWrap = document.createElement('div');
+            mockWrap.className = 'pf-modal-screenshots';
+            var mock = buildMockup(item.mockup);
+            mock.classList.add('pf-mockup--lg');
+            mockWrap.appendChild(mock);
+            rightCol.appendChild(mockWrap);
         }
 
         // Description
@@ -348,9 +539,9 @@
             descDiv.appendChild(p);
         });
 
-        // Action buttons
-        var actionsDiv = document.createElement('div');
-        actionsDiv.className = 'pf-modal-actions';
+        // Action buttons live in a separate footer bar
+        var footer = document.createElement('div');
+        footer.className = 'pf-modal-footer';
 
         if (isSafeUrl(item.botUrl)) {
             var btnBot = document.createElement('a');
@@ -358,8 +549,8 @@
             btnBot.href      = item.botUrl;
             btnBot.target    = '_blank';
             btnBot.rel       = 'noopener noreferrer';
-            btnBot.textContent = _t('pf_btn_go_bot');
-            actionsDiv.appendChild(btnBot);
+            btnBot.innerHTML = ICON_EXTERNAL + '<span>' + escapeHtml(_t('pf_btn_go_bot')) + '</span>';
+            footer.appendChild(btnBot);
         }
 
         if (isSafeUrl(item.sourcesUrl)) {
@@ -368,15 +559,14 @@
             btnDownload.href       = item.sourcesUrl;
             btnDownload.target     = '_blank';
             btnDownload.rel        = 'noopener noreferrer';
-            btnDownload.textContent = _t('pf_btn_download');
-            actionsDiv.appendChild(btnDownload);
+            btnDownload.innerHTML  = ICON_CODE + '<span>' + escapeHtml(_t('pf_btn_download')) + '</span>';
+            footer.appendChild(btnDownload);
         }
 
         rightCol.appendChild(descDiv);
-        rightCol.appendChild(actionsDiv);
-
         body.appendChild(rightCol);
         content.appendChild(body);
+        if (footer.children.length) content.appendChild(footer);
 
         modal.classList.add('active');
         if (closeBtn) closeBtn.focus();
@@ -387,32 +577,12 @@
         if (modal) modal.classList.remove('active');
     }
 
-    // ── Load from API ─────────────────────────────────────────────────────────
+    // ── Load projects ──────────────────────────────────────────────────────────
+    // Portfolio is a static showcase now (admin CRUD removed):
+    // render the hardcoded featured list directly.
     function loadProjects() {
-        if (isLoading) return;
-        isLoading = true;
-        showListLoading();
-
-        // API.getPortfolioProjects is defined in api.js
-        var promise;
-        if (typeof API !== 'undefined' && typeof API.getPortfolioProjects === 'function') {
-            promise = API.getPortfolioProjects();
-        } else {
-            promise = Promise.reject(new Error('API not available'));
-        }
-
-        promise
-            .then(function (data) {
-                isLoading = false;
-                if (!data || !Array.isArray(data.projects)) throw new Error('Invalid response');
-                allItems = data.projects.map(normalize);
-                render(currentPlan, currentPlatform);
-            })
-            .catch(function (err) {
-                isLoading = false;
-                console.error('[Portfolio] load error:', err);
-                showListError(_t('pf_empty_title'));
-            });
+        allItems = FEATURED_PROJECTS.map(normalize);
+        render(currentPlan, currentPlatform);
     }
 
     // ── Init ──────────────────────────────────────────────────────────────────

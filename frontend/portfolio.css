@@ -443,24 +443,54 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.pf-modal-badges {
+    display: flex;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+    margin-bottom: var(--sp-4);
+}
+
+.pf-modal-badge {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-sm);
+    color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.pf-modal-badge--telegram { color: rgb(80, 185, 235);  border-color: rgba(38, 169, 224, 0.35); background: rgba(38, 169, 224, 0.10); }
+.pf-modal-badge--discord  { color: rgb(130, 140, 255); border-color: rgba(88, 101, 242, 0.35); background: rgba(88, 101, 242, 0.10); }
+.pf-modal-badge--plan     { color: var(--white); border-color: rgba(255, 255, 255, 0.22); }
+
 .pf-modal-title {
     font-size: var(--text-2xl);
     font-weight: 700;
     color: var(--white);
-    margin-bottom: var(--sp-4);
+    letter-spacing: -0.015em;
     padding-right: var(--sp-8);
 }
 
 .pf-modal-meta {
     display: flex;
-    gap: var(--sp-6);
     flex-wrap: wrap;
+    margin-top: var(--sp-5);
 }
 
 .pmm-item {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    padding-right: var(--sp-6);
+}
+
+.pmm-item + .pmm-item {
+    padding-left: var(--sp-6);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .pmm-label {
@@ -472,8 +502,9 @@
 }
 
 .pmm-value {
-    font-size: var(--text-base);
-    font-weight: 500;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 600;
     color: var(--white);
 }
 
@@ -598,13 +629,23 @@
     padding: var(--sp-2);
 }
 
-.pf-modal-actions {
-    padding: var(--sp-6) 0;
+.pf-modal-footer {
     display: flex;
-    gap: var(--sp-4);
+    gap: var(--sp-3);
     flex-wrap: wrap;
     align-items: center;
+    padding: var(--sp-5) var(--sp-8);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.22);
 }
+
+.pf-modal-footer .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+}
+
+.pf-modal-footer .btn svg { flex-shrink: 0; }
 
 
 .pf-cta-block {
@@ -664,7 +705,13 @@
     .pf-modal-left { gap: var(--sp-4); }
     .pf-modal-desc h4, .pf-modal-features h4 { margin-bottom: var(--sp-3); }
 
-    .pf-modal-actions { flex-direction: column; }
+    .pf-modal-footer {
+        padding: var(--sp-4) var(--sp-5);
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pf-modal-footer .btn { justify-content: center; }
 
     .pf-cta-inner {
         flex-direction: column;
@@ -687,3 +734,175 @@
 
     .pf-cta-text { font-size: var(--text-lg); }
 }
+
+/* ============================================
+   CSS pseudo-screenshots (mockups)
+   Chat interfaces drawn with HTML/CSS, used
+   when a project has no real screenshots.
+   ============================================ */
+
+.pf-mockup {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    font-size: 10px;
+    user-select: none;
+}
+
+/* themes */
+.pfm--telegram {
+    background: linear-gradient(160deg, #0e1621 0%, #17212b 100%);
+    --pfm-accent: rgb(80, 185, 235);
+    --pfm-out: rgba(38, 169, 224, 0.28);
+}
+
+.pfm--discord {
+    background: linear-gradient(160deg, #1e1f22 0%, #2b2d31 100%);
+    --pfm-accent: #8b9dff;
+    --pfm-out: rgba(88, 101, 242, 0.30);
+}
+
+/* window bar */
+.pfm-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.pfm-dots {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.pfm-dots i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.pfm-dots i:first-child { background: var(--pfm-accent); }
+
+.pfm-title {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* chat area */
+.pfm-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 14px;
+    min-height: 0;
+}
+
+.pfm-bubble {
+    max-width: 62%;
+    padding: 5px 9px;
+    border-radius: 10px;
+    font-size: 9px;
+    line-height: 1.45;
+}
+
+.pfm-bubble--in {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.82);
+    border-bottom-left-radius: 3px;
+}
+
+.pfm-bubble--out {
+    align-self: flex-end;
+    background: var(--pfm-out);
+    color: rgba(255, 255, 255, 0.92);
+    border-bottom-right-radius: 3px;
+}
+
+.pfm-text { display: block; }
+
+.pfm-bar {
+    display: block;
+    height: 5px;
+    margin: 3px 0;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.pfm-sys {
+    align-self: center;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 8px;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.pfm-user {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 2px;
+    font-size: 8.5px;
+    font-weight: 600;
+    color: var(--pfm-accent);
+}
+
+.pfm-role {
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: var(--pfm-accent);
+    font-size: 7px;
+    font-style: normal;
+    font-weight: 700;
+    color: #10131a;
+}
+
+/* input row */
+.pfm-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.pfm-input-field {
+    flex: 1;
+    height: 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.pfm-input-send {
+    font-size: 10px;
+    color: var(--pfm-accent);
+}
+
+/* large variant in the modal */
+.pf-mockup--lg {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    font-size: 13px;
+}
+
+.pf-mockup--lg .pfm-title    { font-size: 11px; }
+.pf-mockup--lg .pfm-bubble   { font-size: 12px; padding: 7px 12px; }
+.pf-mockup--lg .pfm-sys      { font-size: 10px; }
+.pf-mockup--lg .pfm-user     { font-size: 11px; }
+.pf-mockup--lg .pfm-role     { font-size: 9px; }
+.pf-mockup--lg .pfm-bar      { height: 7px; }
+.pf-mockup--lg .pfm-input-field { height: 20px; }
+.pf-mockup--lg .pfm-input-send  { font-size: 14px; }
+
