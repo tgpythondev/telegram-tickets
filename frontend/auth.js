@@ -130,12 +130,48 @@ function clearFieldErrors() {
 
 // ── OAuth (Discord / Google / GitHub) ──────────────────────────────────────
 
+// Завершение OAuth-флоу после редиректа с backend (?oauth=success).
+// Без молчаливого глотания ошибок: либо переходим в кабинет,
+// либо показываем пользователю понятное сообщение.
+async function handleOAuthReturn() {
+    // Чистим URL сразу, чтобы F5 не перезапускал флоу
+    window.history.replaceState({}, '', window.location.pathname);
+
+    const errorEl = document.getElementById('login-error');
+    document.querySelectorAll('.auth-view').forEach(v => v.classList.remove('active'));
+    document.getElementById('login-view').classList.add('active');
+    if (errorEl) errorEl.textContent = 'Вход через провайдера завершён, проверяем сессию...';
+
+    try {
+        const user = await checkAuth();
+        if (user) {
+            window.location.href = user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
+            return;
+        }
+
+        // refresh не вернул сессию — сообщаем вместо «зависания»
+        console.error('OAuth: backend вернул oauth=success, но /auth/refresh не восстановил сессию');
+        if (errorEl) errorEl.textContent = 'Сессия не была создана. Попробуйте войти ещё раз.';
+    } catch (err) {
+        console.error('OAuth session check failed:', err);
+        if (errorEl) errorEl.textContent = 'Ошибка проверки сессии. Попробуйте войти ещё раз.';
+    }
+}
+
 function initOAuth() {
     const params = new URLSearchParams(window.location.search);
     const oauthError = params.get('oauth_error');
+    const oauthSuccess = params.get('oauth') === 'success';
+
+    if (oauthSuccess) {
+        // Успешный возврат от провайдера — завершаем логин явно,
+        // не полагаясь на молчаливый checkAuth ниже
+        handleOAuthReturn();
+        return;
+    }
 
     // Чистим URL после редиректа от backend
-    if (oauthError || params.get('oauth')) {
+    if (oauthError) {
         window.history.replaceState({}, '', window.location.pathname);
     }
 
@@ -188,5 +224,8 @@ initOAuth();
         if (user) {
             window.location.href = user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
         }
-    } catch (_) { /* not logged in */ }
+    } catch (err) {
+        // Не глотаем молча: ошибки CORS/сети должны быть видны при отладке
+        console.warn('Auth check on page load failed:', err);
+    }
 })();

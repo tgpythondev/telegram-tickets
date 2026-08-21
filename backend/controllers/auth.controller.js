@@ -4,13 +4,18 @@ const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = requir
 const { logAuditEvent, AUDIT_ACTIONS } = require('../utils/audit');
 const csrfProtection = require('../middleware/csrf');
 
-// Общая функция для получения cookie настроек
+// Общая функция для получения cookie настроек.
+// ВАЖНО: фронт и бэк на разных доменах (telegram-bots.pl ↔ onrender.com),
+// поэтому на HTTPS-деплое кука обязана быть Secure + SameSite=None, иначе
+// браузер не отправит её в cross-site fetch и логин «молча» не наступит.
+// Зависим от реального URL деплоя, а не от NODE_ENV.
 function getCookieOptions() {
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isHttpsBackend = /^https:\/\//i.test(process.env.BACKEND_URL || '');
     return {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
+        secure: isHttpsBackend,
+        sameSite: isHttpsBackend ? 'none' : 'lax',
+        path: '/',
         maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
     };
 }
@@ -213,6 +218,8 @@ async function refresh(req, res) {
         const refreshToken = req.cookies.refreshToken;
 
         if (!refreshToken) {
+            // Диагностика: кука не дошла (SameSite/блокировка third-party cookies/CORS)
+            console.warn('[Refresh] no refreshToken cookie; headers.cookie present:', !!req.headers.cookie);
             return res.status(401).json({ error: 'Refresh token required' });
         }
 
@@ -221,6 +228,7 @@ async function refresh(req, res) {
         try {
             payload = verifyRefreshToken(refreshToken);
         } catch {
+            console.warn('[Refresh] JWT verification failed');
             return res.status(403).json({ error: 'Invalid or expired refresh token' });
         }
 
@@ -230,12 +238,9 @@ async function refresh(req, res) {
             db.findUserById(payload.id)
         ]);
 
-        if (!tokenData) {
-            return res.status(403).json({ error: 'Invalid or expired refresh token' });
-        }
-
-        if (!user) {
-            return res.status(403).json({ error: 'User not found' });
+        if (!tokenData || !user) {
+            console.warn(`[Refresh] token/user not found in DB: tokenFound=${!!tokenData}, userFound=${!!user}`);
+            return res.status(403).json({ error: !tokenData ? 'Invalid or expired refresh token' : 'User not found' });
         }
 
         const newAccessToken = generateAccessToken(user);

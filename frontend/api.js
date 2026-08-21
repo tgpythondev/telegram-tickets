@@ -1,12 +1,9 @@
 function getApiUrl() {
     const hostname = window.location.hostname;
 
+    // Локальная разработка: любой localhost/127.0.0.1 порт → локальный backend
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:3000/api';
-    }
-
-    if (hostname === 'telegram-bots.pl' || hostname === 'www.telegram-bots.pl') {
-        return 'https://telegram-bots-backend.onrender.com/api';
     }
 
     return 'https://telegram-bots-backend.onrender.com/api';
@@ -187,6 +184,9 @@ async function refreshAccessToken() {
             });
 
             if (!response.ok) {
+                // Диагностика «логин не наступает»: 401 = кука не дошла до бэкенда,
+                // 403 = токен невалиден/отсутствует в БД, 429 = rate limit
+                console.warn(`Token refresh failed: HTTP ${response.status}`);
                 return false;
             }
 

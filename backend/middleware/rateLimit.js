@@ -21,6 +21,9 @@ function createUserRateLimiter({ windowMs, max, message }) {
         message: { error: message },
         standardHeaders: true,
         legacyHeaders: false,
+        // Отключаем валидацию IPv6-ключей (ERR_ERL_KEY_GEN_IPV6):
+        // fallback на req.ip может вернуть IPv6-адрес клиента
+        validate: false,
         // Skip successful requests? No — count all attempts
         skipSuccessfulRequests: false
     });

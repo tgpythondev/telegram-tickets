@@ -321,36 +321,56 @@ async function handleCallback(req, res) {
     const provider = req.params.provider;
     const cfg = getProviderConfig(provider);
 
+    console.log(`[OAuth:${provider}] callback hit`);
+
     if (!cfg) {
         return res.status(404).json({ error: 'Unknown OAuth provider' });
     }
 
     // Пользователь нажал "Отмена" на стороне провайдера
     if (req.query.error) {
+        console.warn(`[OAuth:${provider}] provider returned error: ${req.query.error}`);
         return redirectToFrontend(res, { oauth_error: 'access_denied', provider });
     }
 
     const { code, state } = req.query;
-    if (!code || !state || !consumeState(state, provider)) {
+    if (!code || !state) {
+        console.warn(`[OAuth:${provider}] missing code/state in query`);
+        return redirectToFrontend(res, { oauth_error: 'invalid_state', provider });
+    }
+    if (!consumeState(state, provider)) {
+        // Типичные причины: рестарт инстанса между authorize и callback,
+        // повторное использование state, или >10 минут на авторизацию
+        console.warn(`[OAuth:${provider}] invalid/expired/reused state`);
         return redirectToFrontend(res, { oauth_error: 'invalid_state', provider });
     }
 
     try {
         const profile = await profileFetchers[provider](cfg, code);
+        console.log(`[OAuth:${provider}] profile fetched: providerUserId=${profile.providerUserId}, emailVerified=${profile.emailVerified}`);
 
         if (!profile.email || !profile.emailVerified) {
             return redirectToFrontend(res, { oauth_error: 'email_required', provider });
         }
 
         const { user, isNewUser } = await findOrCreateOAuthUser(provider, profile);
+        console.log(`[OAuth:${provider}] user ready: id=${user.id}, username=${user.username}, isNew=${isNewUser}`);
+
+        // Сессия: все записи в БД await-ятся ДО редиректа, кука ставится
+        // синхронно в заголовки этого же ответа — race condition невозможен
         await issueSession(user, req, res);
+
+        // Контрольный лог: убеждаемся, что Set-Cookie реально попал в ответ
+        const setCookie = res.getHeader('Set-Cookie');
+        console.log(`[OAuth:${provider}] session issued, Set-Cookie: ${setCookie ? setCookie.replace(/refreshToken=[^;]+/, 'refreshToken=<hidden>') : 'MISSING!'}`);
 
         // Audit log: fire-and-forget
         logAuditEvent(user.id, AUDIT_ACTIONS.OAUTH_LOGIN, req, { provider, isNewUser });
 
+        console.log(`[OAuth:${provider}] redirecting to frontend with oauth=success`);
         return redirectToFrontend(res, { oauth: 'success' });
     } catch (error) {
-        console.error(`OAuth ${provider} callback error:`, error.message);
+        console.error(`[OAuth:${provider}] callback error:`, error.message);
         return redirectToFrontend(res, { oauth_error: 'internal', provider });
     }
 }

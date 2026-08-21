@@ -76,6 +76,23 @@ function validateEnvironment() {
         }
     }
 
+    // Диагностика OAuth-конфигурации при старте — эти ошибки проявляются
+    // как «юзер создаётся в БД, но логин на фронте не наступает»
+    const backendUrl = process.env.BACKEND_URL;
+    if (backendUrl && !/^https:\/\//i.test(backendUrl) && process.env.NODE_ENV === 'production') {
+        console.warn('⚠️  BACKEND_URL не HTTPS — refresh-cookie не сможет быть Secure+SameSite=None, cross-site логин сломается');
+    }
+    if (!backendUrl && process.env.NODE_ENV === 'production') {
+        console.warn('⚠️  BACKEND_URL не задан — OAuth redirect_uri будет строиться от http://localhost:3000');
+    }
+    for (const provider of ['DISCORD', 'GOOGLE', 'GITHUB']) {
+        const hasId = !!process.env[`${provider}_CLIENT_ID`];
+        const hasSecret = !!process.env[`${provider}_CLIENT_SECRET`];
+        if (hasId !== hasSecret) {
+            console.warn(`⚠️  ${provider}: задан только ${hasId ? 'CLIENT_ID' : 'CLIENT_SECRET'} — провайдер будет отключён`);
+        }
+    }
+
     console.log('✅ Все переменные окружения проверены');
 }
 
@@ -162,11 +179,18 @@ if (pinoHttp) {
 }
 
 // CORS
-const allowedOrigins = [
+// Уникализируем список и включаем www-вариант FRONTEND_URL
+const allowedOrigins = [...new Set([
     process.env.FRONTEND_URL || 'https://telegram-bots.pl',
+    (process.env.FRONTEND_URL || '').replace(/^(https:\/\/)(?!www\.)/, '$1www.'),
     'https://telegram-bots.pl',
-    'https://www.telegram-bots.pl'
-];
+    'https://www.telegram-bots.pl',
+    // Локальная разработка фронта
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+    'http://localhost:8080',
+    'http://127.0.0.1:8080'
+])].filter(Boolean);
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -195,9 +219,16 @@ app.use((req, res, next) => {
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 // OAuth монтируется ДО '/api/auth' с authLimiter — редиректы провайдеров
-// не должны попадать под жёсткий лимит попыток входа
+// не должны попадать под жёсткий лимит попыток входа.
+// authLimiter применяется только к парольным эндпоинтам: /auth/refresh, /auth/me
+// и /auth/csrf защищены JWT/таблицей токенов, а их попадание под лимит 10/20с
+// ломает логин после OAuth-редиректа при активном тестировании.
+const passwordEndpointLimiter = (req, res, next) => {
+    if (req.path === '/login' || req.path === '/register') return authLimiter(req, res, next);
+    return next();
+};
 app.use('/api/auth/oauth', oauthRoutes);
-app.use('/api/auth',      authLimiter, authRoutes);
+app.use('/api/auth',      passwordEndpointLimiter, authRoutes);
 app.use('/api/tickets',  ticketsRoutes);
 app.use('/api/admin',    adminRoutes);
 app.use('/api/promo',    promoRoutes);
