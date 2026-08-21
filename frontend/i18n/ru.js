@@ -172,6 +172,16 @@ window.LANG_RU = {
   oauth_err_provider_disabled: 'Этот способ входа временно недоступен',
   oauth_err_email_required: 'Требуется подтверждённый email',
   oauth_err_internal: 'Ошибка входа через OAuth. Попробуйте ещё раз.',
+  oauth_nick_title:   'Сменить никнейм?',
+  oauth_nick_text:    'Аккаунт создан через соцсеть и получил автоматический ник. Хотите сменить его?',
+  oauth_nick_current: 'Текущий ник:',
+  oauth_nick_yes:     'Да, сменить',
+  oauth_nick_no:      'Нет, оставить',
+  oauth_nick_label:   'Новый ник',
+  oauth_nick_save:    'Сохранить',
+  oauth_nick_cancel:  'Отмена',
+  oauth_nick_invalid: 'Только буквы, цифры, подчёркивание и дефис (3–20 символов)',
+  oauth_nick_error:   'Не удалось сменить ник. Попробуйте ещё раз.',
 
   // ── Configurator page ─────────────────────────
   page_title_cfg:    'Конфигуратор | KALIANG',

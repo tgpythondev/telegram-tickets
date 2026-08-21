@@ -283,6 +283,49 @@ async function me(req, res) {
     }
 }
 
+// Смена ника — предлагается после первого OAuth-входа с автогенерированным именем
+async function changeUsername(req, res) {
+    try {
+        const { username } = req.body;
+
+        if (!username) {
+            return res.status(400).json({ error: 'Username is required' });
+        }
+
+        // Те же правила валидации, что и при регистрации
+        if (username.length < 3 || username.length > 20) {
+            return res.status(400).json({ error: 'Username must be between 3 and 20 characters' });
+        }
+
+        if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+            return res.status(400).json({ error: 'Username can only contain letters, numbers, underscore and dash' });
+        }
+
+        const existingUser = await db.findUserByUsername(username);
+        if (existingUser && existingUser.id !== req.user.id) {
+            return res.status(409).json({ error: 'Username already exists' });
+        }
+
+        const user = await db.updateUsername(req.user.id, username);
+
+        // Audit log: fire-and-forget
+        logAuditEvent(req.user.id, AUDIT_ACTIONS.USERNAME_CHANGE, req, { username });
+
+        res.json({
+            user: {
+                id: user.id,
+                username: user.username,
+                isAdmin: user.is_admin,
+                telegram_chat_id: user.telegram_chat_id || null,
+                telegram_notifications_enabled: user.telegram_notifications_enabled || false
+            }
+        });
+    } catch (error) {
+        console.error('Change username error:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
 // Привязать Telegram аккаунт
 async function linkTelegram(req, res) {
     try {
@@ -386,6 +429,7 @@ module.exports = {
     logout,
     refresh,
     me,
+    changeUsername,
     linkTelegram,
     unlinkTelegram,
     getTelegramStatus,

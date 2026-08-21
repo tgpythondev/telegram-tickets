@@ -134,6 +134,10 @@ function clearFieldErrors() {
 // Без молчаливого глотания ошибок: либо переходим в кабинет,
 // либо показываем пользователю понятное сообщение.
 async function handleOAuthReturn() {
+    // Читаем query и фрагмент ДО очистки URL
+    const query = new URLSearchParams(window.location.search);
+    const isNewUser = query.get('new_user') === '1';
+
     // Токены во фрагменте — fallback на случай, когда браузер блокирует
     // third-party cookies и кука refreshToken не сохраняется
     const fragment = new URLSearchParams(window.location.hash.slice(1));
@@ -156,6 +160,11 @@ async function handleOAuthReturn() {
     try {
         const user = await checkAuth();
         if (user) {
+            // Новому OAuth-пользователю предлагаем сменить автогенерированный ник
+            if (isNewUser) {
+                showNicknameModal(user);
+                return;
+            }
             window.location.href = user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
             return;
         }
@@ -167,6 +176,68 @@ async function handleOAuthReturn() {
         console.error('OAuth session check failed:', err);
         if (errorEl) errorEl.textContent = 'Ошибка проверки сессии. Попробуйте войти ещё раз.';
     }
+}
+
+// Плашка «Хотите сменить ник?» после первого OAuth-входа
+function showNicknameModal(user) {
+    const modal    = document.getElementById('nickname-modal');
+    const askBlock = document.getElementById('nick-modal-ask');
+    const form     = document.getElementById('nick-modal-form');
+    const input    = document.getElementById('nick-input');
+    const errorEl  = document.getElementById('nick-error');
+    const saveBtn  = document.getElementById('nick-save-btn');
+
+    const finish = () => {
+        window.location.href = user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
+    };
+
+    document.getElementById('nick-current-value').textContent = user.username;
+    input.value = user.username;
+
+    // «Нет» / «Отмена» — просто уходим в кабинет
+    document.getElementById('nick-no-btn').addEventListener('click', finish);
+    document.getElementById('nick-cancel-btn').addEventListener('click', finish);
+
+    // «Да» — показываем форму смены ника
+    document.getElementById('nick-yes-btn').addEventListener('click', () => {
+        askBlock.classList.add('is-hidden');
+        form.classList.remove('is-hidden');
+        input.focus();
+        input.select();
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newUsername = input.value.trim();
+        errorEl.textContent = '';
+
+        if (newUsername.length < 3 || newUsername.length > 20) {
+            errorEl.textContent = t('val_min3');
+            return;
+        }
+        if (!/^[a-zA-Z0-9_-]+$/.test(newUsername)) {
+            errorEl.textContent = t('oauth_nick_invalid');
+            return;
+        }
+        // Ник не менялся — просто уходим
+        if (newUsername === user.username) {
+            finish();
+            return;
+        }
+
+        setLoading(saveBtn, true, t('oauth_nick_save'));
+        try {
+            const data = await API.changeUsername(newUsername);
+            const updatedUser = (data && data.user) ? data.user : { ...user, username: newUsername };
+            sessionStorage.setItem('user', JSON.stringify(updatedUser));
+            finish();
+        } catch (err) {
+            errorEl.textContent = err.message || t('oauth_nick_error');
+            setLoading(saveBtn, false, t('oauth_nick_save'));
+        }
+    });
+
+    modal.classList.remove('is-hidden');
 }
 
 function initOAuth() {

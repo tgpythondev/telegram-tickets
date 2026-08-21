@@ -172,6 +172,16 @@ window.LANG_EN = {
   oauth_err_provider_disabled: 'This sign-in method is temporarily unavailable',
   oauth_err_email_required: 'A verified email address is required',
   oauth_err_internal: 'OAuth sign-in error. Please try again.',
+  oauth_nick_title:   'Change your nickname?',
+  oauth_nick_text:    'Your account was created via social login and received an automatic nickname. Would you like to change it?',
+  oauth_nick_current: 'Current nickname:',
+  oauth_nick_yes:     'Yes, change',
+  oauth_nick_no:      'No, keep it',
+  oauth_nick_label:   'New nickname',
+  oauth_nick_save:    'Save',
+  oauth_nick_cancel:  'Cancel',
+  oauth_nick_invalid: 'Only letters, numbers, underscore and dash (3–20 characters)',
+  oauth_nick_error:   'Failed to change the nickname. Please try again.',
 
   // ── Configurator page ─────────────────────────
   page_title_cfg:    'Configurator | KALIANG',

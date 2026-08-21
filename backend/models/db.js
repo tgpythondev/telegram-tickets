@@ -43,6 +43,15 @@ async function createUserOAuth(username, email) {
     return result.rows[0];
 }
 
+// Смена ника (например, после OAuth-входа с автогенерированным именем)
+async function updateUsername(userId, username) {
+    const result = await db.query(
+        'UPDATE users SET username = $1 WHERE id = $2 RETURNING id, username, is_admin, email, telegram_chat_id, telegram_notifications_enabled, telegram_linked_at',
+        [username, userId]
+    );
+    return result.rows[0];
+}
+
 // ============ OAUTH ACCOUNTS ============
 
 async function findOAuthAccount(provider, providerUserId) {
@@ -356,6 +365,7 @@ module.exports = {
     findUserById,
     findUserByEmail,
     createUserOAuth,
+    updateUsername,
     findOAuthAccount,
     linkOAuthAccount,
     touchOAuthAccount,

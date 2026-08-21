@@ -276,6 +276,12 @@ const API = {
     logout: () =>
         apiRequest('/auth/logout', { method: 'POST' }),
 
+    changeUsername: (username) =>
+        apiRequest('/auth/username', {
+            method: 'PATCH',
+            body: JSON.stringify({ username })
+        }),
+
     // Tickets
     getTickets: (status = null) => {
         const query = status ? `?status=${status}` : '';

@@ -17,6 +17,9 @@ router.post('/logout', authenticateToken, csrfProtection, authController.logout)
 router.post('/refresh', authController.refresh); // БЕЗ CSRF - автоматический запрос
 router.get('/me', authenticateToken, authController.me);
 
+// Смена ника (предлагается после первого OAuth-входа)
+router.patch('/username', authenticateToken, csrfProtection, authController.changeUsername);
+
 // Telegram интеграция
 router.post('/telegram/link', authenticateToken, csrfProtection, authController.linkTelegram);
 router.post('/telegram/unlink', authenticateToken, csrfProtection, authController.unlinkTelegram);

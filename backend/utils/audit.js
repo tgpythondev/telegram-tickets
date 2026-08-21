@@ -11,6 +11,7 @@ const AUDIT_ACTIONS = {
     REGISTER: 'register',
     LOGOUT: 'logout',
     PASSWORD_CHANGE: 'password_change',
+    USERNAME_CHANGE: 'username_change',
     TELEGRAM_LINK: 'telegram_link',
     TELEGRAM_UNLINK: 'telegram_unlink',
     TOKEN_REFRESH: 'token_refresh',

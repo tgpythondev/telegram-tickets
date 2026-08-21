@@ -172,6 +172,16 @@ window.LANG_PL = {
   oauth_err_provider_disabled: 'Ta metoda logowania jest tymczasowo niedostępna',
   oauth_err_email_required: 'Wymagany jest potwierdzony adres e-mail',
   oauth_err_internal: 'Błąd logowania OAuth. Spróbuj ponownie.',
+  oauth_nick_title:   'Zmienić pseudonim?',
+  oauth_nick_text:    'Konto zostało utworzone przez portal społecznościowy i otrzymało automatyczny pseudonim. Chcesz go zmienić?',
+  oauth_nick_current: 'Obecny pseudonim:',
+  oauth_nick_yes:     'Tak, zmień',
+  oauth_nick_no:      'Nie, zostaw',
+  oauth_nick_label:   'Nowy pseudonim',
+  oauth_nick_save:    'Zapisz',
+  oauth_nick_cancel:  'Anuluj',
+  oauth_nick_invalid: 'Tylko litery, cyfry, podkreślnik i myślnik (3–20 znaków)',
+  oauth_nick_error:   'Nie udało się zmienić pseudonimu. Spróbuj ponownie.',
 
   // ── Configurator page ─────────────────────────
   page_title_cfg:    'Konfigurator | KALIANG',

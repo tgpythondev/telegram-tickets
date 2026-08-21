@@ -169,6 +169,35 @@
         </div>
     </div>
 
+    <!-- Плашка смены ника после первого OAuth-входа -->
+    <div id="nickname-modal" class="nick-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="nick-modal-title">
+        <div class="nick-modal-box">
+            <h2 class="nick-modal-title" id="nick-modal-title" data-i18n="oauth_nick_title">Zmienić pseudonim?</h2>
+            <p class="nick-modal-text" data-i18n="oauth_nick_text">Konto otrzymało automatyczny pseudonim.</p>
+            <div class="nick-modal-current">
+                <span data-i18n="oauth_nick_current">Obecny pseudonim:</span>
+                <strong id="nick-current-value"></strong>
+            </div>
+
+            <div id="nick-modal-ask" class="nick-modal-actions">
+                <button type="button" class="btn btn-primary" id="nick-yes-btn" data-i18n="oauth_nick_yes">Tak, zmień</button>
+                <button type="button" class="btn nick-btn-ghost" id="nick-no-btn" data-i18n="oauth_nick_no">Nie</button>
+            </div>
+
+            <form id="nick-modal-form" class="nick-modal-form is-hidden" novalidate>
+                <div class="form-group">
+                    <label for="nick-input" data-i18n="oauth_nick_label">Nowy pseudonim</label>
+                    <input type="text" id="nick-input" minlength="3" maxlength="20" autocomplete="username" required>
+                    <div class="error-message" id="nick-error"></div>
+                </div>
+                <div class="nick-modal-actions">
+                    <button type="submit" class="btn btn-primary" id="nick-save-btn" data-i18n="oauth_nick_save">Zapisz</button>
+                    <button type="button" class="btn nick-btn-ghost" id="nick-cancel-btn" data-i18n="oauth_nick_cancel">Anuluj</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="i18n/ru.js"></script>
     <script src="i18n/pl.js"></script>
     <script src="i18n/en.js"></script>

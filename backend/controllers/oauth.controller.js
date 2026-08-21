@@ -371,9 +371,14 @@ async function handleCallback(req, res) {
 
         // Кука — основной канал, но фронт и бэк на разных доменах, и браузеры
         // массово блокируют third-party cookies. Дублируем токены в URL-фрагменте:
-        // фрагмент не отправляется на сервер и не пишется в логи прокси.
+        // фрагмент не отправляется на сервер и не пишётся в логи прокси.
+        // new_user=1 — фронт предложит сменить автогенерированный ник
         console.log(`[OAuth:${provider}] redirecting to frontend with oauth=success + token fragment`);
-        return redirectToFrontend(res, { oauth: 'success' }, `access_token=${accessToken}&refresh_token=${refreshToken}`);
+        return redirectToFrontend(
+            res,
+            { oauth: 'success', new_user: isNewUser ? '1' : '0' },
+            `access_token=${accessToken}&refresh_token=${refreshToken}`
+        );
     } catch (error) {
         console.error(`[OAuth:${provider}] callback error:`, error.message);
         return redirectToFrontend(res, { oauth_error: 'internal', provider });
