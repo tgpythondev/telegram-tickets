@@ -264,14 +264,16 @@ async function issueSession(user, req, res) {
     await db.saveRefreshToken(user.id, refreshToken, refreshExpiry);
 
     res.cookie('refreshToken', refreshToken, getCookieOptions());
-    return accessToken;
+    return { accessToken, refreshToken };
 }
 
-function redirectToFrontend(res, params) {
+// fragment — токены в URL-фрагменте (fallback при блокировке third-party cookies)
+function redirectToFrontend(res, params, fragment = null) {
     const url = new URL('/auth.html', FRONTEND_URL);
     for (const [key, value] of Object.entries(params)) {
         url.searchParams.set(key, value);
     }
+    if (fragment) url.hash = fragment;
     return res.redirect(url.toString());
 }
 
@@ -358,7 +360,7 @@ async function handleCallback(req, res) {
 
         // Сессия: все записи в БД await-ятся ДО редиректа, кука ставится
         // синхронно в заголовки этого же ответа — race condition невозможен
-        await issueSession(user, req, res);
+        const { accessToken, refreshToken } = await issueSession(user, req, res);
 
         // Контрольный лог: убеждаемся, что Set-Cookie реально попал в ответ
         const setCookie = res.getHeader('Set-Cookie');
@@ -367,8 +369,11 @@ async function handleCallback(req, res) {
         // Audit log: fire-and-forget
         logAuditEvent(user.id, AUDIT_ACTIONS.OAUTH_LOGIN, req, { provider, isNewUser });
 
-        console.log(`[OAuth:${provider}] redirecting to frontend with oauth=success`);
-        return redirectToFrontend(res, { oauth: 'success' });
+        // Кука — основной канал, но фронт и бэк на разных доменах, и браузеры
+        // массово блокируют third-party cookies. Дублируем токены в URL-фрагменте:
+        // фрагмент не отправляется на сервер и не пишется в логи прокси.
+        console.log(`[OAuth:${provider}] redirecting to frontend with oauth=success + token fragment`);
+        return redirectToFrontend(res, { oauth: 'success' }, `access_token=${accessToken}&refresh_token=${refreshToken}`);
     } catch (error) {
         console.error(`[OAuth:${provider}] callback error:`, error.message);
         return redirectToFrontend(res, { oauth_error: 'internal', provider });

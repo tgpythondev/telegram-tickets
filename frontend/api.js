@@ -15,6 +15,21 @@ let inMemoryAccessToken = null;
 
 let csrfToken = null;
 
+// Fallback-канал для refresh-токена на случай, когда браузер блокирует
+// third-party cookies (фронт и бэк на разных доменах). Хранится в sessionStorage
+// и отправляется в теле /auth/refresh вместо куки.
+function saveRefreshToken(token) {
+    try { sessionStorage.setItem('refreshToken', token); } catch (_) { /* private mode */ }
+}
+
+function getStoredRefreshToken() {
+    try { return sessionStorage.getItem('refreshToken'); } catch (_) { return null; }
+}
+
+function clearStoredRefreshToken() {
+    try { sessionStorage.removeItem('refreshToken'); } catch (_) { /* ignore */ }
+}
+
 /**
  * Show error message to user
  * @param {string} message - Error message
@@ -178,13 +193,18 @@ async function refreshAccessToken() {
     isRefreshing = true;
     refreshPromise = (async () => {
         try {
+            // Кука — основной канал; если её нет/браузер её не шлёт,
+            // используем сохранённый токен из sessionStorage
+            const storedRefresh = getStoredRefreshToken();
             const response = await fetch(`${API_URL}/auth/refresh`, {
                 method: 'POST',
                 credentials: 'include',
+                headers: storedRefresh ? { 'Content-Type': 'application/json' } : {},
+                body: storedRefresh ? JSON.stringify({ refreshToken: storedRefresh }) : undefined
             });
 
             if (!response.ok) {
-                // Диагностика «логин не наступает»: 401 = кука не дошла до бэкенда,
+                // Диагностика «логин не наступает»: 401 = токен не дошёл до бэкенда,
                 // 403 = токен невалиден/отсутствует в БД, 429 = rate limit
                 console.warn(`Token refresh failed: HTTP ${response.status}`);
                 return false;
@@ -213,6 +233,7 @@ function logout() {
     inMemoryAccessToken = null;
     csrfToken = null;
     sessionStorage.removeItem('user');
+    clearStoredRefreshToken();
     window.location.href = '/auth.html';
 }
 

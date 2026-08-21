@@ -130,12 +130,23 @@ function clearFieldErrors() {
 
 // ── OAuth (Discord / Google / GitHub) ──────────────────────────────────────
 
-// Завершение OAuth-флоу после редиректа с backend (?oauth=success).
+// Завершение OAuth-флоу после редиректа с backend (?oauth=success#access_token=...).
 // Без молчаливого глотания ошибок: либо переходим в кабинет,
 // либо показываем пользователю понятное сообщение.
 async function handleOAuthReturn() {
-    // Чистим URL сразу, чтобы F5 не перезапускал флоу
+    // Токены во фрагменте — fallback на случай, когда браузер блокирует
+    // third-party cookies и кука refreshToken не сохраняется
+    const fragment = new URLSearchParams(window.location.hash.slice(1));
+    const accessToken = fragment.get('access_token');
+    const refreshToken = fragment.get('refresh_token');
+
+    // Чистим URL сразу: токены не должны оставаться в истории и адресной строке
     window.history.replaceState({}, '', window.location.pathname);
+
+    if (accessToken && refreshToken) {
+        inMemoryAccessToken = accessToken;
+        saveRefreshToken(refreshToken);
+    }
 
     const errorEl = document.getElementById('login-error');
     document.querySelectorAll('.auth-view').forEach(v => v.classList.remove('active'));
@@ -161,7 +172,8 @@ async function handleOAuthReturn() {
 function initOAuth() {
     const params = new URLSearchParams(window.location.search);
     const oauthError = params.get('oauth_error');
-    const oauthSuccess = params.get('oauth') === 'success';
+    const oauthSuccess = params.get('oauth') === 'success'
+        || window.location.hash.includes('access_token=');
 
     if (oauthSuccess) {
         // Успешный возврат от провайдера — завершаем логин явно,

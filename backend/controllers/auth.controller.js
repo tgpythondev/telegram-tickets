@@ -215,7 +215,9 @@ async function logout(req, res) {
 // Обновление access token
 async function refresh(req, res) {
     try {
-        const refreshToken = req.cookies.refreshToken;
+        // Кука — основной канал; токен в теле запроса — fallback для браузеров,
+        // блокирующих third-party cookies (фронт и бэк на разных доменах)
+        const refreshToken = req.cookies.refreshToken || (req.body && req.body.refreshToken) || null;
 
         if (!refreshToken) {
             // Диагностика: кука не дошла (SameSite/блокировка third-party cookies/CORS)
