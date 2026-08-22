@@ -68,6 +68,15 @@ async function register(req, res) {
         const passwordHash = await bcrypt.hash(password, 10);
         const user = await db.createUser(username, passwordHash);
 
+        // Dev-режим: автоматически выдать админку юзеру из ADMIN_USERNAME
+        // (в start-dev.bat). В production-режиме ветка недостижима.
+        if (process.env.DB_MODE === 'memory' && process.env.ADMIN_USERNAME &&
+            username.toLowerCase() === process.env.ADMIN_USERNAME.toLowerCase()) {
+            await db.setAdmin(user.id);
+            user.is_admin = true;
+            console.log(`[memory-db] Пользователю "${username}" выданы права администратора (ADMIN_USERNAME)`);
+        }
+
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
 

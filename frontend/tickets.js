@@ -706,6 +706,10 @@ const Tickets = (() => {
             if (!user) { window.location.href = '/auth.html'; return; }
             if (user.isAdmin) { window.location.href = 'admin/dashboard.html'; return; }
 
+            // Old page replaced by the personal cabinet
+            window.location.href = 'account.html' + window.location.hash;
+            return;
+
             const nameEl = document.getElementById('sidebar-username');
             if (nameEl) nameEl.textContent = user.username || 'Пользователь';
 

@@ -23,6 +23,14 @@ function toggle(id, ok) {
     if (ok) el.classList.add('ok'); else el.classList.remove('ok');
 }
 
+// Safe post-auth redirect: allow only local .html pages via ?returnTo=
+function postAuthDest(isAdmin) {
+    if (isAdmin) return 'admin/dashboard.html';
+    const rt = new URLSearchParams(window.location.search).get('returnTo');
+    if (rt && /^[a-z0-9_-]+\.html$/i.test(rt)) return rt;
+    return 'account.html';
+}
+
 document.getElementById('login-form').addEventListener('submit', async e => {
     e.preventDefault();
 
@@ -54,7 +62,7 @@ document.getElementById('login-form').addEventListener('submit', async e => {
         inMemoryAccessToken = data.accessToken;
         sessionStorage.setItem('user', JSON.stringify(data.user));
 
-        window.location.href = data.user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
+        window.location.href = postAuthDest(data.user.isAdmin);
     } catch (err) {
         console.error('Login error:', err);
         errorEl.textContent = err.message || t('err_login');
@@ -107,7 +115,7 @@ document.getElementById('register-form').addEventListener('submit', async e => {
         inMemoryAccessToken = data.accessToken;
         sessionStorage.setItem('user', JSON.stringify(data.user));
 
-        window.location.href = 'tickets.html';
+        window.location.href = postAuthDest(false);
     } catch (err) {
         console.error('Register error:', err);
         errorEl.textContent = err.message || t('err_register');
@@ -165,7 +173,7 @@ async function handleOAuthReturn() {
                 showNicknameModal(user);
                 return;
             }
-            window.location.href = user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
+            window.location.href = postAuthDest(user.isAdmin);
             return;
         }
 
@@ -188,7 +196,7 @@ function showNicknameModal(user) {
     const saveBtn  = document.getElementById('nick-save-btn');
 
     const finish = () => {
-        window.location.href = user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
+        window.location.href = postAuthDest(user.isAdmin);
     };
 
     document.getElementById('nick-current-value').textContent = user.username;
@@ -305,7 +313,7 @@ initOAuth();
     try {
         const user = await checkAuth();
         if (user) {
-            window.location.href = user.isAdmin ? 'admin/dashboard.html' : 'tickets.html';
+            window.location.href = postAuthDest(user.isAdmin);
         }
     } catch (err) {
         // Не глотаем молча: ошибки CORS/сети должны быть видны при отладке

@@ -11,175 +11,344 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="../i18n/i18n.css">
+    <link rel="stylesheet" href="../style.css?v=20260823">
+    <link rel="stylesheet" href="dashboard.css?v=20260823">
+    <link rel="stylesheet" href="../i18n/i18n.css?v=20260823">
 </head>
 <body class="admin-body">
 
-    <!-- ── Admin layout ───────────────────── -->
     <div class="admin-layout">
 
-        <!-- Sidebar -->
+        <!-- ── Sidebar ─────────────────────── -->
         <aside class="admin-sidebar">
-                <div class="asb-top">
-                    <a href="../index.html" class="asb-logo">KALIANG<span class="logo-dot">·</span></a>
-                    <div class="asb-user">
-                        <span class="asb-username" id="admin-username">—</span>
-                        <span class="asb-badge" data-i18n="admin_badge">ADMIN</span>
+            <div class="asb-top">
+                <a href="../index.html" class="asb-logo">KALIANG<span class="logo-dot">·</span></a>
+                <div class="asb-user">
+                    <span class="asb-username" id="admin-username">—</span>
+                    <span class="asb-badge" data-i18n="admin_badge">ADMIN</span>
+                </div>
+            </div>
+
+            <nav class="asb-nav">
+                <a class="asb-nav-item active" data-section="overview" href="#">
+                    <span class="asb-nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></span>
+                    <span data-i18n="adm_nav_overview">Обзор</span>
+                </a>
+                <a class="asb-nav-item" data-section="orders" href="#">
+                    <span class="asb-nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+                    <span data-i18n="adm_nav_orders">Заказы</span>
+                    <span class="asb-count" id="nav-count-orders"></span>
+                </a>
+                <a class="asb-nav-item" data-section="support" href="#">
+                    <span class="asb-nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                    <span data-i18n="adm_nav_support">Поддержка</span>
+                    <span class="asb-count" id="nav-count-support"></span>
+                </a>
+                <a class="asb-nav-item" data-section="portfolio" href="#">
+                    <span class="asb-nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
+                    <span data-i18n="admin_nav_portfolio">Портфолио</span>
+                </a>
+                <a class="asb-nav-item" data-section="promo" href="#">
+                    <span class="asb-nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/></svg></span>
+                    <span data-i18n="admin_nav_promo">Промокоды</span>
+                </a>
+            </nav>
+
+            <div class="asb-bottom">
+                <button class="asb-logout" id="logout-btn" data-i18n="logout_btn">← Wyloguj się</button>
+            </div>
+        </aside>
+
+        <!-- ── Main ────────────────────────── -->
+        <div class="admin-main">
+
+            <!-- ═══ Обзор ═══ -->
+            <section class="adm-section active" id="section-overview">
+                <div class="adm-page-head">
+                    <h1 class="adm-page-title" data-i18n="adm_overview_title">Обзор</h1>
+                    <p class="adm-page-sub" data-i18n="adm_overview_sub">Сводка по заявкам</p>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-num" id="stat-open">—</span>
+                        <span class="stat-lbl" data-i18n="stat_open">OTWARTE</span>
+                    </div>
+                    <div class="stat-sep"></div>
+                    <div class="stat-item">
+                        <span class="stat-num" id="stat-progress">—</span>
+                        <span class="stat-lbl" data-i18n="stat_progress">W TRAKCIE</span>
+                    </div>
+                    <div class="stat-sep"></div>
+                    <div class="stat-item">
+                        <span class="stat-num" id="stat-closed">—</span>
+                        <span class="stat-lbl" data-i18n="stat_closed">ZAMKNIĘTE</span>
+                    </div>
+                    <div class="stat-sep"></div>
+                    <div class="stat-item">
+                        <span class="stat-num" id="stat-total">—</span>
+                        <span class="stat-lbl" data-i18n="stat_total">ŁĄCZNIE</span>
                     </div>
                 </div>
 
-                <nav class="asb-nav">
-                    <a class="asb-nav-item active" data-section="tickets" href="#">
-                        <span class="asb-nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span> <span data-i18n="admin_nav_tickets">Zgłoszenia</span>
-                    </a>
-                    <a class="asb-nav-item" data-section="promo" href="#">
-                        <span class="asb-nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/></svg></span> <span data-i18n="admin_nav_promo">Kody promocyjne</span>
-                    </a>
-                </nav>
-
-                <div class="asb-bottom">
-                    <button class="asb-logout" id="logout-btn" data-i18n="logout_btn">← Wyloguj się</button>
+                <div class="ov-split">
+                    <button class="ov-split-card" data-goto="orders">
+                        <span class="ov-split-num" id="ov-orders-count">—</span>
+                        <span class="ov-split-lbl" data-i18n="adm_nav_orders">Заказы</span>
+                        <span class="ov-split-note"><b id="ov-orders-active">—</b> <span data-i18n="adm_orders_active">активных</span></span>
+                    </button>
+                    <button class="ov-split-card" data-goto="support">
+                        <span class="ov-split-num" id="ov-support-count">—</span>
+                        <span class="ov-split-lbl" data-i18n="adm_nav_support">Поддержка</span>
+                        <span class="ov-split-note"><b id="ov-support-open">—</b> <span data-i18n="adm_support_open">открытых</span></span>
+                    </button>
                 </div>
-        </aside>
 
-        <!-- Main -->
-        <div class="admin-main">
+                <div class="ov-recent-head">
+                    <h2 class="ov-recent-title" data-i18n="adm_recent_title">Последние заявки</h2>
+                    <button class="ov-recent-all" data-goto="orders" data-i18n="acc_view_all">Смотреть все</button>
+                </div>
+                <div class="adm-list" id="ov-recent"></div>
+            </section>
 
-            <!-- Stats bar -->
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <span class="stat-num" id="stat-open">—</span>
-                    <span class="stat-lbl" data-i18n="stat_open">OTWARTE</span>
+            <!-- ═══ Заказы ═══ -->
+            <section class="adm-section" id="section-orders">
+                <div class="adm-page-head">
+                    <h1 class="adm-page-title" data-i18n="adm_orders_title">Заказы</h1>
+                    <p class="adm-page-sub" data-i18n="adm_orders_sub">Заказы из конфигуратора</p>
                 </div>
-                <div class="stat-sep"></div>
-                <div class="stat-item">
-                    <span class="stat-num" id="stat-progress">—</span>
-                    <span class="stat-lbl" data-i18n="stat_progress">W TRAKCIE</span>
-                </div>
-                <div class="stat-sep"></div>
-                <div class="stat-item">
-                    <span class="stat-num" id="stat-closed">—</span>
-                    <span class="stat-lbl" data-i18n="stat_closed">ZAMKNIĘTE</span>
-                </div>
-                <div class="stat-sep"></div>
-                <div class="stat-item">
-                    <span class="stat-num" id="stat-total">—</span>
-                    <span class="stat-lbl" data-i18n="stat_total">ŁĄCZNIE</span>
-                </div>
-            </div>
 
-            <!-- Controls -->
-            <div class="admin-controls">
-                <div class="adm-filter-tabs">
-                    <button class="adm-filter-tab active" data-filter="all" data-i18n="adm_filter_all">Wszystkie</button>
-                    <button class="adm-filter-tab" data-filter="open" data-i18n="adm_filter_open">Otwarte</button>
-                    <button class="adm-filter-tab" data-filter="in_progress" data-i18n="adm_filter_progress">W trakcie</button>
-                    <button class="adm-filter-tab" data-filter="mine" data-i18n="adm_filter_mine">Moje</button>
+                <div class="admin-controls">
+                    <div class="adm-tabs" data-scope="orders">
+                        <button class="adm-tab active" data-filter="all" data-i18n="adm_filter_all">Все</button>
+                        <button class="adm-tab" data-filter="open" data-i18n="acc_stage_new">Новые</button>
+                        <button class="adm-tab" data-filter="in_progress" data-i18n="acc_stage_progress">В работе</button>
+                        <button class="adm-tab" data-filter="closed" data-i18n="acc_stage_done">Готово</button>
+                        <button class="adm-tab" data-filter="mine" data-i18n="adm_filter_mine">Мои</button>
+                    </div>
+                    <input type="text" class="adm-search" data-scope="orders" data-i18n-ph="adm_search_ph" placeholder="Поиск…" autocomplete="off">
                 </div>
-                <input type="text" id="search-box" class="adm-search" data-i18n-ph="adm_search_ph" placeholder="Szukaj zgłoszeń…" autocomplete="off">
-            </div>
 
-            <!-- Loading -->
-            <div id="loading" class="adm-loading" style="display:none;">
-                <div class="loading-spinner"></div>
-            </div>
+                <div class="adm-loading" data-scope="orders" style="display:none;"><div class="loading-spinner"></div></div>
+                <div class="adm-list" id="orders-list"></div>
+                <div class="adm-empty" id="orders-empty" style="display:none;">
+                    <div class="adm-empty-title" data-i18n="adm_empty_orders">Заказов пока нет</div>
+                    <div class="adm-empty-sub" data-i18n="adm_empty_orders_sub">Новые заказы из конфигуратора появятся здесь</div>
+                </div>
+            </section>
 
-            <!-- Desktop table -->
-            <div class="adm-table-wrap desktop-only">
+            <!-- ═══ Поддержка ═══ -->
+            <section class="adm-section" id="section-support">
+                <div class="adm-page-head">
+                    <h1 class="adm-page-title" data-i18n="adm_support_title">Поддержка</h1>
+                    <p class="adm-page-sub" data-i18n="adm_support_sub">Вопросы и обращения клиентов</p>
+                </div>
+
+                <div class="admin-controls">
+                    <div class="adm-tabs" data-scope="support">
+                        <button class="adm-tab active" data-filter="all" data-i18n="adm_filter_all">Все</button>
+                        <button class="adm-tab" data-filter="open" data-i18n="acc_stage_new">Новые</button>
+                        <button class="adm-tab" data-filter="in_progress" data-i18n="acc_stage_progress">В работе</button>
+                        <button class="adm-tab" data-filter="closed" data-i18n="acc_stage_done">Готово</button>
+                        <button class="adm-tab" data-filter="mine" data-i18n="adm_filter_mine">Мои</button>
+                    </div>
+                    <input type="text" class="adm-search" data-scope="support" data-i18n-ph="adm_search_ph" placeholder="Поиск…" autocomplete="off">
+                </div>
+
+                <div class="adm-loading" data-scope="support" style="display:none;"><div class="loading-spinner"></div></div>
+                <div class="adm-list" id="support-list"></div>
+                <div class="adm-empty" id="support-empty" style="display:none;">
+                    <div class="adm-empty-title" data-i18n="adm_empty_support">Обращений пока нет</div>
+                    <div class="adm-empty-sub" data-i18n="adm_empty_support_sub">Сообщения поддержки появятся здесь</div>
+                </div>
+            </section>
+
+            <!-- ═══ Портфолио ═══ -->
+            <section class="adm-section" id="section-portfolio">
+                <div class="adm-page-head adm-page-head-row">
+                    <div>
+                        <h1 class="adm-page-title" data-i18n="admin_portfolio_title">Проекты портфолио</h1>
+                    </div>
+                    <button class="btn btn-primary" id="pf-new-btn" data-i18n="admin_portfolio_btn_new">+ Новый проект</button>
+                </div>
+
+                <div class="adm-table-wrap">
                     <table class="adm-table">
                         <thead>
                             <tr>
-                                <th data-i18n="tbl_id">ID</th>
-                                <th data-i18n="tbl_subject">Temat</th>
-                                <th data-i18n="tbl_user">Użytkownik</th>
-                                <th data-i18n="tbl_status">Status</th>
-                                <th data-i18n="tbl_priority">Priorytet</th>
-                                <th data-i18n="tbl_assigned">Przypisany</th>
-                                <th data-i18n="tbl_date">Data</th>
+                                <th data-i18n="admin_portfolio_col_title">Название</th>
+                                <th data-i18n="admin_portfolio_platform">Платформа</th>
+                                <th data-i18n="admin_portfolio_plan">Пакет</th>
+                                <th data-i18n="admin_portfolio_col_price">Цена</th>
+                                <th data-i18n="admin_portfolio_col_visible">Видимый</th>
+                                <th data-i18n="admin_portfolio_col_sort">Порядок</th>
+                                <th data-i18n="promo_table_actions">Действия</th>
                             </tr>
                         </thead>
-                    <tbody id="tickets-tbody"></tbody>
-                </table>
-            </div>
+                        <tbody id="pf-tbody"></tbody>
+                    </table>
+                </div>
+                <div class="adm-empty" id="pf-empty" style="display:none;">
+                    <div class="adm-empty-title" data-i18n="admin_portfolio_empty">Нет проектов</div>
+                </div>
+            </section>
 
-            <!-- Mobile cards -->
-            <div class="tickets-cards mobile-only" id="tickets-cards"></div>
-
-            <!-- ── Promo codes section ─────────────────── -->
-            <div class="promo-section" id="promo-section" style="display:none;">
-                <div class="promo-header">
-                    <h2 class="promo-title" data-i18n="promo_title">Kody promocyjne</h2>
-                    <button class="btn btn-primary" id="promo-new-btn" data-i18n="promo_btn_new">+ Nowy kod</button>
+            <!-- ═══ Промокоды ═══ -->
+            <section class="adm-section" id="section-promo">
+                <div class="adm-page-head adm-page-head-row">
+                    <div>
+                        <h1 class="adm-page-title" data-i18n="promo_title">Промокоды</h1>
+                    </div>
+                    <button class="btn btn-primary" id="promo-new-btn" data-i18n="promo_btn_new">+ Новый код</button>
                 </div>
 
-                <div class="promo-table-wrap">
-                    <table class="adm-table promo-table">
+                <div class="adm-table-wrap">
+                    <table class="adm-table">
                         <thead>
                             <tr>
-                                <th data-i18n="promo_table_code">Kod</th>
-                                <th data-i18n="promo_table_desc">Opis</th>
-                                <th data-i18n="promo_table_uses">Użycia</th>
-                                <th data-i18n="promo_table_limit">Limit</th>
-                                <th data-i18n="promo_table_status">Status</th>
-                                <th data-i18n="promo_table_actions">Akcje</th>
+                                <th data-i18n="promo_table_code">Код</th>
+                                <th data-i18n="promo_table_desc">Описание</th>
+                                <th data-i18n="promo_table_uses">Использований</th>
+                                <th data-i18n="promo_table_limit">Лимит</th>
+                                <th data-i18n="promo_table_status">Статус</th>
+                                <th data-i18n="promo_table_actions">Действия</th>
                             </tr>
                         </thead>
                         <tbody id="promo-tbody"></tbody>
                     </table>
                 </div>
+                <div class="adm-empty" id="promo-empty" style="display:none;">
+                    <div class="adm-empty-title" data-i18n="promo_no_codes">Нет промокодов</div>
+                </div>
+            </section>
 
-                <div class="promo-empty" id="promo-empty" style="display:none;" data-i18n="promo_no_codes">Brak kodów promocyjnych</div>
-            </div>
         </div>
     </div>
 
+    <!-- ── Promo modal ─────────────────────── -->
     <div class="modal promo-modal" id="promo-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title"><h3 id="promo-modal-title" data-i18n="promo_create_title">Nowy kod promocyjny</h3></div>
+                <div class="modal-title"><h3 id="promo-modal-title" data-i18n="promo_create_title">Новый промокод</h3></div>
                 <button class="modal-close" id="promo-modal-close">×</button>
             </div>
             <div class="modal-body">
                 <form id="promo-form" class="promo-form">
                     <input type="hidden" id="promo-edit-id" value="">
-
                     <div class="form-group">
-                        <label for="promo-form-code" data-i18n="promo_form_code">Kod</label>
+                        <label for="promo-form-code" data-i18n="promo_form_code">Код</label>
                         <input type="text" id="promo-form-code" required maxlength="50" autocomplete="off" spellcheck="false">
                     </div>
-
                     <div class="form-group">
-                        <label for="promo-form-desc" data-i18n="promo_form_desc">Opis (opcjonalnie)</label>
+                        <label for="promo-form-desc" data-i18n="promo_form_desc">Описание (необязательно)</label>
                         <input type="text" id="promo-form-desc" maxlength="200" autocomplete="off">
                     </div>
-
                     <div class="form-group">
-                        <label for="promo-form-discount" data-i18n="promo_form_discount">Zniżka % (domyślnie 10)</label>
+                        <label for="promo-form-discount" data-i18n="promo_form_discount">Скидка % (по умолчанию 10)</label>
                         <input type="number" id="promo-form-discount" min="0" max="100" step="0.01" value="10">
                     </div>
-
                     <div class="form-group form-checkbox">
                         <label>
                             <input type="checkbox" id="promo-form-free-mini">
-                            <span data-i18n="promo_form_free_mini">Pozwala na darmowego Mini-bota</span>
+                            <span data-i18n="promo_form_free_mini">Разрешить бесплатного Mini-бота</span>
                         </label>
                     </div>
-
                     <div class="form-group">
-                        <label for="promo-form-max-uses" data-i18n="promo_form_max_uses">Limit użyć (puste = bez limitu)</label>
-                        <input type="number" id="promo-form-max-uses" min="1" placeholder="">
+                        <label for="promo-form-max-uses" data-i18n="promo_form_max_uses">Лимит использований (пусто = без лимита)</label>
+                        <input type="number" id="promo-form-max-uses" min="1">
                     </div>
-
                     <div class="form-group form-checkbox">
                         <label>
                             <input type="checkbox" id="promo-form-active" checked>
-                            <span data-i18n="promo_form_active">Aktywny</span>
+                            <span data-i18n="promo_form_active">Активен</span>
                         </label>
                     </div>
+                    <button type="submit" class="btn btn-primary adm-btn-full" id="promo-form-submit" data-i18n="promo_btn_create">Создать</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="promo-form-submit" data-i18n="promo_btn_create">Utwórz</button>
+    <!-- ── Portfolio modal ─────────────────── -->
+    <div class="modal" id="pf-modal">
+        <div class="modal-content pf-modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><h3 id="pf-modal-title" data-i18n="admin_portfolio_modal_create">Новый проект</h3></div>
+                <button class="modal-close" id="pf-modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="pf-form" class="promo-form">
+                    <input type="hidden" id="pf-edit-id" value="">
+                    <div class="form-group">
+                        <label for="pf-form-title" data-i18n="admin_portfolio_col_title">Название</label>
+                        <input type="text" id="pf-form-title" required maxlength="200" autocomplete="off">
+                    </div>
+                    <div class="pf-form-grid">
+                        <div class="form-group">
+                            <label for="pf-form-platform" data-i18n="admin_portfolio_platform">Платформа</label>
+                            <select id="pf-form-platform">
+                                <option value="telegram">Telegram</option>
+                                <option value="discord">Discord</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="pf-form-plan" data-i18n="admin_portfolio_plan">Пакет</label>
+                            <select id="pf-form-plan">
+                                <option value="mini">Mini</option>
+                                <option value="miniplus">Mini+</option>
+                                <option value="standard">Standard</option>
+                                <option value="max">Max</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="pf-form-price" data-i18n="admin_portfolio_col_price">Цена</label>
+                            <input type="text" id="pf-form-price" maxlength="50" placeholder="$5–10" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="pf-form-term" data-i18n="admin_portfolio_col_term">Срок</label>
+                            <input type="text" id="pf-form-term" maxlength="50" placeholder="1–3 дня" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="pf-form-lang" data-i18n="admin_portfolio_col_lang">Язык</label>
+                            <input type="text" id="pf-form-lang" maxlength="50" placeholder="RU / PL / EN" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="pf-form-sort" data-i18n="admin_portfolio_col_sort">Порядок</label>
+                            <input type="number" id="pf-form-sort" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pf-form-desc-ru" data-i18n="admin_portfolio_desc_ru">Описание на русском</label>
+                        <textarea id="pf-form-desc-ru" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="pf-form-desc-pl" data-i18n="admin_portfolio_desc_pl">Описание на польском</label>
+                        <textarea id="pf-form-desc-pl" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="pf-form-desc-en" data-i18n="admin_portfolio_desc_en">Описание на английском</label>
+                        <textarea id="pf-form-desc-en" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="pf-form-bot-url" data-i18n="admin_portfolio_col_bot_url">Ссылка на бота</label>
+                        <input type="text" id="pf-form-bot-url" maxlength="500" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="pf-form-source-url" data-i18n="admin_portfolio_col_source_url">Ссылка на исходники</label>
+                        <input type="text" id="pf-form-source-url" maxlength="500" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="pf-form-screenshots" data-i18n="admin_portfolio_col_screenshots">Скриншоты (URL)</label>
+                        <textarea id="pf-form-screenshots" rows="2" placeholder="https://… (по одному на строку)"></textarea>
+                    </div>
+                    <div class="form-group form-checkbox">
+                        <label>
+                            <input type="checkbox" id="pf-form-visible" checked>
+                            <span data-i18n="admin_portfolio_col_visible">Видимый</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary adm-btn-full" id="pf-form-submit" data-i18n="admin_portfolio_btn_create">Создать</button>
                 </form>
             </div>
         </div>
@@ -195,8 +364,7 @@
             </div>
             <button class="adm-panel-close" id="adm-panel-close">×</button>
         </div>
-
-        <div class="adm-panel-body" id="admin-modal-body">
+        <div class="adm-panel-body" id="adm-panel-body">
             <!-- rendered by JS -->
         </div>
     </div>
@@ -204,12 +372,12 @@
     <!-- Toast -->
     <div id="toast-container"></div>
 
-    <script src="../i18n/ru.js"></script>
-    <script src="../i18n/pl.js"></script>
-    <script src="../i18n/en.js"></script>
-    <script src="../i18n/i18n.js"></script>
-    <script src="../script.js"></script>
-    <script src="../api.js"></script>
-    <script src="dashboard.js"></script>
+    <script src="../i18n/ru.js?v=20260823"></script>
+    <script src="../i18n/pl.js?v=20260823"></script>
+    <script src="../i18n/en.js?v=20260823"></script>
+    <script src="../i18n/i18n.js?v=20260823"></script>
+    <script src="../script.js?v=20260823"></script>
+    <script src="../api.js?v=20260823"></script>
+    <script src="dashboard.js?v=20260823"></script>
 </body>
 </html>

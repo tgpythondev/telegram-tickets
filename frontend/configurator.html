@@ -11,11 +11,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="configurator.css">
-    <link rel="stylesheet" href="i18n/i18n.css">
+    <link rel="stylesheet" href="style.css?v=20260823">
+    <link rel="stylesheet" href="configurator.css?v=20260823">
+    <link rel="stylesheet" href="i18n/i18n.css?v=20260823">
 </head>
-<body>
+<body class="cfg-body">
     <header id="site-header">
         <nav>
             <div class="logo"><a href="index.html">KALIANG</a></div>
@@ -30,277 +30,285 @@
         </nav>
     </header>
 
-    <div class="cfg-layout">
+    <div class="cfg-page">
 
-        <!-- ── Content panel ───────────────── -->
+        <!-- ── Left: steps ───────────────────── -->
         <div class="cfg-content">
-            <div class="cfg-inner">
-                <!-- Progress -->
-                <div class="cfg-progress">
-                    <div class="cfg-progress-bar">
-                        <div class="cfg-progress-fill" id="cfg-progress-fill"></div>
+
+            <div class="cfg-page-head">
+                <h1 class="cfg-page-title" data-i18n="cfg_page_title">Сборка заказа</h1>
+                <p class="cfg-page-sub" data-i18n="cfg_page_sub">Пять шагов — и вы знаете точную стоимость бота</p>
+            </div>
+
+            <!-- Stepper -->
+            <div class="cfg-stepper" id="cfg-stepper">
+                <button class="cfg-stepper-item active" data-goto="0">
+                    <span class="cfg-stepper-num">1</span>
+                    <span class="cfg-stepper-label" data-i18n="cfg_st_platform">Платформа</span>
+                </button>
+                <div class="cfg-stepper-line"></div>
+                <button class="cfg-stepper-item" data-goto="1">
+                    <span class="cfg-stepper-num">2</span>
+                    <span class="cfg-stepper-label" data-i18n="cfg_st_package">Пакет</span>
+                </button>
+                <div class="cfg-stepper-line"></div>
+                <button class="cfg-stepper-item" data-goto="2">
+                    <span class="cfg-stepper-num">3</span>
+                    <span class="cfg-stepper-label" data-i18n="cfg_st_task">Задача</span>
+                </button>
+                <div class="cfg-stepper-line"></div>
+                <button class="cfg-stepper-item" data-goto="3">
+                    <span class="cfg-stepper-num">4</span>
+                    <span class="cfg-stepper-label" data-i18n="cfg_st_details">Детали</span>
+                </button>
+                <div class="cfg-stepper-line"></div>
+                <button class="cfg-stepper-item" data-goto="4">
+                    <span class="cfg-stepper-num">5</span>
+                    <span class="cfg-stepper-label" data-i18n="cfg_st_confirm">Проверка</span>
+                </button>
+            </div>
+
+            <!-- ── Step 0: Platform ── -->
+            <div class="cfg-step active" id="step-0">
+                <h2 class="cfg-step-title" data-i18n="cfg_step_platform_title">Платформа</h2>
+                <p class="cfg-step-desc" data-i18n="cfg_step_platform_desc">Для какого мессенджера нужен бот?</p>
+
+                <div class="cfg-platform-grid" id="platform-list">
+                    <div class="cfg-platform-card" data-platform="telegram">
+                        <div class="cfg-platform-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                        </div>
+                        <div class="cfg-platform-name" data-i18n="cfg_platform_tg_name">Telegram</div>
+                        <div class="cfg-platform-desc" data-i18n="cfg_platform_tg_desc">Боты на базе Telegram Bot API — команды, кнопки, платежи, мини-приложения</div>
                     </div>
-                    <div class="cfg-progress-text" id="cfg-progress-text" data-i18n="cfg_step_label" data-i18n-step="1" data-i18n-total="7">Krok 1 / 7</div>
-                </div>
-
-                <!-- Step 0: Promo code -->
-                <div class="cfg-step active" id="step-0">
-                    <h2 class="cfg-step-title" data-i18n="cfg_step0_title">Masz kod promocyjny?</h2>
-                    <p class="cfg-step-desc" data-i18n="cfg_step0_desc">Wpisz kod, aby odblokować zniżkę lub darmowego bota</p>
-
-                    <div class="cfg-promo-wrap" id="promo-input-area">
-                        <div class="cfg-promo-field">
-                            <input
-                                type="text"
-                                id="promo-code-input"
-                                class="cfg-promo-input"
-                                data-i18n-ph="cfg_promo_placeholder"
-                                placeholder="Wprowadź kod promocyjny"
-                                maxlength="50"
-                                autocomplete="off"
-                                spellcheck="false"
-                            >
-                            <button class="btn btn-primary cfg-promo-apply-btn" id="promo-apply-btn" data-i18n="cfg_promo_apply">Zastosuj</button>
+                    <div class="cfg-platform-card" data-platform="discord">
+                        <div class="cfg-platform-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 12.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill="currentColor"/><path d="M15.5 12.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill="currentColor"/><path d="M7 4C4.5 5 3 7 2.5 10c-.3 3.5.3 6.5 1 8 1.7 1.3 3.5 2 5 2.3l1-1.8c-1.3-.4-2.4-1-3.5-2M17 4c2.5 1 4 3 4.5 6 .3 3.5-.3 6.5-1 8-1.7 1.3-3.5 2-5 2.3l-1-1.8c1.3-.4 2.4-1 3.5-2"/><path d="M8.5 16.5c1 .5 2.3.8 3.5.8s2.5-.3 3.5-.8"/></svg>
                         </div>
-                        <div class="cfg-promo-status" id="promo-status" style="display:none;"></div>
+                        <div class="cfg-platform-name" data-i18n="cfg_platform_dc_name">Discord</div>
+                        <div class="cfg-platform-desc" data-i18n="cfg_platform_dc_desc">Боты на Discord.js — слэш-команды, авторолевые системы, модерация серверов</div>
                     </div>
-
-                    <!-- Benefit choice — shown only after valid code -->
-                    <div class="cfg-promo-benefits" id="promo-benefits" style="display:none;">
-                        <p class="cfg-promo-benefits-title" data-i18n="cfg_promo_choose">Wybierz swój bonus:</p>
-                        <div class="cfg-option-list" id="benefit-list">
-                            <div class="cfg-option-row cfg-promo-benefit-row" id="benefit-free-mini" data-benefit="free_mini">
-                                <span class="cor-name" data-i18n="cfg_promo_free_mini_name">Darmowy bot Mini</span>
-                                <span class="cor-desc" data-i18n="cfg_promo_free_mini_desc">Otrzymasz bota kategorii Mini całkowicie za darmo. Hosting tylko na własnym serwerze.</span>
-                                <span class="cor-price" style="color:var(--accent-ok);">$0</span>
-                            </div>
-                            <div class="cfg-option-row cfg-promo-benefit-row" id="benefit-percent-10" data-benefit="percent_10">
-                                <span class="cor-name" data-i18n="cfg_promo_pct_name">Zniżka 10%</span>
-                                <span class="cor-desc" data-i18n="cfg_promo_pct_desc">10% zniżki na dowolny pakiet.</span>
-                                <span class="cor-price" style="color:var(--accent-ok);">−10%</span>
-                            </div>
+                    <div class="cfg-platform-card" data-platform="both">
+                        <div class="cfg-platform-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg>
                         </div>
-                    </div>
-
-                    <button class="cfg-promo-skip" id="promo-skip-btn" data-i18n="cfg_promo_skip">Nie mam kodu — pomiń →</button>
-                </div>
-
-                <!-- Step 1: Platform -->
-                <div class="cfg-step" id="step-1">
-                    <h2 class="cfg-step-title" data-i18n="cfg_step_platform_title">Platforma</h2>
-                    <p class="cfg-step-desc" data-i18n="cfg_step_platform_desc">Na jaką platformę potrzebujesz bota?</p>
-
-                    <div class="cfg-option-list" id="platform-list">
-                        <div class="cfg-option-row" data-platform="telegram">
-                            <span class="cor-name" data-i18n="cfg_platform_tg_name">Telegram</span>
-                            <span class="cor-desc" data-i18n="cfg_platform_tg_desc">Боты на базе Telegram Bot API — команды, кнопки, платежи, мини-приложения</span>
-                            <span class="cor-price cor-platform-tag cor-platform-tag--tg">TG</span>
-                        </div>
-                        <div class="cfg-option-row" data-platform="discord">
-                            <span class="cor-name" data-i18n="cfg_platform_dc_name">Discord</span>
-                            <span class="cor-desc" data-i18n="cfg_platform_dc_desc">Боты на Discord.js — слэш-команды, авторолевые системы, модерация серверов</span>
-                            <span class="cor-price cor-platform-tag cor-platform-tag--dc">DC</span>
-                        </div>
-                        <div class="cfg-option-row" data-platform="both">
-                            <span class="cor-name" data-i18n="cfg_platform_both_name">Telegram + Discord</span>
-                            <span class="cor-desc" data-i18n="cfg_platform_both_desc">Бот сразу для двух платформ с единой логикой и базой данных</span>
-                            <span class="cor-price cor-platform-tag">Both</span>
-                        </div>
+                        <div class="cfg-platform-name" data-i18n="cfg_platform_both_name">Telegram + Discord</div>
+                        <div class="cfg-platform-desc" data-i18n="cfg_platform_both_desc">Бот сразу для двух платформ с единой логикой и базой данных</div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Step 2: Package -->
-                <div class="cfg-step" id="step-2">
-                    <h2 class="cfg-step-title" data-i18n="cfg_step1_title">Wybierz pakiet</h2>
-                    <p class="cfg-step-desc" data-i18n="cfg_step1_desc">Wybierz odpowiedni pakiet dla swojego projektu</p>
+            <!-- ── Step 1: Package ── -->
+            <div class="cfg-step" id="step-1">
+                <h2 class="cfg-step-title" data-i18n="cfg_step1_title">Выберите пакет</h2>
+                <p class="cfg-step-desc" data-i18n="cfg_step1_desc">Выберите подходящий пакет для вашего проекта</p>
 
-                    <div class="cfg-option-list" id="package-list">
-                        <div class="cfg-option-row" data-package="Mini" data-price-min="3" data-price-max="5">
-                            <span class="cor-name">Mini</span>
-                            <span class="cor-desc" data-i18n="cfg_mini_desc">Proste boty bez BD: automaty, wysyłka, powiadomienia. 1–1.5 dnia.</span>
-                            <span class="cor-price">$3–5</span>
+                <div class="cfg-package-grid" id="package-list">
+                    <div class="cfg-package-card" data-package="Mini" data-price-min="3" data-price-max="5">
+                        <div class="cfg-package-top">
+                            <span class="cfg-package-name">Mini</span>
+                            <span class="cfg-package-price">$3–5</span>
                         </div>
-                        <div class="cfg-option-row" data-package="Mini+" data-price-min="5" data-price-max="10">
-                            <span class="cor-name">Mini+</span>
-                            <span class="cor-desc" data-i18n="cfg_miniplus_desc">Z bazą danych + bezpłatny hosting. 1–3 dni.</span>
-                            <span class="cor-price">$5–10</span>
+                        <div class="cfg-package-desc" data-i18n="cfg_mini_desc">Простые боты без БД: автоответчики, рассылки, уведомления. 1–1.5 дня.</div>
+                    </div>
+                    <div class="cfg-package-card" data-package="Mini+" data-price-min="5" data-price-max="10">
+                        <div class="cfg-package-top">
+                            <span class="cfg-package-name">Mini+</span>
+                            <span class="cfg-package-price">$5–10</span>
                         </div>
-                        <div class="cfg-option-row" data-package="Standard" data-price-min="20" data-price-max="30">
-                            <span class="cor-name">Standard</span>
-                            <span class="cor-desc" data-i18n="cfg_std_desc">Sklepy, katalogi, quizy, piękny design + BD. 4–7 dni.</span>
-                            <span class="cor-price">$20–30</span>
+                        <div class="cfg-package-desc" data-i18n="cfg_miniplus_desc">С базой данных + бесплатный хостинг. 1–3 дня.</div>
+                    </div>
+                    <div class="cfg-package-card" data-package="Standard" data-price-min="20" data-price-max="30">
+                        <div class="cfg-package-flag" data-i18n="cfg_package_popular">Популярный</div>
+                        <div class="cfg-package-top">
+                            <span class="cfg-package-name">Standard</span>
+                            <span class="cfg-package-price">$20–30</span>
                         </div>
-                        <div class="cfg-option-row" data-package="Max" data-price-min="50" data-price-max="70">
-                            <span class="cor-name">Max</span>
-                            <span class="cor-desc" data-i18n="cfg_max_desc">Złożone boty z integracjami i dużym obciążeniem. 1–2.5 tyg.</span>
-                            <span class="cor-price">$50–70</span>
+                        <div class="cfg-package-desc" data-i18n="cfg_std_desc">Магазины, каталоги, квизы, красивый дизайн + БД. 4–7 дней.</div>
+                    </div>
+                    <div class="cfg-package-card" data-package="Max" data-price-min="50" data-price-max="70">
+                        <div class="cfg-package-top">
+                            <span class="cfg-package-name">Max</span>
+                            <span class="cfg-package-price">$50–70</span>
                         </div>
-                        <div class="cfg-option-row" data-package="Custom" data-price-min="70" data-price-max="999">
-                            <span class="cor-name">Custom</span>
-                            <span class="cor-desc" data-i18n="cfg_custom_desc">Indywidualny rozwój. Cena i termin po omówieniu.</span>
-                            <span class="cor-price">od $70</span>
+                        <div class="cfg-package-desc" data-i18n="cfg_max_desc">Сложные боты с интеграциями и высокой нагрузкой. 1–2.5 нед.</div>
+                    </div>
+                    <div class="cfg-package-card cfg-package-card--wide" data-package="Custom" data-price-min="70" data-price-max="999">
+                        <div class="cfg-package-top">
+                            <span class="cfg-package-name">Custom</span>
+                            <span class="cfg-package-price" data-i18n="cfg_price_from70">от $70</span>
+                        </div>
+                        <div class="cfg-package-desc" data-i18n="cfg_custom_desc">Индивидуальная разработка. Цена и сроки после обсуждения.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Step 2: Task ── -->
+            <div class="cfg-step" id="step-2">
+                <h2 class="cfg-step-title" data-i18n="cfg_step2_title">Опишите задачу</h2>
+                <p class="cfg-step-desc" data-i18n="cfg_step2_desc">Расскажите что должен делать бот</p>
+
+                <div class="cfg-field">
+                    <label class="cfg-field-label" for="short-description" data-i18n="cfg_short_label">Кратко (до 200 символов)</label>
+                    <input type="text" id="short-description" class="cfg-input"
+                           data-i18n-ph="cfg_short_ph" placeholder="Например: Бот для приёма заказов в ресторане" maxlength="200">
+                    <div class="cfg-char-counter"><span id="short-counter">0</span>/200</div>
+                </div>
+
+                <div class="cfg-field">
+                    <label class="cfg-field-label" for="detailed-description" data-i18n="cfg_detail_label">Подробно — функционал, интеграции, особенности (до 2000)</label>
+                    <textarea id="detailed-description" class="cfg-textarea" rows="7"
+                              data-i18n-ph="cfg_detail_ph"
+                              placeholder="Опишите все необходимые функции, интеграции с другими сервисами, особые требования…"
+                              maxlength="2000"></textarea>
+                    <div class="cfg-char-counter"><span id="detailed-counter">0</span>/2000</div>
+                </div>
+            </div>
+
+            <!-- ── Step 3: Details (language + hosting + priority) ── -->
+            <div class="cfg-step" id="step-3">
+                <h2 class="cfg-step-title" data-i18n="cfg_step_details_title">Детали заказа</h2>
+                <p class="cfg-step-desc" data-i18n="cfg_step_details_desc">Язык, хостинг и приоритет — можно оставить по умолчанию</p>
+
+                <div class="cfg-field">
+                    <div class="cfg-field-label" data-i18n="cfg_step3_title">Язык программирования</div>
+                    <div class="cfg-segmented" id="language-list">
+                        <div class="cfg-seg" data-language="Python">
+                            <span class="cfg-seg-name">Python</span>
+                            <span class="cfg-seg-hint" data-i18n="cfg_py_hint">Быстрая разработка</span>
+                        </div>
+                        <div class="cfg-seg" data-language="JavaScript">
+                            <span class="cfg-seg-name">JavaScript</span>
+                            <span class="cfg-seg-hint" data-i18n="cfg_js_hint">Лёгкий и гибкий</span>
+                        </div>
+                        <div class="cfg-seg" data-language="Go">
+                            <span class="cfg-seg-name">Go</span>
+                            <span class="cfg-seg-hint" data-i18n="cfg_go_hint">Минимум ресурсов</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 3: Description (combined) -->
-                <div class="cfg-step" id="step-3">
-                    <h2 class="cfg-step-title" data-i18n="cfg_step2_title">Opisz zadanie</h2>
-                    <p class="cfg-step-desc" data-i18n="cfg_step2_desc">Powiedz, co bot ma robić</p>
-
-                    <div class="form-group">
-                        <label for="short-description" data-i18n="cfg_short_label">Krótko (do 200 znaków)</label>
-                        <input type="text" id="short-description" data-i18n-ph="cfg_short_ph" placeholder="Np.: Bot do przyjmowania zamówień w restauracji" maxlength="200">
-                        <div class="cfg-char-counter"><span id="short-counter">0</span>/200</div>
-                    </div>
-                    <div class="form-group" style="margin-top:var(--sp-5)">
-                        <label for="detailed-description" data-i18n="cfg_detail_label">Szczegółowo — funkcjonalność, integracje, wymagania (do 2000)</label>
-                        <textarea id="detailed-description" rows="6"
-                                  data-i18n-ph="cfg_detail_ph"
-                                  placeholder="Opisz wszystkie niezbędne funkcje, integracje z innymi serwisami, specjalne wymagania…"
-                                  maxlength="2000"></textarea>
-                        <div class="cfg-char-counter"><span id="detailed-counter">0</span>/2000</div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Language -->
-                <div class="cfg-step" id="step-4">
-                    <h2 class="cfg-step-title" data-i18n="cfg_step3_title">Język programowania</h2>
-                    <p class="cfg-step-desc" data-i18n="cfg_step3_desc">Wybór nie wpływa na koszt</p>
-
-                    <div class="cfg-option-list" id="language-list">
-                        <div class="cfg-option-row" data-language="Python">
-                            <span class="cor-name">Python</span>
-                            <span class="cor-desc" data-i18n="cfg_py_desc">Szybkość rozwoju: bardzo wysoka · Udział w rynku: ~67%</span>
-                            <span class="cor-price" style="color:rgba(255,255,255,.3);">Popular</span>
-                        </div>
-                        <div class="cfg-option-row" data-language="JavaScript">
-                            <span class="cor-name">JavaScript</span>
-                            <span class="cor-desc" data-i18n="cfg_js_desc">Szybkość rozwoju: bardzo wysoka · Zasoby: niskie</span>
-                            <span class="cor-price" style="color:rgba(255,255,255,.3);">Fast</span>
-                        </div>
-                        <div class="cfg-option-row" data-language="Go">
-                            <span class="cor-name">Go</span>
-                            <span class="cor-desc" data-i18n="cfg_go_desc">Maksymalna wydajność · Zasoby: bardzo niskie</span>
-                            <span class="cor-price" style="color:rgba(255,255,255,.3);">Perf</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 4: Hosting -->
-                <div class="cfg-step" id="step-5">
-                    <h2 class="cfg-step-title" data-i18n="cfg_step4_title">Hosting</h2>
-                    <p class="cfg-step-desc" data-i18n="cfg_step4_desc">Gdzie bot będzie działał</p>
-
+                <div class="cfg-field">
+                    <div class="cfg-field-label" data-i18n="cfg_step4_title">Хостинг</div>
                     <div class="cfg-option-list" id="hosting-list">
                         <div class="cfg-option-row" data-hosting="free">
-                            <span class="cor-name" data-i18n="cfg_host_free_name">Bezpłatny</span>
-                            <span class="cor-desc" data-i18n="cfg_host_free_desc">512 MB · 5 GB ruchu · Bez kopii zapasowych · Usypia przy bezczynności</span>
-                            <span class="cor-price" style="color:rgba(255,255,255,.3);" data-i18n="cfg_host_free_incl">Wliczone w pakiet</span>
+                            <span class="cor-name" data-i18n="cfg_host_free_name">Бесплатный</span>
+                            <span class="cor-desc" data-i18n="cfg_host_free_desc">512 МБ · 5 ГБ трафика · Без бэкапов · Засыпает при простое</span>
+                            <span class="cor-price cor-muted" data-i18n="cfg_host_free_incl">Входит в пакет</span>
                         </div>
                         <div class="cfg-option-row" data-hosting="paid">
-                            <span class="cor-name" data-i18n="cfg_host_paid_name">Płatny</span>
-                            <span class="cor-desc" data-i18n="cfg_host_paid_desc">3 GB · 10 GB ruchu · Kopie zapasowe · Działa 24/7</span>
-                            <span class="cor-price">+$5/mies.</span>
+                            <span class="cor-name" data-i18n="cfg_host_paid_name">Платный</span>
+                            <span class="cor-desc" data-i18n="cfg_host_paid_desc">3 ГБ · 10 ГБ трафика · Бэкапы · Работает 24/7</span>
+                            <span class="cor-price">+$5/<span data-i18n="cfg_month_short">мес</span></span>
                         </div>
                         <div class="cfg-option-row" data-hosting="none">
-                            <span class="cor-name" data-i18n="cfg_host_none_name">Bez hostingu</span>
-                            <span class="cor-desc" data-i18n="cfg_host_none_desc">Wdrożę na własnym serwerze samodzielnie</span>
-                            <span class="cor-price" style="color:rgba(255,255,255,.3);">—</span>
+                            <span class="cor-name" data-i18n="cfg_host_none_name">Без хостинга</span>
+                            <span class="cor-desc" data-i18n="cfg_host_none_desc">Разверну на своём сервере самостоятельно</span>
+                            <span class="cor-price cor-muted">—</span>
                         </div>
                     </div>
 
                     <div class="cfg-extra-resources" id="extra-resources" style="display:none;">
-                        <div class="cer-label" data-i18n="cfg_extra_title">Dodatkowe zasoby (opcjonalnie)</div>
+                        <div class="cer-label" data-i18n="cfg_extra_title">Дополнительные ресурсы (опционально)</div>
                         <div class="cer-row">
-                            <label data-i18n="cfg_extra_storage">Miejsce (+$3 za 1 GB)</label>
+                            <label data-i18n="cfg_extra_storage">Место (+$3 за 1 ГБ)</label>
                             <div class="cer-input-wrap">
-                                <input type="number" id="extra-storage" min="0" max="50" value="0"> <span data-i18n="cfg_extra_gb">GB</span>
+                                <input type="number" id="extra-storage" min="0" max="50" value="0"> <span data-i18n="cfg_extra_gb">ГБ</span>
                             </div>
                         </div>
                         <div class="cer-row">
-                            <label data-i18n="cfg_extra_bw">Ruch (+$1 za 1 GB)</label>
+                            <label data-i18n="cfg_extra_bw">Трафик (+$1 за 1 ГБ)</label>
                             <div class="cer-input-wrap">
-                                <input type="number" id="extra-bandwidth" min="0" max="100" value="0"> <span data-i18n="cfg_extra_gb">GB</span>
+                                <input type="number" id="extra-bandwidth" min="0" max="100" value="0"> <span data-i18n="cfg_extra_gb">ГБ</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 5: Priority -->
-                <div class="cfg-step" id="step-6">
-                    <h2 class="cfg-step-title" data-i18n="cfg_step5_title">Priorytet zamówienia</h2>
-                    <p class="cfg-step-desc" data-i18n="cfg_step5_desc">Wpływa na szybkość realizacji</p>
-
-                    <div class="cfg-option-list" id="priority-list">
-                        <div class="cfg-option-row" data-priority="normal" data-cost="0">
-                            <span class="cor-name">
-                                <span class="status-dot" style="background:rgba(255,255,255,.45)"></span>
-                                <span data-i18n="cfg_prio_normal_name">Normalny</span>
-                            </span>
-                            <span class="cor-desc" data-i18n="cfg_prio_normal_desc">Standardowa kolejka. W kolejności zgłoszeń.</span>
-                            <span class="cor-price">+$0</span>
+                <div class="cfg-field">
+                    <div class="cfg-field-label" data-i18n="cfg_step5_title">Приоритет заказа</div>
+                    <div class="cfg-segmented" id="priority-list">
+                        <div class="cfg-seg selected" data-priority="normal" data-cost="0">
+                            <span class="cfg-seg-name"><span class="cfg-seg-dot" style="background:rgba(255,255,255,.45)"></span><span data-i18n="cfg_prio_normal_name">Обычный</span></span>
+                            <span class="cfg-seg-hint">+$0</span>
                         </div>
-                        <div class="cfg-option-row" data-priority="high" data-cost="10">
-                            <span class="cor-name">
-                                <span class="status-dot" style="background:var(--accent-warning)"></span>
-                                <span data-i18n="cfg_prio_high_name">Wysoki</span>
-                            </span>
-                            <span class="cor-desc" data-i18n="cfg_prio_high_desc">Priorytet nad normalnymi zamówieniami.</span>
-                            <span class="cor-price">+$10</span>
+                        <div class="cfg-seg" data-priority="high" data-cost="10">
+                            <span class="cfg-seg-name"><span class="cfg-seg-dot" style="background:var(--accent-warning)"></span><span data-i18n="cfg_prio_high_name">Высокий</span></span>
+                            <span class="cfg-seg-hint">+$10</span>
                         </div>
-                        <div class="cfg-option-row" data-priority="urgent" data-cost="30">
-                            <span class="cor-name">
-                                <span class="status-dot" style="background:var(--accent-urgent)"></span>
-                                <span data-i18n="cfg_prio_urgent_name">Pilny</span>
-                            </span>
-                            <span class="cor-desc" data-i18n="cfg_prio_urgent_desc">Maksymalny priorytet. 2× szybciej.</span>
-                            <span class="cor-price" style="color:var(--accent-urgent)">+$30</span>
+                        <div class="cfg-seg" data-priority="urgent" data-cost="30">
+                            <span class="cfg-seg-name"><span class="cfg-seg-dot" style="background:var(--accent-urgent)"></span><span data-i18n="cfg_prio_urgent_name">Срочный</span></span>
+                            <span class="cfg-seg-hint" style="color:var(--accent-urgent)">+$30</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Step 6: Summary -->
-                <div class="cfg-step" id="step-7">
-                    <h2 class="cfg-step-title" data-i18n="cfg_step6_title">Potwierdzenie zamówienia</h2>
-                    <p class="cfg-step-desc" data-i18n="cfg_step6_desc">Sprawdź parametry przed wysłaniem</p>
+            <!-- ── Step 4: Confirm ── -->
+            <div class="cfg-step" id="step-4">
+                <h2 class="cfg-step-title" data-i18n="cfg_step6_title">Подтверждение заказа</h2>
+                <p class="cfg-step-desc" data-i18n="cfg_step6_desc">Проверьте параметры перед отправкой</p>
 
-                    <div class="cfg-summary-block">
-                        <div class="csb-row"><span class="csb-label" data-i18n="cfg_sum_platform">Platforma</span><span class="csb-value" id="sum-platform">—</span></div>
-                        <div class="csb-row"><span class="csb-label" data-i18n="cfg_sum_package">Pakiet</span><span class="csb-value" id="sum-package">—</span></div>
-                        <div class="csb-row"><span class="csb-label" data-i18n="cfg_sum_desc">Opis</span><span class="csb-value" id="sum-short">—</span></div>
-                        <div class="csb-row"><span class="csb-label" data-i18n="cfg_sum_lang">Język</span><span class="csb-value" id="sum-language">—</span></div>
-                        <div class="csb-row"><span class="csb-label" data-i18n="cfg_sum_hosting">Hosting</span><span class="csb-value" id="sum-hosting">—</span></div>
-                        <div class="csb-row"><span class="csb-label" data-i18n="cfg_sum_priority">Priorytet</span><span class="csb-value" id="sum-priority">—</span></div>
-                        <div class="csb-row csb-row-total">
-                            <span class="csb-label" data-i18n="cfg_sum_total">Łączny koszt</span>
-                            <span class="csb-value csb-total" id="sum-total">$0</span>
-                        </div>
-                        <div class="csb-row" id="sum-promo-row" style="display:none;">
-                            <span class="csb-label" data-i18n="cfg_sum_promo">Promocja</span>
-                            <span class="csb-value" id="sum-promo" style="color:var(--accent-ok);">—</span>
-                        </div>
+                <div class="cfg-summary-block">
+                    <div class="csb-row">
+                        <span class="csb-label" data-i18n="cfg_sum_platform">Платформа</span>
+                        <span class="csb-value" id="sum-platform">—</span>
+                        <button class="csb-edit" data-goto="0" data-i18n="cfg_edit">Изменить</button>
                     </div>
-
-                    <details class="cfg-desc-details" id="desc-details" style="display:none;">
-                        <summary class="cfg-desc-summary" data-i18n="cfg_show_desc">Pokaż opis</summary>
-                        <div class="cfg-desc-content" id="sum-detailed">—</div>
-                    </details>
+                    <div class="csb-row">
+                        <span class="csb-label" data-i18n="cfg_sum_package">Пакет</span>
+                        <span class="csb-value" id="sum-package">—</span>
+                        <button class="csb-edit" data-goto="1" data-i18n="cfg_edit">Изменить</button>
+                    </div>
+                    <div class="csb-row">
+                        <span class="csb-label" data-i18n="cfg_sum_desc">Описание</span>
+                        <span class="csb-value" id="sum-short">—</span>
+                        <button class="csb-edit" data-goto="2" data-i18n="cfg_edit">Изменить</button>
+                    </div>
+                    <div class="csb-row">
+                        <span class="csb-label" data-i18n="cfg_sum_lang">Язык</span>
+                        <span class="csb-value" id="sum-language">—</span>
+                        <button class="csb-edit" data-goto="3" data-i18n="cfg_edit">Изменить</button>
+                    </div>
+                    <div class="csb-row">
+                        <span class="csb-label" data-i18n="cfg_sum_hosting">Хостинг</span>
+                        <span class="csb-value" id="sum-hosting">—</span>
+                        <button class="csb-edit" data-goto="3" data-i18n="cfg_edit">Изменить</button>
+                    </div>
+                    <div class="csb-row">
+                        <span class="csb-label" data-i18n="cfg_sum_priority">Приоритет</span>
+                        <span class="csb-value" id="sum-priority">—</span>
+                        <button class="csb-edit" data-goto="3" data-i18n="cfg_edit">Изменить</button>
+                    </div>
+                    <div class="csb-row" id="sum-promo-row" style="display:none;">
+                        <span class="csb-label" data-i18n="cfg_sum_promo">Промоакция</span>
+                        <span class="csb-value csb-ok" id="sum-promo">—</span>
+                    </div>
+                    <div class="csb-row csb-row-total">
+                        <span class="csb-label" data-i18n="cfg_sum_total">Итоговая стоимость</span>
+                        <span class="csb-value csb-total" id="sum-total">$0</span>
+                    </div>
                 </div>
 
-                <!-- Navigation -->
-                <div class="cfg-nav">
-                    <button class="btn btn-ghost cfg-btn-back" id="btn-back" style="display:none;" data-i18n="cfg_btn_back">← Wróć</button>
-                    <span class="cfg-nav-step" id="nav-step-label">1 / 6</span>
-                    <button class="btn btn-primary cfg-btn-next" id="btn-next" data-i18n="cfg_btn_next">Dalej →</button>
-                    <button class="btn btn-primary cfg-btn-submit" id="btn-submit" style="display:none;" data-i18n="cfg_btn_submit">Wyślij zamówienie</button>
-                </div>
+                <details class="cfg-desc-details" id="desc-details" style="display:none;">
+                    <summary class="cfg-desc-summary" data-i18n="cfg_show_desc">Показать описание</summary>
+                    <div class="cfg-desc-content" id="sum-detailed">—</div>
+                </details>
+
+                <button class="btn btn-primary cfg-final-submit" id="btn-final-submit" data-i18n="cfg_btn_submit">Отправить заказ</button>
+            </div>
+
+            <!-- Navigation -->
+            <div class="cfg-nav">
+                <button class="btn btn-ghost cfg-btn-back" id="btn-back" style="visibility:hidden;" data-i18n="cfg_btn_back">← Назад</button>
+                <span class="cfg-nav-step" id="nav-step-label">1 / 5</span>
+                <button class="btn btn-primary cfg-btn-next" id="btn-next" data-i18n="cfg_btn_next">Далее →</button>
             </div>
         </div>
 
-        <!-- ── Summary panel ───────────────── -->
-        <div class="cfg-summary">
-            <div class="cfs-label" data-i18n="cfg_order_label">TWOJE ZAMÓWIENIE</div>
+        <!-- ── Right: live summary ───────────── -->
+        <aside class="cfg-summary">
+            <div class="cfs-label" data-i18n="cfg_order_label">ВАШ ЗАКАЗ</div>
 
             <div class="cfs-rows">
                 <div class="cfs-row">
@@ -308,43 +316,75 @@
                     <span class="cfs-val" id="live-platform">—</span>
                 </div>
                 <div class="cfs-row">
-                    <span class="cfs-key" data-i18n="cfg_live_package">Pakiet</span>
+                    <span class="cfs-key" data-i18n="cfg_live_package">Пакет</span>
                     <span class="cfs-val" id="live-package">—</span>
                 </div>
                 <div class="cfs-row">
-                    <span class="cfs-key" data-i18n="cfg_live_lang">Język</span>
+                    <span class="cfs-key" data-i18n="cfg_live_lang">Язык</span>
                     <span class="cfs-val" id="live-language">—</span>
                 </div>
                 <div class="cfs-row">
-                    <span class="cfs-key" data-i18n="cfg_live_hosting">Hosting</span>
+                    <span class="cfs-key" data-i18n="cfg_live_hosting">Хостинг</span>
                     <span class="cfs-val" id="live-hosting">—</span>
                 </div>
                 <div class="cfs-row">
-                    <span class="cfs-key" data-i18n="cfg_live_priority">Priorytet</span>
+                    <span class="cfs-key" data-i18n="cfg_live_priority">Приоритет</span>
                     <span class="cfs-val" id="live-priority">—</span>
                 </div>
                 <div class="cfs-row" id="live-promo-row" style="display:none;">
-                    <span class="cfs-key" data-i18n="cfg_live_promo">Promo</span>
-                    <span class="cfs-val" id="live-promo" style="color:var(--accent-ok);">—</span>
+                    <span class="cfs-key" data-i18n="cfg_live_promo">Промо</span>
+                    <span class="cfs-val cfs-ok" id="live-promo">—</span>
                 </div>
             </div>
 
             <div class="cfs-divider"></div>
 
-            <div class="cfs-price-label" data-i18n="cfg_price_label">Szacunkowy koszt</div>
+            <div class="cfs-price-label" data-i18n="cfg_price_label">Примерная стоимость</div>
             <div class="cfs-price" id="live-price">$0</div>
 
+            <!-- Promo code — collapsible -->
+            <div class="cfs-promo">
+                <button class="cfs-promo-toggle" id="promo-toggle" aria-expanded="false">
+                    <span data-i18n="cfg_promo_toggle">Есть промокод?</span>
+                    <span class="cfs-promo-chevron">▾</span>
+                </button>
+                <div class="cfs-promo-body" id="promo-body" style="display:none;">
+                    <div class="cfg-promo-field">
+                        <input type="text" id="promo-code-input" class="cfg-promo-input"
+                               data-i18n-ph="cfg_promo_placeholder" placeholder="Введите промокод"
+                               maxlength="50" autocomplete="off" spellcheck="false">
+                        <button class="btn btn-ghost cfg-promo-apply-btn" id="promo-apply-btn" data-i18n="cfg_promo_apply">Применить</button>
+                    </div>
+                    <div class="cfg-promo-status" id="promo-status" style="display:none;"></div>
+
+                    <div class="cfg-promo-benefits" id="promo-benefits" style="display:none;">
+                        <p class="cfg-promo-benefits-title" data-i18n="cfg_promo_choose">Выберите свой бонус:</p>
+                        <div class="cfg-benefit-row" id="benefit-free-mini" data-benefit="free_mini">
+                            <span class="cbr-name" data-i18n="cfg_promo_free_mini_name">Бесплатный бот Mini</span>
+                            <span class="cbr-hint" data-i18n="cfg_promo_free_mini_desc_short">Mini бот за $0 (свой сервер)</span>
+                        </div>
+                        <div class="cfg-benefit-row" id="benefit-percent-10" data-benefit="percent_10">
+                            <span class="cbr-name" data-i18n="cfg_promo_pct_name">Скидка 10%</span>
+                            <span class="cbr-hint" data-i18n="cfg_promo_pct_desc_short">Скидка 10% на любой пакет</span>
+                        </div>
+                    </div>
+
+                    <button class="cfs-promo-clear" id="promo-clear-btn" style="display:none;" data-i18n="cfg_promo_remove">Убрать промокод</button>
+                </div>
+            </div>
+
             <button class="btn btn-primary cfs-order-btn" id="cfs-order-btn" disabled data-i18n="cfg_btn_submit">
-                Wyślij zamówienie
+                Отправить заказ
             </button>
-        </div>
+            <p class="cfs-note" data-i18n="cfg_submit_note">Отправка создаст тикет в личном кабинете — там же будет статус заказа</p>
+        </aside>
     </div>
 
     <!-- Loading overlay -->
     <div class="cfg-loading-overlay" id="loading-overlay">
         <div style="text-align:center;">
             <div class="loading-spinner"></div>
-            <p style="color:rgba(255,255,255,.4);margin-top:var(--sp-4);font-size:var(--text-sm);" data-i18n="cfg_creating">Tworzenie zamówienia…</p>
+            <p style="color:rgba(255,255,255,.4);margin-top:var(--sp-4);font-size:var(--text-sm);" data-i18n="cfg_creating">Создание заказа…</p>
         </div>
     </div>
 
@@ -352,19 +392,19 @@
         <div class="footer-content">
             <div class="footer-logo">KALIANG</div>
             <div class="footer-links">
-                <a href="index.html" data-i18n="footer_home">Strona główna</a>
-                <a href="auth.html" data-i18n="footer_support">Wsparcie</a>
+                <a href="index.html" data-i18n="footer_home">Главная</a>
+                <a href="auth.html" data-i18n="footer_support">Поддержка</a>
             </div>
-            <p class="footer-copyright" data-i18n="footer_copyright">© 2026 Kaliang. Wszelkie prawa zastrzeżone.</p>
+            <p class="footer-copyright" data-i18n="footer_copyright">© 2026 Kaliang. Все права защищены.</p>
         </div>
     </footer>
 
-    <script src="i18n/ru.js"></script>
-    <script src="i18n/pl.js"></script>
-    <script src="i18n/en.js"></script>
-    <script src="i18n/i18n.js"></script>
-    <script src="script.js"></script>
-    <script src="api.js"></script>
-    <script src="configurator.js"></script>
+    <script src="i18n/ru.js?v=20260823"></script>
+    <script src="i18n/pl.js?v=20260823"></script>
+    <script src="i18n/en.js?v=20260823"></script>
+    <script src="i18n/i18n.js?v=20260823"></script>
+    <script src="script.js?v=20260823"></script>
+    <script src="api.js?v=20260823"></script>
+    <script src="configurator.js?v=20260823"></script>
 </body>
 </html>

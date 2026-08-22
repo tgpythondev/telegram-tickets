@@ -10,6 +10,15 @@ async function createUser(username, passwordHash) {
     return result.rows[0];
 }
 
+// Выдача прав администратора (используется в dev-режиме DB_MODE=memory)
+async function setAdmin(userId) {
+    const result = await db.query(
+        'UPDATE users SET is_admin = TRUE WHERE id = $1 RETURNING id, username, is_admin',
+        [userId]
+    );
+    return result.rows[0];
+}
+
 async function findUserByUsername(username) {
     const result = await db.query(
         'SELECT * FROM users WHERE username = $1',
@@ -361,6 +370,7 @@ async function getAdminStats() {
 
 module.exports = {
     createUser,
+    setAdmin,
     findUserByUsername,
     findUserById,
     findUserByEmail,

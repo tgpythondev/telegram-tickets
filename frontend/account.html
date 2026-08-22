@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pl" data-title-key="page_title_account">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; connect-src https://telegram-bots-backend.onrender.com https://telegram-bots.pl http://localhost:3000; font-src 'self' https://fonts.gstatic.com; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Личный кабинет | KALIANG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=20260823">
+    <link rel="stylesheet" href="account.css?v=20260823">
+    <link rel="stylesheet" href="i18n/i18n.css?v=20260823">
+</head>
+<body class="acc-body">
+    <header id="site-header">
+        <nav>
+            <div class="logo"><a href="index.html">KALIANG</a></div>
+            <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Открыть меню" aria-expanded="false" data-i18n-aria="nav_open_menu">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html#services" data-i18n="nav_services">Usługi</a></li>
+                <li><a href="index.html#portfolio" data-i18n="nav_portfolio">Portfolio</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="acc-layout">
+
+        <!-- ── Sidebar ─────────────────────────── -->
+        <aside class="acc-sidebar">
+            <div class="acc-user">
+                <div class="acc-avatar" id="acc-avatar">?</div>
+                <div class="acc-user-info">
+                    <div class="acc-username" id="acc-username">…</div>
+                    <div class="acc-role" data-i18n="sidebar_role">Клиент</div>
+                </div>
+            </div>
+
+            <nav class="acc-nav">
+                <button class="acc-nav-item active" data-tab="overview">
+                    <svg class="acc-nav-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                    <span data-i18n="acc_nav_overview">Обзор</span>
+                </button>
+                <button class="acc-nav-item" data-tab="orders">
+                    <svg class="acc-nav-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>
+                    <span data-i18n="acc_nav_orders">Мои заказы</span>
+                    <span class="acc-nav-badge" id="badge-orders" style="display:none;">0</span>
+                </button>
+                <button class="acc-nav-item" data-tab="support">
+                    <svg class="acc-nav-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                    <span data-i18n="acc_nav_support">Поддержка</span>
+                    <span class="acc-nav-badge" id="badge-support" style="display:none;">0</span>
+                </button>
+                <button class="acc-nav-item" data-tab="telegram">
+                    <svg class="acc-nav-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                    <span>Telegram</span>
+                </button>
+                <button class="acc-nav-item" data-tab="profile">
+                    <svg class="acc-nav-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span data-i18n="acc_nav_profile">Профиль</span>
+                </button>
+            </nav>
+
+            <div class="acc-sidebar-bottom">
+                <a href="configurator.html" class="btn btn-primary acc-new-order-btn" data-i18n="acc_btn_new_order">+ Заказать бота</a>
+                <button class="acc-logout" id="acc-logout" data-i18n="logout_btn">Выйти</button>
+            </div>
+        </aside>
+
+        <!-- ── Main ────────────────────────────── -->
+        <main class="acc-main">
+
+            <!-- ═══ TAB: Overview ═══ -->
+            <section class="acc-section active" id="tab-overview">
+                <div class="acc-page-head">
+                    <h1 class="acc-page-title" id="acc-greeting">…</h1>
+                    <p class="acc-page-sub" data-i18n="acc_overview_sub">Заказы, тикеты и уведомления — всё в одном месте</p>
+                </div>
+
+                <div class="acc-stats-grid">
+                    <div class="acc-stat-card">
+                        <div class="acc-stat-num" id="ov-orders-active">—</div>
+                        <div class="acc-stat-lbl" data-i18n="acc_stat_orders_active">Активные заказы</div>
+                    </div>
+                    <div class="acc-stat-card">
+                        <div class="acc-stat-num" id="ov-tickets-open">—</div>
+                        <div class="acc-stat-lbl" data-i18n="acc_stat_tickets_open">Открытые тикеты</div>
+                    </div>
+                    <div class="acc-stat-card">
+                        <div class="acc-stat-num" id="ov-tg-status">—</div>
+                        <div class="acc-stat-lbl" data-i18n="acc_stat_telegram">Telegram-уведомления</div>
+                    </div>
+                </div>
+
+                <div class="acc-quick-grid">
+                    <a href="configurator.html" class="acc-quick-card">
+                        <div class="acc-quick-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 7.7l5.4-.8L12 2z"/></svg>
+                        </div>
+                        <div class="acc-quick-body">
+                            <div class="acc-quick-title" data-i18n="acc_quick_order">Заказать бота</div>
+                            <div class="acc-quick-desc" data-i18n="acc_quick_order_desc">Пройдите конфигуратор и получите точную стоимость</div>
+                        </div>
+                        <span class="acc-quick-arrow">→</span>
+                    </a>
+                    <button class="acc-quick-card" id="ov-new-ticket-btn">
+                        <div class="acc-quick-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                        <div class="acc-quick-body">
+                            <div class="acc-quick-title" data-i18n="acc_quick_ticket">Задать вопрос</div>
+                            <div class="acc-quick-desc" data-i18n="acc_quick_ticket_desc">Создайте тикет — ответим в течение дня</div>
+                        </div>
+                        <span class="acc-quick-arrow">→</span>
+                    </button>
+                </div>
+
+                <div class="acc-recent">
+                    <div class="acc-recent-head">
+                        <h2 class="acc-block-title" data-i18n="acc_recent_title">Последняя активность</h2>
+                        <button class="acc-link-btn" id="ov-view-all" data-i18n="acc_view_all">Все →</button>
+                    </div>
+                    <div class="acc-recent-list" id="ov-recent-list">
+                        <!-- rendered by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ TAB: Orders ═══ -->
+            <section class="acc-section" id="tab-orders">
+                <div class="acc-page-head acc-page-head-row">
+                    <div>
+                        <h1 class="acc-page-title" data-i18n="acc_orders_title">Мои заказы</h1>
+                        <p class="acc-page-sub" data-i18n="acc_orders_sub">Статус и переписка по каждому заказу</p>
+                    </div>
+                    <span class="acc-count-chip" id="orders-count"></span>
+                </div>
+                <div class="acc-orders-list" id="orders-list">
+                    <!-- rendered by JS -->
+                </div>
+            </section>
+
+            <!-- ═══ TAB: Support ═══ -->
+            <section class="acc-section" id="tab-support">
+                <div class="acc-page-head acc-page-head-row">
+                    <div>
+                        <h1 class="acc-page-title" data-i18n="acc_support_title">Поддержка</h1>
+                        <p class="acc-page-sub" data-i18n="acc_support_sub">Вопросы, консультации, помощь</p>
+                    </div>
+                    <button class="btn btn-primary" id="support-new-ticket-btn" data-i18n="sidebar_new_ticket">+ Новый тикет</button>
+                </div>
+
+                <div class="acc-filter-row">
+                    <button class="acc-filter-chip active" data-filter="all" data-i18n="filter_all">Все</button>
+                    <button class="acc-filter-chip" data-filter="open" data-i18n="filter_open">Открытые</button>
+                    <button class="acc-filter-chip" data-filter="in_progress" data-i18n="filter_progress">В работе</button>
+                    <button class="acc-filter-chip" data-filter="closed" data-i18n="filter_closed">Закрытые</button>
+                </div>
+
+                <div class="acc-tickets-list" id="support-list">
+                    <!-- rendered by JS -->
+                </div>
+            </section>
+
+            <!-- ═══ TAB: Telegram ═══ -->
+            <section class="acc-section" id="tab-telegram">
+                <div class="acc-page-head">
+                    <h1 class="acc-page-title">Telegram</h1>
+                    <p class="acc-page-sub" data-i18n="acc_tg_sub">Получайте уведомления о заказах и ответах прямо в мессенджер</p>
+                </div>
+
+                <div class="acc-tg-card">
+                    <div class="acc-tg-status-row">
+                        <div class="acc-tg-status-icon" id="acc-tg-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                        </div>
+                        <div class="acc-tg-status-info">
+                            <div class="acc-tg-status-title" id="acc-tg-title" data-i18n="tg_not_connected">Telegram не подключён</div>
+                            <div class="acc-tg-status-desc" id="acc-tg-desc"></div>
+                        </div>
+                        <div class="acc-tg-status-actions" id="acc-tg-actions">
+                            <!-- rendered by JS -->
+                        </div>
+                    </div>
+
+                    <div class="acc-tg-notif-row" id="acc-tg-notif-row" style="display:none;">
+                        <div>
+                            <div class="acc-tg-notif-title" data-i18n="acc_tg_notifications">Уведомления</div>
+                            <div class="acc-tg-notif-desc" data-i18n="acc_tg_notifications_desc">Новые сообщения и смена статуса заказа</div>
+                        </div>
+                        <button class="acc-toggle" id="acc-tg-toggle" role="switch" aria-checked="false">
+                            <span class="acc-toggle-thumb"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="acc-tg-howto">
+                    <h2 class="acc-block-title" data-i18n="acc_tg_how_title">Как подключить</h2>
+                    <ol class="acc-tg-steps">
+                        <li data-i18n-html="tg_step1">Нажмите «Подключить» и напишите боту <code>/start</code></li>
+                        <li data-i18n-html="tg_step2">Залогиньтесь командой <code>/login username password</code></li>
+                        <li data-i18n-html="tg_step3">Вернитесь и включите уведомления</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- ═══ TAB: Profile ═══ -->
+            <section class="acc-section" id="tab-profile">
+                <div class="acc-page-head">
+                    <h1 class="acc-page-title" data-i18n="acc_profile_title">Профиль</h1>
+                    <p class="acc-page-sub" data-i18n="acc_profile_sub">Настройки аккаунта и интерфейса</p>
+                </div>
+
+                <div class="acc-profile-grid">
+                    <div class="acc-profile-card">
+                        <h2 class="acc-block-title" data-i18n="acc_profile_username">Имя пользователя</h2>
+                        <div class="acc-profile-current" id="profile-username">—</div>
+                        <form id="profile-nick-form" class="acc-profile-form">
+                            <input type="text" id="profile-nick-input" maxlength="20" autocomplete="off"
+                                   data-i18n-ph="acc_profile_new_nick_ph" placeholder="Новый ник (3–20 символов)">
+                            <button type="submit" class="btn btn-ghost" data-i18n="acc_profile_save">Сохранить</button>
+                        </form>
+                        <p class="acc-profile-hint" data-i18n="acc_profile_nick_hint">Только буквы, цифры, подчёркивание и дефис</p>
+                    </div>
+
+                    <div class="acc-profile-card">
+                        <h2 class="acc-block-title" data-i18n="acc_profile_lang">Язык интерфейса</h2>
+                        <div class="acc-lang-row" id="acc-lang-row">
+                            <button class="acc-lang-btn" data-lang="ru">Русский</button>
+                            <button class="acc-lang-btn" data-lang="pl">Polski</button>
+                            <button class="acc-lang-btn" data-lang="en">English</button>
+                        </div>
+                        <div class="acc-profile-divider"></div>
+                        <button class="btn btn-logout" id="profile-logout" data-i18n="logout_btn">Выйти</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ── Slide-out ticket panel ─────────── -->
+    <div class="acc-panel-overlay" id="acc-panel-overlay"></div>
+    <div class="acc-panel" id="acc-panel">
+        <div class="acc-panel-header">
+            <div class="acc-panel-header-info">
+                <div class="acc-panel-subject" id="ap-subject">—</div>
+                <div class="acc-panel-meta" id="ap-meta"></div>
+            </div>
+            <button class="acc-panel-close" id="ap-close">×</button>
+        </div>
+        <div class="acc-panel-assigned" id="ap-assigned" style="display:none;"></div>
+        <div class="acc-panel-messages" id="ap-messages"></div>
+        <div id="ap-form-area"></div>
+    </div>
+
+    <!-- ── Create ticket modal ────────────── -->
+    <div class="modal" id="acc-create-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><h3 data-i18n="create_modal_title">Новый тикет</h3></div>
+                <button class="modal-close" id="acc-create-close">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="acc-create-form" class="create-form">
+                    <div class="form-group">
+                        <label for="acc-ticket-subject" data-i18n="create_form_subject">Тема</label>
+                        <input type="text" id="acc-ticket-subject" required maxlength="200"
+                               data-i18n-ph="create_form_subject_ph"
+                               placeholder="Например: Сколько стоит бот для магазина?">
+                    </div>
+                    <div class="form-group">
+                        <label for="acc-ticket-message" data-i18n="create_form_message">Сообщение</label>
+                        <textarea id="acc-ticket-message" required rows="5"
+                                  data-i18n-ph="create_form_message_ph"
+                                  placeholder="Опишите ваш вопрос или задачу..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" data-i18n="create_submit">Создать тикет</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="i18n/ru.js?v=20260823"></script>
+    <script src="i18n/pl.js?v=20260823"></script>
+    <script src="i18n/en.js?v=20260823"></script>
+    <script src="i18n/i18n.js?v=20260823"></script>
+    <script src="script.js?v=20260823"></script>
+    <script src="api.js?v=20260823"></script>
+    <script src="account.js?v=20260823"></script>
+</body>
+</html>

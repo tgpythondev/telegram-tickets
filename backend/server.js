@@ -49,7 +49,11 @@ app.use(firewall);
 
 // Валидация критических переменных окружения при старте
 function validateEnvironment() {
-    const required = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'DATABASE_URL'];
+    // В dev-режиме DB_MODE=memory (pg-mem) PostgreSQL не используется
+    const required = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET'];
+    if (process.env.DB_MODE !== 'memory') {
+        required.push('DATABASE_URL');
+    }
     const missing = required.filter(key => !process.env[key]);
 
     if (missing.length > 0) {

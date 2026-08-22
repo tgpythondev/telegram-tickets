@@ -1,43 +1,99 @@
+// ============================================================
+// KALIANG Admin Panel v2
+// Разделы: Обзор / Заказы / Поддержка / Портфолио / Промокоды
+// ============================================================
 const Dashboard = (() => {
     let user = null;
-    let tickets = [];
+    let allTickets = [];
     let currentTicket = null;
-    let filters = {};
+    let currentSection = 'overview';
     let sse = null;
 
-    // ── SSE ────────────────────────────────
-    function initSSE() {
-        if (!inMemoryAccessToken) return;
-        if (sse) { sse.close(); sse = null; }
-        sse = new EventSource(`${API_URL}/events`, { withCredentials: true });
+    const listState = {
+        orders:  { filter: 'all', search: '' },
+        support: { filter: 'all', search: '' }
+    };
 
-        sse.addEventListener('admin:ticket:new', e => {
-            const ticket = JSON.parse(e.data);
-            tickets.unshift(ticket);
-            renderTickets();
-            loadStats();
-            showToastMsg(t('admin_sse_new').replace('{id}', ticket.id), 'success');
-            pulseStat('stat-open');
-        });
+    const isOrder = tk => !!tk.order_config;
 
-        sse.addEventListener('admin:ticket:updated', e => {
-            const updated = JSON.parse(e.data);
-            const idx = tickets.findIndex(t => t.id === updated.id);
-            if (idx !== -1) { tickets[idx] = updated; renderTickets(); }
-            if (currentTicket && currentTicket.id === updated.id) {
-                currentTicket = updated;
-                refreshPanelMeta();
-            }
-            loadStats();
-        });
+    // ── Helpers ──────────────────────────────
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text).replace(/[&<>"']/g, m => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        }[m]));
+    }
 
-        sse.addEventListener('admin:message:new', e => {
-            const { ticketId, message } = JSON.parse(e.data);
-            if (currentTicket && currentTicket.id === ticketId) appendMessageToPanel(message);
-            showToastMsg(t('admin_sse_msg').replace('{id}', ticketId), 'success');
-        });
+    function setText(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    }
 
-        sse.onerror = () => {};
+    function fmtDate(iso, withTime) {
+        if (!iso) return '';
+        const locale = { ru: 'ru-RU', pl: 'pl-PL', en: 'en-US' }[I18n.getLang()] || 'ru-RU';
+        const opts = withTime
+            ? { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+            : { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' };
+        return new Date(iso).toLocaleString(locale, opts);
+    }
+
+    const statusLabel = s => ({
+        open: t('status_open'),
+        in_progress: t('status_progress'),
+        closed: t('status_closed')
+    }[s] || s);
+
+    const prioColor = { normal: 'rgba(255,255,255,0.5)', high: '#FFD700', urgent: '#FF3333' };
+
+    function showToastMsg(msg, type) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const el = document.createElement('div');
+        el.className = 'adm-toast';
+        el.textContent = msg;
+        if (type === 'error') el.style.borderLeftColor = 'var(--accent-urgent)';
+        container.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('show'));
+        setTimeout(() => {
+            el.classList.remove('show');
+            setTimeout(() => el.remove(), 350);
+        }, 3500);
+    }
+
+    // Тосты для глобальных вызовов (api.js использует showSuccess/showError)
+    window.showSuccess = msg => showToastMsg(msg, 'success');
+    window.showError   = msg => showToastMsg(msg, 'error');
+
+    // ── Data ─────────────────────────────────
+    async function loadTickets(silent) {
+        if (!silent) {
+            document.querySelectorAll('.adm-loading').forEach(el => el.style.display = 'flex');
+        }
+        try {
+            const data = await API.getAllTickets();
+            if (!data || !Array.isArray(data.tickets)) throw new Error(t('tickets_load_error'));
+            allTickets = data.tickets;
+            renderAll();
+        } catch (err) {
+            showToastMsg(`${t('tickets_load_error')}: ${err.message}`, 'error');
+        } finally {
+            document.querySelectorAll('.adm-loading').forEach(el => el.style.display = 'none');
+        }
+    }
+
+    async function loadStats() {
+        try {
+            const data = await API.getStats();
+            if (!data || !data.stats) throw new Error('no stats');
+            const s = data.stats;
+            setText('stat-open',     s.open_tickets || 0);
+            setText('stat-progress', s.in_progress_tickets || 0);
+            setText('stat-closed',   s.closed_tickets || 0);
+            setText('stat-total',    s.total_tickets || 0);
+        } catch (_) {
+            ['stat-open', 'stat-progress', 'stat-closed', 'stat-total'].forEach(id => setText(id, '—'));
+        }
     }
 
     function pulseStat(id) {
@@ -47,126 +103,120 @@ const Dashboard = (() => {
         setTimeout(() => el.classList.remove('pulse-anim'), 450);
     }
 
-    async function loadStats() {
-        try {
-            const data = await API.getStats();
-            if (!data || !data.stats) throw new Error('no stats');
-            const s = data.stats;
-            setText('stat-open',     s.open_tickets     || 0);
-            setText('stat-progress', s.in_progress_tickets || 0);
-            setText('stat-closed',   s.closed_tickets   || 0);
-            setText('stat-total',    s.total_tickets    || 0);
-        } catch (_) {
-            ['stat-open','stat-progress','stat-closed','stat-total'].forEach(id => setText(id, '—'));
-        }
+    // ── Rendering ────────────────────────────
+    function renderAll() {
+        renderOverview();
+        renderList('orders');
+        renderList('support');
+        renderNavCounts();
     }
 
-    // ── Load tickets ───────────────────────
-    async function loadTickets() {
-        const loading = document.getElementById('loading');
-        const tbody   = document.getElementById('tickets-tbody');
-        const cards   = document.getElementById('tickets-cards');
-
-        if (loading) loading.style.display = 'flex';
-        if (tbody)  tbody.innerHTML = '';
-        if (cards)  cards.innerHTML = '';
-
-        try {
-            const data = await API.getAllTickets(filters);
-            if (!data || !Array.isArray(data.tickets)) throw new Error(t('tickets_load_error'));
-            tickets = data.tickets;
-            renderTickets();
-        } catch (err) {
-            const msg = `${t('tickets_load_error')}: ${escapeHtml(err.message)}`;
-            if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${msg}</td></tr>`;
-            if (cards) cards.innerHTML = `<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${msg}</div>`;
-        } finally {
-            if (loading) loading.style.display = 'none';
-        }
+    function renderNavCounts() {
+        const ordersActive  = allTickets.filter(tk => isOrder(tk) && tk.status !== 'closed').length;
+        const supportActive = allTickets.filter(tk => !isOrder(tk) && tk.status !== 'closed').length;
+        setText('nav-count-orders',  ordersActive || '');
+        setText('nav-count-support', supportActive || '');
     }
 
-    function renderTickets() {
-        const tbody  = document.getElementById('tickets-tbody');
-        const cards  = document.getElementById('tickets-cards');
-        const statusLabels = {
-            open: t('status_open'),
-            in_progress: t('status_progress'),
-            closed: t('status_closed')
-        };
-        const priorityDot  = { normal: 'rgba(255,255,255,0.5)', high: '#FFD700', urgent: '#FF3333' };
+    function renderOverview() {
+        const orders  = allTickets.filter(isOrder);
+        const support = allTickets.filter(tk => !isOrder(tk));
 
-        if (tbody) {
-            tbody.innerHTML = '';
-            if (tickets.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${t('admin_no_tickets')}</td></tr>`;
-            } else {
-                tickets.forEach(t => {
-                    const tr = document.createElement('tr');
-                    if (currentTicket && currentTicket.id === t.id) tr.classList.add('row-active');
-                    const date = new Date(t.created_at).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-                    tr.innerHTML = `
-                        <td class="td-id">#${t.id}</td>
-                        <td class="td-subject">${escapeHtml(t.subject)}</td>
-                        <td class="td-user">${escapeHtml(t.user_username)}</td>
-                        <td><span class="badge status-${t.status}">${statusLabels[t.status]}</span></td>
-                        <td>
-                            <span class="priority-dot">
-                                <span class="status-dot" style="background:${priorityDot[t.priority]}"></span>
-                                ${t.priority.toUpperCase()}
-                            </span>
-                        </td>
-                        <td class="td-assigned">${escapeHtml(t.assigned_admin_username) || '—'}</td>
-                        <td class="td-date">${date}</td>
-                    `;
-                    tr.addEventListener('click', () => openTicket(t.id));
-                    tbody.appendChild(tr);
-                });
-            }
-        }
+        setText('ov-orders-count',   orders.length);
+        setText('ov-orders-active',  orders.filter(tk => tk.status !== 'closed').length);
+        setText('ov-support-count',  support.length);
+        setText('ov-support-open',   support.filter(tk => tk.status !== 'closed').length);
 
-        if (cards) {
-            cards.innerHTML = '';
-            if (tickets.length === 0) {
-                cards.innerHTML = `<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${t('admin_no_tickets')}</div>`;
-            } else {
-                tickets.forEach(t => {
-                    const card = document.createElement('div');
-                    card.className = 'adm-ticket-card';
-                    card.innerHTML = `
-                        <div class="atc-header">
-                            <span class="atc-id">#${t.id}</span>
-                            <div class="atc-badges">
-                                <span class="badge status-${t.status}">${statusLabels[t.status]}</span>
-                                <span class="badge priority-${t.priority}">${t.priority.toUpperCase()}</span>
-                            </div>
-                        </div>
-                        <div class="atc-subject">${escapeHtml(t.subject)}</div>
-                        <div class="atc-meta">
-                            <span>${escapeHtml(t.user_username)}</span>
-                            <span>${new Date(t.created_at).toLocaleDateString('ru-RU')}</span>
-                            ${t.assigned_admin_username ? `<span>${escapeHtml(t.assigned_admin_username)}</span>` : ''}
-                        </div>
-                    `;
-                    card.addEventListener('click', () => openTicket(t.id));
-                    cards.appendChild(card);
-                });
-            }
+        const recent = [...allTickets]
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 8);
+
+        const box = document.getElementById('ov-recent');
+        box.innerHTML = '';
+        if (recent.length === 0) {
+            box.innerHTML = `<div class="adm-empty"><div class="adm-empty-title">${t('admin_no_tickets')}</div></div>`;
+            return;
         }
+        recent.forEach(tk => box.appendChild(makeRow(tk, true)));
     }
 
-    // ── Open ticket panel ──────────────────
+    function filteredTickets(scope) {
+        const st = listState[scope];
+        let list = allTickets.filter(scope === 'orders' ? isOrder : tk => !isOrder(tk));
+        if (st.filter === 'mine') list = list.filter(tk => tk.assigned_admin_id === user.id);
+        else if (st.filter !== 'all') list = list.filter(tk => tk.status === st.filter);
+        if (st.search) {
+            const q = st.search.toLowerCase();
+            list = list.filter(tk =>
+                (tk.subject || '').toLowerCase().includes(q) ||
+                (tk.user_username || '').toLowerCase().includes(q) ||
+                String(tk.id).includes(q)
+            );
+        }
+        return list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+
+    function renderList(scope) {
+        const listEl = document.getElementById(`${scope}-list`);
+        const emptyEl = document.getElementById(`${scope}-empty`);
+        if (!listEl) return;
+
+        const list = filteredTickets(scope);
+        listEl.innerHTML = '';
+
+        if (list.length === 0) {
+            emptyEl.style.display = '';
+            listEl.style.display = 'none';
+            return;
+        }
+        emptyEl.style.display = 'none';
+        listEl.style.display = '';
+        list.forEach(tk => listEl.appendChild(makeRow(tk, false)));
+    }
+
+    function makeRow(tk, showKind) {
+        const row = document.createElement('button');
+        row.className = 'adm-row';
+        if (currentTicket && currentTicket.id === tk.id) row.classList.add('row-active');
+
+        const kindBadge = showKind
+            ? `<span class="badge ${isOrder(tk) ? 'kind-order' : 'kind-ticket'}">${isOrder(tk) ? t('acc_kind_order') : t('acc_kind_ticket')}</span>`
+            : '';
+
+        row.innerHTML = `
+            <span class="adm-row-id">#${tk.id}</span>
+            <span class="adm-row-main">
+                <span class="adm-row-subject">${escapeHtml(tk.subject)}</span>
+                <span class="adm-row-meta">
+                    ${kindBadge}
+                    <span>${escapeHtml(tk.user_username || '')}</span>
+                </span>
+            </span>
+            <span><span class="badge status-${tk.status}">${statusLabel(tk.status)}</span></span>
+            <span class="priority-dot">
+                <span class="dot" style="background:${prioColor[tk.priority] || prioColor.normal}"></span>
+                ${escapeHtml((tk.priority || 'normal').toUpperCase())}
+            </span>
+            <span class="adm-row-assigned">${tk.assigned_admin_username ? escapeHtml(tk.assigned_admin_username) : '—'}</span>
+            <span class="adm-row-date">${fmtDate(tk.created_at)}</span>
+        `;
+        row.addEventListener('click', () => openTicket(tk.id));
+        return row;
+    }
+
+    // ── Ticket panel ─────────────────────────
     async function openTicket(ticketId) {
         const panel   = document.getElementById('adm-panel');
         const overlay = document.getElementById('adm-panel-overlay');
-        const body    = document.getElementById('admin-modal-body');
+        const body    = document.getElementById('adm-panel-body');
 
         panel.classList.add('open');
         overlay.classList.add('active');
-        body.innerHTML = `<div style="padding:3rem;text-align:center;color:rgba(255,255,255,.3)">${t('panel_loading')}</div>`;
+        body.innerHTML = `<div class="adm-loading" style="display:flex;"><div class="loading-spinner"></div></div>`;
 
-        // Mark active row
-        document.querySelectorAll('#tickets-tbody tr').forEach(r => {
-            r.classList.toggle('row-active', r.querySelector('.td-id') && r.querySelector('.td-id').textContent === `#${ticketId}`);
+        document.querySelectorAll('.adm-row').forEach(r => {
+            const id = r.querySelector('.adm-row-id');
+            r.classList.toggle('row-active', !!id && id.textContent === `#${ticketId}`);
         });
 
         try {
@@ -176,32 +226,26 @@ const Dashboard = (() => {
             renderPanelHeader(currentTicket);
             renderPanelBody(currentTicket, data.messages || []);
         } catch (err) {
-            body.innerHTML = `<div style="padding:3rem;text-align:center;color:var(--accent-urgent);">${t('tickets_load_error')}: ${escapeHtml(err.message)}</div>`;
+            body.innerHTML = `<div class="adm-empty"><div class="adm-empty-title" style="color:var(--accent-urgent);">${t('tickets_load_error')}: ${escapeHtml(err.message)}</div></div>`;
         }
     }
 
     function renderPanelHeader(ticket) {
-        const statusLabels = {
-            open: t('status_open'),
-            in_progress: t('status_progress'),
-            closed: t('status_closed')
-        };
         document.getElementById('adm-panel-subject').textContent = ticket.subject;
 
         const meta = document.getElementById('adm-panel-meta');
         meta.innerHTML = '';
 
         const idS = document.createElement('span');
-        idS.style.fontFamily = 'var(--font-mono)';
         idS.textContent = `#${ticket.id}`;
 
         const st = document.createElement('span');
         st.className = `badge status-${ticket.status}`;
-        st.textContent = statusLabels[ticket.status];
+        st.textContent = statusLabel(ticket.status);
 
         const pr = document.createElement('span');
         pr.className = `badge priority-${ticket.priority}`;
-        pr.textContent = ticket.priority.toUpperCase();
+        pr.textContent = (ticket.priority || 'normal').toUpperCase();
 
         meta.appendChild(idS);
         meta.appendChild(st);
@@ -209,81 +253,81 @@ const Dashboard = (() => {
     }
 
     function renderPanelBody(ticket, messages) {
-        const body = document.getElementById('admin-modal-body');
+        const body = document.getElementById('adm-panel-body');
         body.innerHTML = '';
 
-        // ── Details section
-        const details = document.createElement('div');
-        details.className = 'adm-ticket-details';
+        // ── Сводка заказа
+        if (isOrder(ticket)) body.appendChild(makeOrderSummary(ticket.order_config));
 
+        // ── Описание задачи (для заказов)
+        const cfg = ticket.order_config || {};
+        if (cfg.shortDescription || cfg.detailedDescription) {
+            const descBlock = document.createElement('div');
+            if (cfg.shortDescription) {
+                descBlock.innerHTML += `<div class="adm-block-title">${t('adm_task_short')}</div>
+                    <div class="adm-desc-text" style="margin-bottom:var(--sp-3);">${escapeHtml(cfg.shortDescription)}</div>`;
+            }
+            if (cfg.detailedDescription) {
+                descBlock.innerHTML += `<div class="adm-block-title">${t('adm_task_details')}</div>
+                    <div class="adm-desc-text">${escapeHtml(cfg.detailedDescription)}</div>`;
+            }
+            body.appendChild(descBlock);
+        }
+
+        // ── Детали
+        const details = document.createElement('div');
         const grid = document.createElement('div');
         grid.className = 'adm-details-grid';
-
-        const fields = [
-            [t('admin_field_user'),     ticket.user_username || '—'],
-            [t('admin_field_created'),  new Date(ticket.created_at).toLocaleString('ru-RU')],
+        [
+            [t('admin_field_user'),    ticket.user_username || '—'],
+            [t('admin_field_created'), fmtDate(ticket.created_at, true)],
             [t('admin_field_assigned'), ticket.assigned_admin_username || '—']
-        ];
-
-        fields.forEach(([label, value]) => {
+        ].forEach(([label, value]) => {
             const item = document.createElement('div');
             item.className = 'adm-detail-item';
             item.innerHTML = `<span class="adm-detail-label">${label}</span><span class="adm-detail-value">${escapeHtml(String(value))}</span>`;
             grid.appendChild(item);
         });
+        details.appendChild(grid);
+        body.appendChild(details);
 
-        // ── Actions
+        // ── Действия
         const actions = document.createElement('div');
         actions.className = 'adm-actions';
 
-        // Status
-        const statusGroup = makeActionGroup(t('admin_action_status'), [
+        actions.appendChild(makeActionGroup(t('admin_action_status'), [
             { label: t('status_open'),     key: 'status', val: 'open',        active: ticket.status === 'open' },
             { label: t('status_progress'), key: 'status', val: 'in_progress', active: ticket.status === 'in_progress' },
             { label: t('status_closed'),   key: 'status', val: 'closed',      active: ticket.status === 'closed' }
-        ]);
+        ]));
 
-        // Priority
-        const priorityGroup = makeActionGroup(t('admin_action_priority'), [
-            { label: '● ' + t('cfg_prio_normal'), key: 'priority', val: 'normal',  active: ticket.priority === 'normal',  attr: 'data-priority=normal' },
-            { label: '● ' + t('cfg_prio_high'),   key: 'priority', val: 'high',    active: ticket.priority === 'high',    attr: 'data-priority=high' },
-            { label: '● ' + t('cfg_prio_urgent'), key: 'priority', val: 'urgent',  active: ticket.priority === 'urgent',  attr: 'data-priority=urgent' }
-        ]);
+        actions.appendChild(makeActionGroup(t('admin_action_priority'), [
+            { label: t('cfg_prio_normal_live'), key: 'priority', val: 'normal', active: ticket.priority === 'normal' },
+            { label: t('cfg_prio_high_live'),   key: 'priority', val: 'high',   active: ticket.priority === 'high' },
+            { label: t('cfg_prio_urgent_live'), key: 'priority', val: 'urgent', active: ticket.priority === 'urgent' }
+        ]));
 
-        // Assign
         const assignBtn = document.createElement('button');
-        assignBtn.className = 'adm-assign-btn';
+        assignBtn.className = 'adm-assign-btn' + (ticket.assigned_admin_id === user.id ? ' assigned' : '');
         assignBtn.id = 'adm-assign-btn';
         assignBtn.textContent = ticket.assigned_admin_id === user.id ? t('admin_btn_unassign') : t('admin_btn_assign');
         assignBtn.addEventListener('click', toggleAssign);
-
-        actions.appendChild(statusGroup);
-        actions.appendChild(priorityGroup);
         actions.appendChild(assignBtn);
 
-        details.appendChild(grid);
-        details.appendChild(actions);
-        body.appendChild(details);
+        body.appendChild(actions);
 
-        // ── Messages
-        const msgsSection = document.createElement('div');
-        msgsSection.className = 'adm-messages-section';
-
-        const msgsLabel = document.createElement('div');
-        msgsLabel.className = 'adm-messages-label';
-        msgsLabel.textContent = t('admin_messages');
+        // ── Переписка
+        const msgsBlock = document.createElement('div');
+        msgsBlock.innerHTML = `<div class="adm-block-title">${t('admin_messages')}</div>`;
 
         const msgsList = document.createElement('div');
         msgsList.className = 'adm-messages-list';
         msgsList.id = 'adm-messages-list';
-
         messages.forEach(msg => msgsList.appendChild(makeMessageEl(msg)));
+        msgsBlock.appendChild(msgsList);
+        body.appendChild(msgsBlock);
 
-        msgsSection.appendChild(msgsLabel);
-        msgsSection.appendChild(msgsList);
-        body.appendChild(msgsSection);
-
-        // ── Reply form
+        // ── Ответ
         if (ticket.status !== 'closed') {
             const replyForm = document.createElement('div');
             replyForm.className = 'adm-reply-form';
@@ -295,28 +339,18 @@ const Dashboard = (() => {
             ta.maxLength = 5000;
 
             const sendBtn = document.createElement('button');
-            sendBtn.className = 'btn btn-primary';
-            sendBtn.style.cssText = 'width:100%;justify-content:center;';
+            sendBtn.className = 'btn btn-primary adm-btn-full';
             sendBtn.textContent = t('admin_reply_btn');
 
             sendBtn.addEventListener('click', async () => {
                 const content = ta.value.trim();
                 if (!content) return;
-                if (content.length > 5000) { showToastMsg(t('ticket_max_chars'), 'error'); return; }
                 sendBtn.disabled = true;
                 sendBtn.textContent = t('btn_sending');
                 try {
-                    await API.replyToTicket(currentTicket.id, content);
+                    const res = await API.replyToTicket(currentTicket.id, content);
                     ta.value = '';
-                    const data = await API.getTicket(currentTicket.id);
-                    if (data && data.messages) {
-                        const list = document.getElementById('adm-messages-list');
-                        if (list) {
-                            list.innerHTML = '';
-                            data.messages.forEach(m => list.appendChild(makeMessageEl(m)));
-                            list.scrollTop = list.scrollHeight;
-                        }
-                    }
+                    if (res && res.message) appendMessageToPanel({ ...res.message, username: user.username });
                 } catch (err) {
                     showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
                 } finally {
@@ -325,21 +359,61 @@ const Dashboard = (() => {
                 }
             });
 
+            ta.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendBtn.click();
+            });
+
             replyForm.appendChild(ta);
             replyForm.appendChild(sendBtn);
             body.appendChild(replyForm);
         }
 
-        // Scroll messages to bottom
         setTimeout(() => {
             const list = document.getElementById('adm-messages-list');
             if (list) list.scrollTop = list.scrollHeight;
         }, 50);
     }
 
+    function makeOrderSummary(cfg) {
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `<div class="adm-block-title">${t('adm_summary_title')}</div>`;
+
+        const grid = document.createElement('div');
+        grid.className = 'adm-summary';
+
+        const platformKey = { telegram: 'cfg_platform_tg_name', discord: 'cfg_platform_dc_name', both: 'cfg_platform_both_name' }[cfg.platform];
+        const hostingKey  = { free: 'cfg_hosting_free', paid: 'cfg_hosting_paid', none: 'cfg_hosting_none' }[cfg.hosting && cfg.hosting.type];
+        const benefitKey  = { free_mini: 'cfg_promo_free_mini_name', percent_10: 'cfg_promo_pct_name' }[cfg.chosenBenefit];
+
+        let hostingVal = hostingKey ? t(hostingKey) : '—';
+        if (cfg.hosting && cfg.hosting.extraStorage > 0) hostingVal += ' ' + t('cfg_hosting_extra_storage').replace('{n}', cfg.hosting.extraStorage);
+        if (cfg.hosting && cfg.hosting.extraBandwidth > 0) hostingVal += ' ' + t('cfg_hosting_extra_bw').replace('{n}', cfg.hosting.extraBandwidth);
+
+        const items = [
+            [t('cfg_sum_platform'), platformKey ? t(platformKey) : '—'],
+            [t('cfg_live_package'), cfg.package ? cfg.package.toUpperCase() : '—'],
+            [t('cfg_live_lang'),    cfg.language ? cfg.language.toUpperCase() : '—'],
+            [t('cfg_live_hosting'), hostingVal],
+            [t('cfg_live_priority'), t(`cfg_prio_${cfg.priority || 'normal'}_live`)],
+            [t('cfg_price_label'),  cfg.totalPrice !== undefined && cfg.totalPrice !== null ? `$${cfg.totalPrice}` : '—', 'mono']
+        ];
+        if (cfg.promoCode) {
+            items.push([t('cfg_live_promo'), `${cfg.promoCode}${benefitKey ? ' · ' + t(benefitKey) : ''}`, 'full']);
+        }
+
+        items.forEach(([label, value, cls]) => {
+            const item = document.createElement('div');
+            item.className = 'adm-summary-item' + (cls === 'full' ? ' full' : '');
+            item.innerHTML = `<span class="adm-summary-label">${label}</span><span class="adm-summary-value${cls === 'mono' ? ' mono' : ''}">${escapeHtml(String(value))}</span>`;
+            grid.appendChild(item);
+        });
+
+        wrap.appendChild(grid);
+        return wrap;
+    }
+
     function makeActionGroup(labelText, buttons) {
         const group = document.createElement('div');
-        group.className = 'adm-action-group';
 
         const label = document.createElement('div');
         label.className = 'adm-action-label';
@@ -348,15 +422,11 @@ const Dashboard = (() => {
         const btns = document.createElement('div');
         btns.className = 'adm-action-btns';
 
-        buttons.forEach(({ label: btnLabel, key, val, active, attr }) => {
+        buttons.forEach(({ label: btnLabel, key, val, active }) => {
             const btn = document.createElement('button');
             btn.className = `adm-action-btn${active ? ' btn-active' : ''}`;
             btn.dataset[key === 'status' ? 'status' : 'priority'] = val;
             btn.textContent = btnLabel;
-            if (attr) {
-                const [k, v] = attr.split('=');
-                btn.setAttribute(k, v);
-            }
             btn.addEventListener('click', () => updateTicketField(key, val, btn));
             btns.appendChild(btn);
         });
@@ -369,32 +439,23 @@ const Dashboard = (() => {
     function makeMessageEl(msg) {
         const wrap = document.createElement('div');
         wrap.className = `adm-message ${msg.is_admin_reply ? 'admin-reply' : 'user-message'}`;
+        if (msg.id) wrap.dataset.msgId = msg.id;
 
-        const meta = document.createElement('div');
-        meta.className = 'adm-msg-meta';
-
-        const author = document.createElement('span');
-        author.className = 'adm-msg-author';
-        author.textContent = msg.username || '—';
-
-        const time = document.createElement('span');
-        time.textContent = new Date(msg.created_at).toLocaleString('ru-RU');
-
-        meta.appendChild(author);
-        meta.appendChild(time);
-
-        const body = document.createElement('div');
-        body.className = 'adm-msg-body';
-        body.textContent = msg.content;
-
-        wrap.appendChild(meta);
-        wrap.appendChild(body);
+        wrap.innerHTML = `
+            <div class="adm-msg-meta">
+                <span class="adm-msg-author">${escapeHtml(msg.username || '—')}</span>
+                <span>${fmtDate(msg.created_at, true)}</span>
+            </div>
+            <div class="adm-msg-body">${escapeHtml(msg.content)}</div>
+        `;
         return wrap;
     }
 
     function appendMessageToPanel(msg) {
         const list = document.getElementById('adm-messages-list');
         if (!list) return;
+        // Защита от дублей (SSE + оптимистичная вставка)
+        if (msg.id && list.querySelector(`[data-msg-id="${msg.id}"]`)) return;
         list.appendChild(makeMessageEl(msg));
         list.scrollTop = list.scrollHeight;
     }
@@ -402,24 +463,22 @@ const Dashboard = (() => {
     function refreshPanelMeta() {
         if (!currentTicket) return;
         renderPanelHeader(currentTicket);
-        // Update active buttons
-        document.querySelectorAll('[data-status]').forEach(btn => {
-            btn.classList.toggle('btn-active', btn.dataset.status === currentTicket.status);
-        });
-        document.querySelectorAll('[data-priority]').forEach(btn => {
-            btn.classList.toggle('btn-active', btn.dataset.priority === currentTicket.priority);
-        });
+        document.querySelectorAll('[data-status]').forEach(btn =>
+            btn.classList.toggle('btn-active', btn.dataset.status === currentTicket.status));
+        document.querySelectorAll('[data-priority]').forEach(btn =>
+            btn.classList.toggle('btn-active', btn.dataset.priority === currentTicket.priority));
         const ab = document.getElementById('adm-assign-btn');
-        if (ab) ab.textContent = currentTicket.assigned_admin_id === user.id ? t('admin_btn_unassign') : t('admin_btn_assign');
+        if (ab) {
+            const mine = currentTicket.assigned_admin_id === user.id;
+            ab.textContent = mine ? t('admin_btn_unassign') : t('admin_btn_assign');
+            ab.classList.toggle('assigned', mine);
+        }
     }
 
     async function updateTicketField(field, value, clickedBtn) {
-        if (!currentTicket) return;
-        if (currentTicket[field] === value) return;
+        if (!currentTicket || currentTicket[field] === value) return;
 
         const prevValue = currentTicket[field];
-
-        // Optimistic UI
         const selector = field === 'status' ? '[data-status]' : '[data-priority]';
         document.querySelectorAll(selector).forEach(b => b.classList.remove('btn-active'));
         clickedBtn.classList.add('btn-active');
@@ -428,9 +487,8 @@ const Dashboard = (() => {
         try {
             await API.updateTicket(currentTicket.id, { [field]: value });
             renderPanelHeader(currentTicket);
-            renderTickets();
+            renderAll();
         } catch (err) {
-            // Rollback
             currentTicket[field] = prevValue;
             refreshPanelMeta();
             showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
@@ -450,154 +508,138 @@ const Dashboard = (() => {
     function closePanel() {
         document.getElementById('adm-panel').classList.remove('open');
         document.getElementById('adm-panel-overlay').classList.remove('active');
-        document.querySelectorAll('#tickets-tbody tr').forEach(r => r.classList.remove('row-active'));
+        document.querySelectorAll('.adm-row').forEach(r => r.classList.remove('row-active'));
         currentTicket = null;
     }
 
-    function setupFilters() {
-        document.querySelectorAll('.adm-filter-tab').forEach(tab => {
-            tab.addEventListener('click', async () => {
-                document.querySelectorAll('.adm-filter-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const f = tab.dataset.filter;
-                filters = f === 'all' ? {} : f === 'mine' ? { assigned_to_me: true } : { status: f };
-                await loadTickets();
-            });
+    // ── SSE ──────────────────────────────────
+    function initSSE() {
+        if (!inMemoryAccessToken) return;
+        if (sse) { sse.close(); sse = null; }
+        sse = new EventSource(`${API_URL}/events`, { withCredentials: true });
+
+        sse.addEventListener('admin:ticket:new', e => {
+            const ticket = JSON.parse(e.data);
+            if (!allTickets.some(x => x.id === ticket.id)) allTickets.unshift(ticket);
+            renderAll();
+            loadStats();
+            showToastMsg(t('admin_sse_new').replace('{id}', ticket.id), 'success');
+            pulseStat('stat-open');
         });
-    }
 
-    function setupSearch() {
-        let timer;
-        const box = document.getElementById('search-box');
-        if (!box) return;
-        box.addEventListener('input', e => {
-            clearTimeout(timer);
-            timer = setTimeout(() => {
-                const q = e.target.value.toLowerCase();
-                document.querySelectorAll('#tickets-tbody tr').forEach(r => {
-                    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
-                });
-                document.querySelectorAll('.adm-ticket-card').forEach(c => {
-                    c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
-                });
-            }, 250);
+        sse.addEventListener('admin:ticket:updated', e => {
+            const updated = JSON.parse(e.data);
+            const idx = allTickets.findIndex(x => x.id === updated.id);
+            if (idx !== -1) allTickets[idx] = { ...allTickets[idx], ...updated };
+            renderAll();
+            if (currentTicket && currentTicket.id === updated.id) {
+                currentTicket = { ...currentTicket, ...updated };
+                refreshPanelMeta();
+            }
+            loadStats();
         });
+
+        sse.addEventListener('admin:message:new', e => {
+            const { ticketId, message } = JSON.parse(e.data);
+            if (currentTicket && currentTicket.id === ticketId) appendMessageToPanel(message);
+            showToastMsg(t('admin_sse_msg').replace('{id}', ticketId), 'success');
+        });
+
+        sse.onerror = () => {};
     }
 
-    function showToastMsg(msg, type) {
-        const container = document.getElementById('toast-container');
-        if (!container) return;
-        const t = document.createElement('div');
-        t.className = 'adm-toast';
-        t.textContent = msg;
-        if (type === 'error') t.style.borderColor = 'rgba(255,51,51,0.3)';
-        container.appendChild(t);
-        requestAnimationFrame(() => t.classList.add('show'));
-        setTimeout(() => {
-            t.classList.remove('show');
-            setTimeout(() => t.remove(), 350);
-        }, 3500);
+    // ── Sections / filters / search ──────────
+    function switchSection(section) {
+        currentSection = section;
+        document.querySelectorAll('[data-section]').forEach(l =>
+            l.classList.toggle('active', l.dataset.section === section));
+        document.querySelectorAll('.adm-section').forEach(s =>
+            s.classList.toggle('active', s.id === `section-${section}`));
+
+        if (section === 'promo') loadPromoCodes();
+        if (section === 'portfolio') loadPortfolio();
     }
 
-    // Override global toast for admin page
-    window.showSuccess = msg => showToastMsg(msg, 'success');
-    window.showError   = msg => showToastMsg(msg, 'error');
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        return String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-    }
-
-    function setText(id, val) {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val;
-    }
-
-    let currentSection = 'tickets';
-
-    function setupSectionSwitching() {
+    function setupNav() {
         document.querySelectorAll('[data-section]').forEach(link => {
             link.addEventListener('click', e => {
                 e.preventDefault();
-                const section = link.dataset.section;
-                switchSection(section);
+                switchSection(link.dataset.section);
+            });
+        });
+        document.querySelectorAll('[data-goto]').forEach(btn => {
+            btn.addEventListener('click', () => switchSection(btn.dataset.goto));
+        });
+    }
+
+    function setupTabsAndSearch() {
+        document.querySelectorAll('.adm-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const scope = tab.closest('.adm-tabs').dataset.scope;
+                tab.closest('.adm-tabs').querySelectorAll('.adm-tab').forEach(x => x.classList.remove('active'));
+                tab.classList.add('active');
+                listState[scope].filter = tab.dataset.filter;
+                renderList(scope);
+            });
+        });
+
+        document.querySelectorAll('.adm-search').forEach(box => {
+            let timer;
+            box.addEventListener('input', e => {
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    const scope = box.dataset.scope;
+                    listState[scope].search = e.target.value.trim();
+                    renderList(scope);
+                }, 200);
             });
         });
     }
 
-    function switchSection(section) {
-        currentSection = section;
-        document.querySelectorAll('[data-section]').forEach(l => l.classList.toggle('active', l.dataset.section === section));
-
-        // Tickets section
-        const isTickets = section === 'tickets';
-        document.querySelector('.stats-bar').style.display = isTickets ? '' : 'none';
-        document.querySelector('.admin-controls').style.display = isTickets ? '' : 'none';
-        document.querySelector('.adm-table-wrap').style.display = isTickets ? '' : 'none';
-        document.querySelector('.tickets-cards').style.display = isTickets ? '' : 'none';
-        document.getElementById('loading').style.display = isTickets ? 'none' : 'none';
-
-        // Promo section
-        document.getElementById('promo-section').style.display = section === 'promo' ? '' : 'none';
-
-        if (section === 'promo') {
-            loadPromoCodes();
-        }
-    }
-
-    // ── Promo codes ────────────────────────
-    let currentPromoTbody = null;
+    // ── Promo codes ──────────────────────────
     let promoEditId = null;
 
     async function loadPromoCodes() {
         const tbody = document.getElementById('promo-tbody');
         const empty = document.getElementById('promo-empty');
         if (!tbody) return;
-        if (empty) empty.style.display = 'none';
-        tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:rgba(255,255,255,.3)">Ładowanie…</td></tr>';
+        empty.style.display = 'none';
+        tbody.innerHTML = '';
 
         try {
             const data = await API.adminListPromoCodes();
             if (!data || !Array.isArray(data.promoCodes)) throw new Error('Invalid response');
 
-            tbody.innerHTML = '';
             if (data.promoCodes.length === 0) {
-                if (empty) empty.style.display = '';
+                empty.style.display = '';
                 return;
             }
 
             data.promoCodes.forEach(pc => {
                 const tr = document.createElement('tr');
-                const isActive = pc.is_active;
-                const uses = pc.use_count || 0;
-                const limit = pc.max_uses !== null ? pc.max_uses : '∞';
-
+                const limit = pc.max_uses !== null && pc.max_uses !== undefined ? pc.max_uses : '∞';
                 tr.innerHTML = `
-                    <td class="td-id" style="font-family:var(--font-mono);font-weight:600;">${escapeHtml(pc.code)}</td>
+                    <td class="td-code">${escapeHtml(pc.code)}</td>
                     <td>${escapeHtml(pc.description || '—')}</td>
-                    <td>${uses}</td>
+                    <td>${pc.use_count || 0}</td>
                     <td>${limit}</td>
-                    <td><span class="badge ${isActive ? 'status-open' : 'status-closed'}">${isActive ? t('promo_yes') : t('promo_no')}</span></td>
+                    <td><span class="badge ${pc.is_active ? 'status-in_progress' : 'status-closed'}">${pc.is_active ? t('promo_yes') : t('promo_no')}</span></td>
                     <td>
                         <div style="display:flex;gap:var(--sp-2);">
-                            <button class="btn btn-ghost promo-edit-btn" data-id="${pc.id}" style="padding:var(--sp-1) var(--sp-3);font-size:var(--text-xs);">${t('promo_btn_save')}</button>
-                            <button class="btn btn-ghost promo-delete-btn" data-id="${pc.id}" style="padding:var(--sp-1) var(--sp-3);font-size:var(--text-xs);color:var(--accent-urgent);">${pc.use_count > 0 ? t('promo_btn_deactivate') : t('promo_btn_delete')}</button>
+                            <button class="btn btn-ghost adm-btn-small promo-edit-btn" data-id="${pc.id}">${t('promo_btn_save')}</button>
+                            <button class="btn btn-ghost adm-btn-small adm-btn-danger promo-delete-btn" data-id="${pc.id}">${pc.use_count > 0 ? t('promo_btn_deactivate') : t('promo_btn_delete')}</button>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Attach event listeners
-            tbody.querySelectorAll('.promo-edit-btn').forEach(btn => {
-                btn.addEventListener('click', () => openPromoEdit(parseInt(btn.dataset.id)));
-            });
-            tbody.querySelectorAll('.promo-delete-btn').forEach(btn => {
-                btn.addEventListener('click', () => deletePromoCode(parseInt(btn.dataset.id)));
-            });
-
+            tbody.querySelectorAll('.promo-edit-btn').forEach(btn =>
+                btn.addEventListener('click', () => openPromoEdit(parseInt(btn.dataset.id))));
+            tbody.querySelectorAll('.promo-delete-btn').forEach(btn =>
+                btn.addEventListener('click', () => deletePromoCode(parseInt(btn.dataset.id))));
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="6" style="padding:2rem;text-align:center;color:var(--accent-urgent);">${t('tickets_load_error')}: ${escapeHtml(err.message)}</td></tr>`;
+            showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
         }
     }
 
@@ -616,11 +658,10 @@ const Dashboard = (() => {
     }
 
     function openPromoEdit(id) {
-        promoEditId = id;
-        // Fetch promo data
         API.adminGetPromoCode(id).then(data => {
             if (!data || !data.promoCode) throw new Error('Not found');
             const pc = data.promoCode;
+            promoEditId = id;
             document.getElementById('promo-edit-id').value = pc.id;
             document.getElementById('promo-form-code').value = pc.code;
             document.getElementById('promo-form-code').disabled = true;
@@ -632,58 +673,63 @@ const Dashboard = (() => {
             document.getElementById('promo-modal-title').textContent = t('promo_edit_title');
             document.getElementById('promo-form-submit').textContent = t('promo_btn_save');
             document.getElementById('promo-modal').classList.add('active');
-        }).catch(err => {
-            showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
-        });
+        }).catch(err => showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error'));
     }
 
     async function deletePromoCode(id) {
         if (!confirm(t('promo_confirm_delete'))) return;
         try {
-            const data = await API.adminDeletePromoCode(id);
-            if (data && data.deactivated) {
-                showToastMsg(t('promo_deleted'), 'success');
-            } else {
-                showToastMsg(t('promo_deleted'), 'success');
-            }
+            await API.adminDeletePromoCode(id);
+            showToastMsg(t('promo_deleted'), 'success');
             await loadPromoCodes();
         } catch (err) {
             showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
         }
     }
 
-    function setupPromoForm() {
+    function setupPromo() {
+        document.getElementById('promo-new-btn').addEventListener('click', () => {
+            resetPromoForm();
+            document.getElementById('promo-modal').classList.add('active');
+        });
+
+        const close = () => {
+            document.getElementById('promo-modal').classList.remove('active');
+            resetPromoForm();
+        };
+        document.getElementById('promo-modal-close').addEventListener('click', close);
+        document.getElementById('promo-modal').addEventListener('click', e => {
+            if (e.target === document.getElementById('promo-modal')) close();
+        });
+
         document.getElementById('promo-form').addEventListener('submit', async e => {
             e.preventDefault();
-
             const code = document.getElementById('promo-form-code').value.trim();
-            if (!code) { showToastMsg(t('promo_form_code') + ' ' + t('val_min3'), 'error'); return; }
+            if (!code) { showToastMsg(t('promo_form_code') + ' — ' + t('val_min3'), 'error'); return; }
 
-            const editId = document.getElementById('promo-edit-id').value;
+            const desc = document.getElementById('promo-form-desc').value.trim() || undefined;
+            const maxUses = document.getElementById('promo-form-max-uses').value
+                ? parseInt(document.getElementById('promo-form-max-uses').value) : null;
 
             try {
-                if (editId) {
-                    // Update
-                    await API.adminUpdatePromoCode(parseInt(editId), {
-                        description: document.getElementById('promo-form-desc').value.trim() || undefined,
+                if (promoEditId) {
+                    await API.adminUpdatePromoCode(promoEditId, {
+                        description: desc,
                         isActive: document.getElementById('promo-form-active').checked,
-                        maxUses: document.getElementById('promo-form-max-uses').value ? parseInt(document.getElementById('promo-form-max-uses').value) : null
+                        maxUses
                     });
                     showToastMsg(t('promo_updated'), 'success');
                 } else {
-                    // Create
                     await API.adminCreatePromoCode({
-                        code: code,
-                        description: document.getElementById('promo-form-desc').value.trim() || undefined,
+                        code,
+                        description: desc,
                         discountPercent: parseFloat(document.getElementById('promo-form-discount').value) || 10,
                         isFreeMini: document.getElementById('promo-form-free-mini').checked,
-                        maxUses: document.getElementById('promo-form-max-uses').value ? parseInt(document.getElementById('promo-form-max-uses').value) : null
+                        maxUses
                     });
                     showToastMsg(t('promo_created'), 'success');
                 }
-
-                document.getElementById('promo-modal').classList.remove('active');
-                resetPromoForm();
+                close();
                 await loadPromoCodes();
             } catch (err) {
                 showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
@@ -691,58 +737,202 @@ const Dashboard = (() => {
         });
     }
 
-    function setupPromoModal() {
-        // New promo button
-        document.getElementById('promo-new-btn').addEventListener('click', () => {
-            resetPromoForm();
-            document.getElementById('promo-modal').classList.add('active');
+    // ── Portfolio ────────────────────────────
+    let pfEditId = null;
+
+    async function loadPortfolio() {
+        const tbody = document.getElementById('pf-tbody');
+        const empty = document.getElementById('pf-empty');
+        if (!tbody) return;
+        empty.style.display = 'none';
+        tbody.innerHTML = '';
+
+        try {
+            const data = await API.adminListPortfolio();
+            if (!data || !Array.isArray(data.projects)) throw new Error('Invalid response');
+
+            if (data.projects.length === 0) {
+                empty.style.display = '';
+                return;
+            }
+
+            data.projects.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(p.title)}</td>
+                    <td>${escapeHtml(p.platform || '—')}</td>
+                    <td>${escapeHtml((p.plan || '—').toUpperCase())}</td>
+                    <td>${escapeHtml(p.price || '—')}</td>
+                    <td><span class="badge ${p.is_visible ? 'status-in_progress' : 'status-closed'}">${p.is_visible ? t('promo_yes') : t('promo_no')}</span></td>
+                    <td>${p.sort_order ?? 0}</td>
+                    <td>
+                        <div style="display:flex;gap:var(--sp-2);">
+                            <button class="btn btn-ghost adm-btn-small pf-edit-btn" data-id="${p.id}">${t('promo_btn_save')}</button>
+                            <button class="btn btn-ghost adm-btn-small adm-btn-danger pf-delete-btn" data-id="${p.id}">${t('promo_btn_delete')}</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('.pf-edit-btn').forEach(btn =>
+                btn.addEventListener('click', () => openPfEdit(parseInt(btn.dataset.id))));
+            tbody.querySelectorAll('.pf-delete-btn').forEach(btn =>
+                btn.addEventListener('click', () => deletePf(parseInt(btn.dataset.id))));
+        } catch (err) {
+            showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
+        }
+    }
+
+    function resetPfForm() {
+        pfEditId = null;
+        document.getElementById('pf-edit-id').value = '';
+        document.getElementById('pf-form-title').value = '';
+        document.getElementById('pf-form-platform').value = 'telegram';
+        document.getElementById('pf-form-plan').value = 'mini';
+        document.getElementById('pf-form-price').value = '';
+        document.getElementById('pf-form-term').value = '';
+        document.getElementById('pf-form-lang').value = '';
+        document.getElementById('pf-form-sort').value = '0';
+        document.getElementById('pf-form-desc-ru').value = '';
+        document.getElementById('pf-form-desc-pl').value = '';
+        document.getElementById('pf-form-desc-en').value = '';
+        document.getElementById('pf-form-bot-url').value = '';
+        document.getElementById('pf-form-source-url').value = '';
+        document.getElementById('pf-form-screenshots').value = '';
+        document.getElementById('pf-form-visible').checked = true;
+        document.getElementById('pf-modal-title').textContent = t('admin_portfolio_modal_create');
+        document.getElementById('pf-form-submit').textContent = t('admin_portfolio_btn_create');
+    }
+
+    function openPfEdit(id) {
+        API.adminGetPortfolioProject(id).then(data => {
+            if (!data || !data.project) throw new Error('Not found');
+            const p = data.project;
+            pfEditId = id;
+            document.getElementById('pf-edit-id').value = p.id;
+            document.getElementById('pf-form-title').value = p.title || '';
+            document.getElementById('pf-form-platform').value = p.platform || 'telegram';
+            document.getElementById('pf-form-plan').value = p.plan || 'mini';
+            document.getElementById('pf-form-price').value = p.price || '';
+            document.getElementById('pf-form-term').value = p.term || '';
+            document.getElementById('pf-form-lang').value = p.lang || '';
+            document.getElementById('pf-form-sort').value = p.sort_order ?? 0;
+            document.getElementById('pf-form-desc-ru').value = p.description_ru || '';
+            document.getElementById('pf-form-desc-pl').value = p.description_pl || '';
+            document.getElementById('pf-form-desc-en').value = p.description_en || '';
+            document.getElementById('pf-form-bot-url').value = p.bot_url || '';
+            document.getElementById('pf-form-source-url').value = p.source_url || '';
+            document.getElementById('pf-form-screenshots').value = Array.isArray(p.screenshots) ? p.screenshots.join('\n') : '';
+            document.getElementById('pf-form-visible').checked = !!p.is_visible;
+            document.getElementById('pf-modal-title').textContent = t('admin_portfolio_modal_edit');
+            document.getElementById('pf-form-submit').textContent = t('promo_btn_save');
+            document.getElementById('pf-modal').classList.add('active');
+        }).catch(err => showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error'));
+    }
+
+    async function deletePf(id) {
+        if (!confirm(t('admin_portfolio_confirm_delete'))) return;
+        try {
+            await API.adminDeletePortfolioProject(id);
+            showToastMsg(t('admin_portfolio_deleted'), 'success');
+            await loadPortfolio();
+        } catch (err) {
+            showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
+        }
+    }
+
+    function setupPortfolio() {
+        document.getElementById('pf-new-btn').addEventListener('click', () => {
+            resetPfForm();
+            document.getElementById('pf-modal').classList.add('active');
         });
 
-        // Close modal
-        document.getElementById('promo-modal-close').addEventListener('click', () => {
-            document.getElementById('promo-modal').classList.remove('active');
-            resetPromoForm();
+        const close = () => {
+            document.getElementById('pf-modal').classList.remove('active');
+            resetPfForm();
+        };
+        document.getElementById('pf-modal-close').addEventListener('click', close);
+        document.getElementById('pf-modal').addEventListener('click', e => {
+            if (e.target === document.getElementById('pf-modal')) close();
         });
 
-        document.getElementById('promo-modal').addEventListener('click', e => {
-            if (e.target === document.getElementById('promo-modal')) {
-                document.getElementById('promo-modal').classList.remove('active');
-                resetPromoForm();
+        document.getElementById('pf-form').addEventListener('submit', async e => {
+            e.preventDefault();
+
+            const payload = {
+                title:         document.getElementById('pf-form-title').value.trim(),
+                platform:      document.getElementById('pf-form-platform').value,
+                plan:          document.getElementById('pf-form-plan').value,
+                price:         document.getElementById('pf-form-price').value.trim() || undefined,
+                term:          document.getElementById('pf-form-term').value.trim() || undefined,
+                lang:          document.getElementById('pf-form-lang').value.trim() || undefined,
+                sortOrder:     parseInt(document.getElementById('pf-form-sort').value) || 0,
+                descriptionRu: document.getElementById('pf-form-desc-ru').value.trim(),
+                descriptionPl: document.getElementById('pf-form-desc-pl').value.trim(),
+                descriptionEn: document.getElementById('pf-form-desc-en').value.trim(),
+                botUrl:        document.getElementById('pf-form-bot-url').value.trim() || undefined,
+                sourceUrl:     document.getElementById('pf-form-source-url').value.trim() || undefined,
+                screenshots:   document.getElementById('pf-form-screenshots').value
+                    .split('\n').map(s => s.trim()).filter(Boolean),
+                isVisible:     document.getElementById('pf-form-visible').checked
+            };
+
+            if (!payload.title) { showToastMsg(t('admin_portfolio_col_title') + ' — ?', 'error'); return; }
+
+            try {
+                if (pfEditId) {
+                    await API.adminUpdatePortfolioProject(pfEditId, payload);
+                    showToastMsg(t('admin_portfolio_updated'), 'success');
+                } else {
+                    await API.adminCreatePortfolioProject(payload);
+                    showToastMsg(t('admin_portfolio_created'), 'success');
+                }
+                close();
+                await loadPortfolio();
+            } catch (err) {
+                showToastMsg(t('tickets_load_error') + ': ' + err.message, 'error');
             }
         });
     }
 
-    // ── Init ───────────────────────────────
+    // ── Init ─────────────────────────────────
     async function init() {
         try {
             user = await checkAuth();
             if (!user) { window.location.href = '../auth.html'; return; }
-            if (!user.isAdmin) { window.location.href = '../tickets.html'; return; }
+            if (!user.isAdmin) { window.location.href = '../account.html'; return; }
 
             setText('admin-username', user.username || 'Admin');
 
-            await loadStats();
-            await loadTickets();
+            await Promise.all([loadStats(), loadTickets()]);
             initSSE();
-            setupFilters();
-            setupSearch();
-            setupSectionSwitching();
-            setupPromoForm();
-            setupPromoModal();
+            setupNav();
+            setupTabsAndSearch();
+            setupPromo();
+            setupPortfolio();
 
-            // Logout
             document.getElementById('logout-btn').addEventListener('click', async () => {
                 try { await API.logout(); } catch (_) {}
                 logout();
             });
 
-            // Panel close
             document.getElementById('adm-panel-close').addEventListener('click', closePanel);
             document.getElementById('adm-panel-overlay').addEventListener('click', closePanel);
             document.addEventListener('keydown', e => {
                 if (e.key === 'Escape' && document.getElementById('adm-panel').classList.contains('open')) closePanel();
             });
 
+            // Смена языка — перерисовка динамики
+            document.addEventListener('langchange', () => {
+                renderAll();
+                if (currentTicket) {
+                    const id = currentTicket.id;
+                    openTicket(id);
+                }
+                if (currentSection === 'promo') loadPromoCodes();
+                if (currentSection === 'portfolio') loadPortfolio();
+            });
         } catch (err) {
             console.error('Init error:', err);
         }

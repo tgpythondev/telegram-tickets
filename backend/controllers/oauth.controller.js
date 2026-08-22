@@ -247,6 +247,14 @@ async function findOrCreateOAuthUser(provider, profile) {
     const email = profile.email && profile.emailVerified ? profile.email.toLowerCase() : null;
     const user = await db.createUserOAuth(username, email);
     await db.linkOAuthAccount(user.id, provider, profile.providerUserId, email);
+
+    // Dev-режим: выдать админку юзеру из ADMIN_USERNAME (start-dev.bat)
+    if (process.env.DB_MODE === 'memory' && process.env.ADMIN_USERNAME &&
+        username.toLowerCase() === process.env.ADMIN_USERNAME.toLowerCase()) {
+        await db.setAdmin(user.id);
+        user.is_admin = true;
+    }
+
     return { user, isNewUser: true };
 }
 

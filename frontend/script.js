@@ -32,8 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const authBtn = document.getElementById('nav-auth-btn');
         const usernameEl = document.getElementById('nav-username');
         if (authBtn) {
-            authBtn.textContent = typeof t === 'function' ? t('nav_create_ticket') : 'Создать тикет';
-            authBtn.href = 'tickets.html';
+            authBtn.textContent = typeof t === 'function' ? t('nav_account') : 'Личный кабинет';
+            authBtn.href = 'account.html';
             authBtn.classList.remove('nav-cta');
             authBtn.classList.add('nav-ticket-btn');
         }
