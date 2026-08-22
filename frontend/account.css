@@ -103,6 +103,8 @@
 }
 
 .acc-nav-icon { flex-shrink: 0; opacity: 0.85; }
+.acc-nav-img { width: 17px; height: 17px; border-radius: 50%; object-fit: cover; }
+.acc-tg-status-icon img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
 
 .acc-nav-badge {
     margin-left: auto;

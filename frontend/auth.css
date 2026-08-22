@@ -313,6 +313,14 @@
     flex-shrink: 0;
 }
 
+.oauth-btn img {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
 .oauth-btn.is-hidden { display: none; }
 
 

@@ -167,6 +167,17 @@
     color: rgba(255, 255, 255, 0.75);
 }
 .cfg-platform-card.selected .cfg-platform-icon { color: var(--white); }
+.cfg-platform-icon { gap: 4px; }
+.cfg-platform-img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.cfg-platform-img--sm {
+    width: 21px;
+    height: 21px;
+}
 
 .cfg-platform-name {
     font-weight: 600;
